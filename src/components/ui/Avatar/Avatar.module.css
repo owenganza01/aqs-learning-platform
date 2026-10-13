@@ -1,0 +1,31 @@
+/* Initials avatar ("GO", "MJ") on a pale blue circle. */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-blue-100);
+  color: var(--color-navy);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.sm {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
+.md {
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+}
+
+.lg {
+  width: 48px;
+  height: 48px;
+  font-size: 16px;
+}

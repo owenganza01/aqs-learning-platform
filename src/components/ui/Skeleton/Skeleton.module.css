@@ -1,0 +1,32 @@
+/* Grey placeholder blocks shown while content loads (see "Loading" designs). */
+.skeleton {
+  display: block;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.6), transparent);
+  animation: shimmer 1.4s infinite;
+}
+
+.text {
+  height: 12px;
+  border-radius: var(--radius-full);
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}

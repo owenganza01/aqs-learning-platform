@@ -1,0 +1,369 @@
+/* Styles for the development-only preview page. Not used by product screens. */
+.page {
+  min-height: 100vh;
+  background: var(--color-canvas);
+}
+
+.topBar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-24);
+  min-height: 72px;
+  padding: var(--space-12) var(--space-40);
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.topTitle {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: var(--weight-semibold);
+}
+
+.devTag {
+  font-size: var(--text-caption);
+  color: var(--color-border-strong);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: var(--space-48);
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: var(--space-40);
+}
+
+.toc {
+  position: sticky;
+  top: 112px;
+  align-self: start;
+}
+
+.tocList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tocLink {
+  display: block;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-subtle);
+  font-size: var(--text-caption);
+  text-decoration: none;
+}
+
+.tocLink:hover {
+  background: var(--color-blue-50);
+  color: var(--color-blue);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-64);
+  min-width: 0;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  scroll-margin-top: 104px;
+}
+
+.sectionHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-bottom: var(--space-12);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sectionNote {
+  max-width: 760px;
+  color: var(--color-text-muted);
+}
+
+.subheading {
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: var(--weight-semibold);
+}
+
+/* ---- Colour swatches ---- */
+.swatchGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-16);
+}
+
+.swatch {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+}
+
+.swatchColor {
+  height: 88px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.swatchInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-12) var(--space-16) var(--space-16);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.swatchName {
+  font-weight: var(--weight-semibold);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.swatchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+/* ---- Typography rows ---- */
+.typeRow {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-24);
+  padding: var(--space-24) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.typeRow:last-child {
+  border-bottom: 0;
+}
+
+.typeMeta {
+  font-size: var(--text-label);
+  line-height: 18px;
+  color: var(--color-text-muted);
+}
+
+.typeMeta strong,
+.typeMeta .mono {
+  display: block;
+  font-size: var(--text-caption);
+  color: var(--color-text);
+}
+
+/* ---- Spacing bars ---- */
+.spaceRow {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) 60px;
+  align-items: center;
+  gap: var(--space-16);
+  font-size: var(--text-caption);
+}
+
+.spaceBar {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-blue);
+}
+
+/* ---- Grids for component demos ---- */
+.stateGrid {
+  display: grid;
+  grid-template-columns: 180px repeat(4, minmax(0, 1fr));
+  align-items: center;
+  gap: var(--space-16) var(--space-24);
+}
+
+.stateHead {
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+}
+
+.variantName {
+  font-weight: var(--weight-semibold);
+}
+
+.variantNote {
+  font-size: var(--text-label);
+  line-height: 18px;
+  color: var(--color-text-muted);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-24);
+}
+
+.threeCol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-24);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.elevationCard {
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.radiusDemo {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 120px;
+  padding: var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-canvas);
+}
+
+/* ---- Layout frames ---- */
+.frame {
+  overflow: hidden;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  box-shadow: var(--shadow-1);
+}
+
+.frameLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding: var(--space-12) var(--space-16);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+}
+
+.frameViewport {
+  height: 900px;
+  overflow: auto;
+  /* creates a containing block so position: fixed drawers stay inside */
+  transform: translateZ(0);
+}
+
+.mockBlock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  padding: var(--space-24);
+  border: 1px solid var(--color-border);
+  background: var(--color-white);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  text-align: center;
+}
+
+.mockHero {
+  padding: var(--space-64) 72px;
+}
+
+.mockHeroTitle {
+  max-width: 640px;
+}
+
+.focusContent {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-32) var(--space-24);
+}
+
+@media (max-width: 1023px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--space-24);
+  }
+
+  .toc {
+    display: none;
+  }
+
+  .stateGrid,
+  .twoCol,
+  .threeCol {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stateHead {
+    display: none;
+  }
+
+  .typeRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .topBar {
+    padding: var(--space-12) var(--space-24);
+  }
+}
+
+/* ---- Type in context ---- */
+.contextGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-24);
+}
+
+.contextSource {
+  margin-bottom: var(--space-16);
+  font-family: var(--font-mono);
+  font-size: var(--text-hint);
+  line-height: var(--leading-hint);
+  color: var(--color-text-muted);
+}
+
+.contextInner {
+  margin-top: var(--space-24);
+  padding-top: var(--space-24);
+  border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 1023px) {
+  .contextGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

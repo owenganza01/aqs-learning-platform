@@ -1,0 +1,346 @@
+/*
+ * Signed-in workspaces (learner, instructor, admins): navy sidebar on the left,
+ * white header with search, notifications and the user, content on the canvas.
+ * Sizes measured from the dashboard designs: 240px sidebar, 88px header.
+ */
+.shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--color-canvas);
+}
+
+/* ---- Sidebar ---- */
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 28px var(--space-16) var(--space-24);
+  overflow-y: auto;
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.sidebarTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-16);
+  margin-bottom: 36px;
+}
+
+.closeButton {
+  display: none;
+}
+
+.navList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  min-height: 48px;
+  padding: 0 var(--space-16);
+  border-radius: var(--radius);
+  color: var(--color-border-strong); /* 7.75:1 on navy */
+  font-size: 15px;
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+}
+
+.navItem:hover {
+  background: rgb(255 255 255 / 0.06);
+  color: var(--color-white);
+}
+
+.navItem[aria-current='page'] {
+  background: var(--color-navy-light);
+  color: var(--color-white);
+  font-weight: var(--weight-semibold);
+}
+
+.helpCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin-top: var(--space-32);
+  padding: var(--space-16);
+  border-radius: var(--radius);
+  background: var(--color-navy-light);
+}
+
+.helpTitle {
+  margin-top: var(--space-8);
+  font-size: var(--text-caption); /* 14px, measured */
+  font-weight: var(--weight-semibold);
+}
+
+.helpText {
+  font-size: var(--text-label);
+  line-height: 18px;
+  color: var(--color-border-strong);
+}
+
+.helpLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin-top: var(--space-4);
+  color: var(--color-white);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.helpLink:hover {
+  text-decoration: underline;
+}
+
+.sidebarBottom {
+  margin-top: auto;
+  padding: var(--space-32) var(--space-16) 0;
+}
+
+.signOut {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-4) 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-border-strong);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.signOut:hover {
+  color: var(--color-white);
+}
+
+.copyright {
+  margin-top: var(--space-12);
+  font-size: var(--text-label);
+  color: var(--color-border-strong);
+}
+
+/* ---- Header ---- */
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: var(--space-24);
+  height: var(--header-height);
+  padding: 0 var(--space-40);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-white);
+}
+
+.menuButton {
+  display: none;
+}
+
+.workspace {
+  min-width: 0;
+}
+
+.workspaceTitle {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: var(--weight-semibold);
+  color: var(--color-navy);
+}
+
+.workspaceSubtitle {
+  font-size: var(--text-hint); /* 12px, measured */
+  line-height: var(--leading-hint);
+  color: var(--color-text-muted);
+}
+
+.search {
+  position: relative;
+  flex: 0 1 350px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--space-16);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  height: 44px;
+  padding: 0 var(--space-16) 0 44px;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius);
+  background: var(--color-canvas);
+  font-size: 15px;
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.searchInput:focus-visible {
+  outline: none;
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 3px var(--color-blue-100);
+}
+
+.headerEnd {
+  display: flex;
+  align-items: center;
+  gap: var(--space-24);
+  margin-left: auto;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-navy);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: var(--color-canvas);
+}
+
+.divider {
+  width: 1px;
+  height: 32px;
+  background: var(--color-border);
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.userName {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: var(--weight-semibold);
+  color: var(--color-navy);
+}
+
+.userRole {
+  font-size: var(--text-hint); /* 12px, measured */
+  line-height: var(--leading-hint);
+  color: var(--color-text-muted);
+}
+
+.content {
+  flex: 1;
+  width: 100%;
+  max-width: calc(1120px + 2 * var(--space-40));
+  padding: var(--space-32) var(--space-40) var(--space-64);
+}
+
+.content:focus {
+  outline: none;
+}
+
+.backdrop {
+  display: none;
+}
+
+/* ---- Tablet & smaller (D9: desktop-first, still usable) ----
+ * The sidebar becomes a slide-in drawer opened by the menu button. */
+@media (max-width: 1023px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 30;
+    width: min(var(--sidebar-width), 85vw);
+    transform: translateX(-100%);
+    transition: transform 200ms ease;
+    visibility: hidden;
+  }
+
+  .shell[data-drawer='open'] .sidebar {
+    transform: none;
+    visibility: visible;
+  }
+
+  .shell[data-drawer='open'] .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: rgb(15 23 42 / 0.45);
+  }
+
+  .closeButton,
+  .menuButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: var(--radius);
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .closeButton {
+    color: var(--color-white);
+  }
+
+  .menuButton {
+    color: var(--color-navy);
+    margin-left: calc(-1 * var(--space-12));
+  }
+
+  .header {
+    height: 72px;
+    padding: 0 var(--space-24);
+    gap: var(--space-12);
+  }
+
+  .search,
+  .divider,
+  .userText {
+    display: none;
+  }
+
+  .headerEnd {
+    gap: var(--space-8);
+  }
+
+  .content {
+    padding: var(--space-24) var(--space-24) var(--space-48);
+  }
+}

@@ -1,0 +1,107 @@
+/*
+ * Sign-in screens: white half with a centred card, navy half with the
+ * "Learn at your pace, anywhere." message. On small screens only the card shows
+ * (matches the mobile sign-in design).
+ */
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--color-white);
+}
+
+.formSide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-48) var(--space-24);
+}
+
+.card {
+  width: 100%;
+  max-width: 480px;
+  padding: var(--space-48) 44px;
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  background: var(--color-white);
+  box-shadow: var(--shadow-2);
+}
+
+.brandMark {
+  margin-bottom: var(--space-32);
+}
+
+.brandSide {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: 72px 72px 0;
+  overflow: hidden;
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-blue-100);
+}
+
+.eyebrow::before {
+  content: '';
+  width: 28px;
+  height: 2px;
+  background: var(--color-orange); /* decorative accent — no text on it */
+}
+
+.headline {
+  max-width: 440px;
+  font-size: 48px;
+  line-height: 52px;
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.02em;
+}
+
+.illustration {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-top: var(--space-32);
+}
+
+/* Quiet stand-in until the photo is exported from Figma as its own image */
+.placeholder {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 480px;
+  min-height: 320px;
+  border-radius: 24px 24px 0 0;
+  padding: var(--space-24);
+  background: rgb(255 255 255 / 0.06);
+  font-size: var(--text-hint);
+  line-height: var(--leading-hint);
+  color: var(--color-blue-100);
+}
+
+@media (max-width: 899px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .brandSide {
+    display: none;
+  }
+
+  .card {
+    padding: var(--space-40) var(--space-24);
+  }
+}

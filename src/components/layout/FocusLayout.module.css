@@ -1,0 +1,141 @@
+/*
+ * Distraction-free pages (course player, quiz): no sidebar, a slim header with
+ * a back link, the course title and overall progress. Optional sticky footer
+ * for "Mark as done / Next lesson".
+ */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-canvas);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-24);
+  height: var(--header-height);
+  padding: 0 var(--space-32);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-white);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-12);
+  justify-self: start;
+  padding: var(--space-8) var(--space-4);
+  border-radius: var(--radius-sm);
+  color: var(--color-navy);
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.back:hover {
+  text-decoration: underline;
+}
+
+.titleBlock {
+  min-width: 0;
+}
+
+.eyebrow {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-blue);
+}
+
+.title {
+  overflow: hidden;
+  font-size: var(--text-card-md); /* 20px, measured in course player & quiz headers */
+  line-height: var(--leading-card-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+  color: var(--color-navy);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.end {
+  display: flex;
+  align-items: center;
+  gap: var(--space-32);
+}
+
+.progress {
+  width: 240px;
+}
+
+.divider {
+  width: 1px;
+  height: 40px;
+  background: var(--color-border);
+}
+
+.main {
+  flex: 1;
+}
+
+.main:focus {
+  outline: none;
+}
+
+.footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-16);
+  padding: var(--space-16) var(--space-40);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-white);
+}
+
+/* ---- Mobile (matches the mobile course-player design) ---- */
+@media (max-width: 767px) {
+  .header {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    height: auto;
+    row-gap: var(--space-8);
+    padding: var(--space-12) var(--space-16);
+  }
+
+  .backLabel,
+  .eyebrow,
+  .divider,
+  .avatar {
+    display: none;
+  }
+
+  .title {
+    font-size: 16px; /* measured in the mobile course-player design */
+    line-height: 24px;
+  }
+
+  .end {
+    grid-column: 1 / -1;
+  }
+
+  .progress {
+    width: 100%;
+  }
+
+  .footer {
+    padding: var(--space-12) var(--space-16);
+  }
+
+  .footer > * {
+    flex: 1;
+  }
+}

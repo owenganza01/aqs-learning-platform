@@ -1,0 +1,59 @@
+/* Full-width strip under the header ("You're offline…", "Syncing…"). */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  font-weight: var(--weight-medium);
+}
+
+.flush {
+  border-radius: 0;
+  padding-inline: var(--space-40);
+}
+
+.message {
+  flex: 1;
+  min-width: 0;
+}
+
+.action {
+  flex-shrink: 0;
+}
+
+.info {
+  background: var(--color-blue-50);
+  color: var(--color-navy);
+}
+
+.info .icon {
+  color: var(--color-blue);
+}
+
+.warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .flush {
+    padding-inline: var(--space-16);
+  }
+}

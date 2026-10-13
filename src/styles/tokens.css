@@ -1,0 +1,132 @@
+/*
+ * AQS design tokens
+ * -----------------
+ * Every colour, size and shadow the interface uses lives here as a CSS
+ * custom property (a "variable"). Components refer to these names instead
+ * of hard-coding values, so a change here updates the whole app.
+ *
+ * Source: design-reference/1 Cover & Foundations/Design system.png
+ * plus colours sampled from the screen designs (see docs/decisions.md).
+ * Contrast ratios are WCAG 2.x, measured against white (#FFFFFF) unless noted.
+ */
+
+:root {
+  /* ---- Brand palette (verified from the design system page) ---- */
+  --color-navy: #1e3a5f; /* brand foundation · 11.5:1 */
+  --color-navy-light: #2c4d75; /* sidebar active item, help card (sampled) */
+  --color-blue: #2563eb; /* links & selection · 5.17:1 */
+  --color-orange: #f97316; /* brand ACCENT only — 2.80:1, never behind or as small text */
+  --color-canvas: #f8fafc; /* page background */
+  --color-text: #0f172a; /* primary content · 17.85:1 */
+  --color-white: #ffffff; /* surfaces */
+
+  /* ---- Accessible action colours (decision D1) ---- */
+  --color-action: #c2410c; /* primary button fill · white text 5.18:1 */
+  --color-action-hover: #9a3412; /* primary hover · white text 7.31:1 */
+  --color-accent-text: #c2410c; /* orange-looking text, e.g. eyebrows · 5.18:1 */
+
+  /* ---- Neutrals ---- */
+  --color-text-muted: #64748b; /* secondary text · 4.76:1 (4.55:1 on canvas) — do not go lighter */
+  --color-text-subtle: #475569; /* labels on tinted fills · 7.58:1 */
+  --color-border: #e2e8f0; /* card & table borders (decorative) */
+  --color-border-strong: #cbd5e1; /* input borders */
+  --color-input-border: #8391a7; /* form control outline · 3.19:1 (WCAG 1.4.11 needs 3:1;
+                                    slightly darker than the light grey in the designs) */
+  --color-disabled-bg: #cbd5e1;
+  --color-disabled-text: #475569;
+  --color-surface-muted: #f1f5f9; /* skeletons, table header */
+
+  /* ---- Tints used by badges, banners and selected states ---- */
+  --color-blue-50: #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-orange-50: #fff7ed;
+  --color-success: #15803d; /* 5.02:1 */
+  --color-success-bg: #f0fdf4;
+  --color-warning: #9a3412; /* 7.31:1 — text on warning tint */
+  --color-warning-bg: #fff7ed; /* one warning tint everywhere (decision log) */
+  --color-danger: #b91c1c; /* 6.47:1 */
+  --color-danger-bg: #fef2f2;
+  --color-violet: #6d28d9; /* General Admin role badge · 7.10:1 */
+  --color-violet-bg: #f5f3ff;
+
+  /* ---- Focus ring (D1: visible keyboard focus) ---- */
+  --focus-ring-color: var(--color-blue); /* 5.17:1 on white, 4.94:1 on canvas */
+  --focus-ring-gap: var(--color-white);
+  --focus-ring: 0 0 0 2px var(--focus-ring-gap), 0 0 0 4px var(--focus-ring-color);
+  --focus-ring-on-dark: #93c5fd; /* 6.38:1 on navy — blue would only reach 2.23:1 */
+
+  /* ---- Typography (Inter type scale) ---- */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  /*
+   * Type scale. Sizes in the right-hand comments were measured from the
+   * 1440px design exports (Inter cap height = 0.727 × font size, ±1.5px).
+   * Heading SIZE is chosen with a class (see global.css), not by the HTML
+   * heading level, so pages keep a correct h1 → h2 → h3 outline.
+   */
+  --text-h1: 56px; /* landing hero — measured 56–58 */
+  --leading-h1: 60px;
+  --text-h2: 40px; /* landing sections, sign-in heading — measured 40–42 */
+  --leading-h2: 46px;
+  --text-title: 32px; /* dashboard & admin page titles — measured 32–34 */
+  --leading-title: 40px;
+  --text-section: 28px; /* course builder, lesson title, quiz question, course-detail sections — measured ≈29 */
+  --leading-section: 36px;
+  --text-h3: 24px; /* large card titles, empty states — measured 24–25 */
+  --leading-h3: 31px;
+  --text-card-md: 20px; /* landing cards, course-player & quiz header — measured 20–21 */
+  --leading-card-md: 28px;
+  --text-card-sm: 18px; /* panel titles, list course-card titles — measured 18 */
+  --leading-card-sm: 26px;
+  --text-lead: 18px; /* hero & section intro paragraphs — measured 18 */
+  --leading-lead: 28px;
+  --text-body: 16px;
+  --leading-body: 25px;
+  --text-body-sm: 15px; /* form text, tabs, card descriptions — measured 15 */
+  --leading-body-sm: 22px;
+  --text-caption: 14px;
+  --leading-caption: 20px;
+  --text-label: 12px; /* eyebrows, table headers */
+  --leading-label: 16px;
+  --text-hint: 12px; /* helper text, subtitles under names — measured 11–12 */
+  --leading-hint: 16px;
+  --text-badge: 11px; /* status badges — measured 10–11; 11 is the readable minimum */
+  --leading-badge: 14px;
+  --text-button-sm: 13px; /* row/table actions — measured 12–14 */
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ---- Spacing: 8px rhythm (4 and 12 are half-steps for tight spots) ---- */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-64: 64px;
+
+  /* ---- Radius ---- */
+  --radius: 12px; /* cards, buttons, inputs, panels */
+  --radius-sm: 8px; /* small inner elements (thumbnails, icon tiles) */
+  --radius-full: 999px; /* pills, avatars */
+
+  /* ---- Elevation: two levels only ---- */
+  --shadow-1: 0 2px 8px 0 rgb(30 58 95 / 0.08); /* cards and controls */
+  --shadow-2: 0 12px 32px -4px rgb(30 58 95 / 0.15); /* menus and dialogs */
+
+  /* ---- Sizes ---- */
+  --control-height: 48px; /* buttons and inputs */
+  --control-height-sm: 36px;
+  --sidebar-width: 240px;
+  --header-height: 88px;
+  --content-max-width: 1296px;
+
+  --transition-fast: 120ms ease;
+}

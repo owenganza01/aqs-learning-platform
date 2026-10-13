@@ -1,0 +1,114 @@
+/*
+ * Form fields — label above, 48px control, 12px radius, hint or error below.
+ * Matches "Create organization", "Lesson editor" and "Invite members".
+ */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+}
+
+.optional {
+  margin-left: var(--space-4);
+  font-weight: var(--weight-regular);
+  color: var(--color-text-muted);
+}
+
+.control {
+  width: 100%;
+  min-height: var(--control-height);
+  padding: 0 var(--space-16);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  color: var(--color-text);
+  font-size: var(--text-body-sm); /* 15px, measured in the designs */
+  line-height: var(--leading-body-sm);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.control::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.control:hover:not(:disabled) {
+  border-color: var(--color-text-muted);
+}
+
+.control:focus-visible,
+.control[data-preview-state='focus'] {
+  outline: none;
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 3px var(--color-blue-100);
+}
+
+.control:disabled {
+  background: var(--color-surface-muted);
+  color: var(--color-disabled-text);
+  cursor: not-allowed;
+}
+
+.control[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.control[aria-invalid='true']:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-danger-bg);
+}
+
+.textarea {
+  min-height: 112px;
+  padding: var(--space-12) var(--space-16);
+  resize: vertical;
+}
+
+.selectWrap {
+  position: relative;
+}
+
+.select {
+  appearance: none;
+  padding-right: var(--space-48);
+  cursor: pointer;
+}
+
+.selectIcon {
+  position: absolute;
+  right: var(--space-16);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.hint {
+  font-size: var(--text-hint);
+  line-height: var(--leading-hint);
+  color: var(--color-text-muted);
+}
+
+.error {
+  font-size: var(--text-hint);
+  line-height: var(--leading-hint);
+  font-weight: var(--weight-medium);
+  color: var(--color-danger);
+}
+
+/* Phones: keep 16px so iOS Safari does not zoom in when a field is tapped */
+@media (max-width: 767px) {
+  .control {
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+  }
+}

@@ -1,0 +1,245 @@
+/* Marketing pages: white top bar, content, navy CTA band (optional), footer. */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-white);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.headerInner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-32);
+  /* 1296px content + 72px side padding = 1440px, matching the design grid */
+  max-width: calc(var(--content-max-width) + 2 * 72px);
+  height: 96px;
+  margin: 0 auto;
+  padding: 0 72px;
+}
+
+.nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+/*
+ * Navigation, measured from Landing [Ready] at 1440px:
+ * links ≈14px navy, 40px between words, centred between wordmark and actions;
+ * "Sign in" ≈15px, 27px before the button; button ≈135px wide.
+ * (12px link padding + 16px gap + 12px padding = 40px between words.)
+ */
+.navList {
+  display: flex;
+  gap: var(--space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  display: block;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-sm);
+  color: var(--color-navy);
+  font-size: var(--text-caption); /* 14px */
+  line-height: var(--leading-caption);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.navLink:hover {
+  color: var(--color-blue);
+}
+
+.navLink[aria-current='page'] {
+  color: var(--color-blue);
+  font-weight: var(--weight-medium);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.signIn {
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-sm);
+  color: var(--color-navy);
+  font-size: var(--text-body-sm); /* 15px, measured; regular weight keeps it understated */
+  line-height: var(--leading-body-sm);
+  font-weight: var(--weight-regular);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+/* "Get started": standard 48px primary button, with a medium (not semibold)
+ * label so it sits in proportion with the navigation. ≈132px wide. */
+.cta {
+  font-weight: var(--weight-medium);
+}
+
+.signIn:hover {
+  color: var(--color-blue);
+}
+
+.menuButton {
+  display: none;
+}
+
+.main {
+  flex: 1;
+}
+
+/* ---- Footer ---- */
+.footer {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-white);
+}
+
+.footerInner {
+  max-width: calc(var(--content-max-width) + 2 * 72px);
+  margin: 0 auto;
+  padding: var(--space-64) 72px var(--space-32);
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
+  gap: var(--space-32);
+}
+
+.footerAbout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  max-width: 300px;
+  font-size: var(--text-caption);
+  line-height: 22px;
+  color: var(--color-text-muted);
+}
+
+.footerHeading {
+  margin-bottom: var(--space-12);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.footerList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footerLink {
+  color: var(--color-text);
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.footerLink:hover {
+  color: var(--color-blue);
+  text-decoration: underline;
+}
+
+.copyright {
+  margin-top: var(--space-40);
+  padding-top: var(--space-24);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+}
+
+/* ---- Tablet & mobile (D9: public screens must work on mobile) ---- */
+@media (max-width: 1023px) {
+  .headerInner {
+    height: 72px;
+    padding: 0 var(--space-24);
+    gap: var(--space-16);
+  }
+
+  .menuButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-left: auto;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius);
+    background: var(--color-white);
+    color: var(--color-navy);
+    cursor: pointer;
+  }
+
+  .nav,
+  .actions {
+    display: none;
+  }
+
+  .header[data-open='true'] .headerInner {
+    flex-wrap: wrap;
+    height: auto;
+    padding-block: var(--space-12);
+  }
+
+  .header[data-open='true'] .nav,
+  .header[data-open='true'] .actions {
+    display: flex;
+    flex-basis: 100%;
+  }
+
+  .header[data-open='true'] .nav {
+    justify-content: flex-start;
+  }
+
+  .header[data-open='true'] .navList {
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+  }
+
+  /* Larger touch targets in the open mobile menu */
+  .header[data-open='true'] .navLink {
+    padding: var(--space-12) var(--space-8);
+    font-size: var(--text-body-sm);
+  }
+
+  .header[data-open='true'] .actions {
+    padding-bottom: var(--space-8);
+  }
+
+  /* Line "Sign in" up with the menu links above it */
+  .header[data-open='true'] .signIn {
+    padding-inline: var(--space-8);
+  }
+
+  .footerInner {
+    padding: var(--space-48) var(--space-24) var(--space-24);
+  }
+
+  .footerGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footerAbout {
+    grid-column: 1 / -1;
+  }
+}

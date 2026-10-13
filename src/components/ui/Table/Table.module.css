@@ -1,0 +1,66 @@
+/* Data table as used for organizations, users and course performance. */
+.scroll {
+  /* position: relative keeps screen-reader-only text inside the scroll area */
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.caption {
+  text-align: left;
+}
+
+.th {
+  padding: var(--space-12) var(--space-24);
+  background: var(--color-canvas);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-subtle);
+  white-space: nowrap;
+}
+
+.td {
+  padding: var(--space-16) var(--space-24);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  vertical-align: middle;
+}
+
+.row:hover .td {
+  background: var(--color-canvas);
+}
+
+.alignRight {
+  text-align: right;
+}
+
+.alignCenter {
+  text-align: center;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-16);
+  padding: var(--space-16) var(--space-24);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--color-text-muted);
+}
+
+.emptyCell {
+  padding: var(--space-40) var(--space-24);
+  text-align: center;
+  color: var(--color-text-muted);
+}
