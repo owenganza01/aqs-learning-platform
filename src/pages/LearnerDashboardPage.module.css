@@ -1,0 +1,194 @@
+/*
+ * Learner dashboard (frame 1), measured from
+ * `Learner dashboard [Ready].png` (new designs) at 1440px wide.
+ * AppShell provides the sidebar, header and the 1120px content column.
+ */
+
+/* ---- Page header ---- */
+.pageHeader {
+  margin-bottom: var(--space-40);
+}
+
+.pageIntro {
+  margin-top: var(--space-8);
+  color: var(--color-text-muted);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+/* ---- Sections ---- */
+.section + .section {
+  margin-top: var(--space-48);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  margin-bottom: var(--space-24);
+}
+
+.sectionTitle {
+  color: var(--color-text);
+}
+
+.sectionDescription {
+  margin-top: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+}
+
+.sectionAction {
+  flex-shrink: 0;
+  margin-right: calc(-1 * var(--space-12));
+}
+
+/* ---- Card grids ---- */
+.grid {
+  display: grid;
+  gap: var(--space-24);
+  align-items: start; /* cards keep their own height, as in the design */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gridThree {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.gridTwo {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* ---- Course cards (page-local) ---- */
+.card {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  box-shadow: var(--shadow-1);
+}
+
+.image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-subtle);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+}
+
+.tintBlue {
+  background: var(--color-blue-50);
+}
+
+.tintOrange {
+  background: var(--color-orange-50);
+}
+
+.tintBlueStrong {
+  background: var(--color-blue-100);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--space-16);
+}
+
+.category {
+  color: var(--color-blue);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: var(--weight-medium);
+}
+
+.cardTitle {
+  margin-top: var(--space-8);
+  color: var(--color-navy);
+  font-size: var(--text-card-md);
+  line-height: var(--leading-card-md);
+  font-weight: var(--weight-semibold);
+}
+
+.meta {
+  margin-top: var(--space-8);
+  color: var(--color-text-subtle);
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.progress {
+  margin-top: var(--space-16);
+}
+
+.cardAction {
+  margin-top: var(--space-16);
+}
+
+.description {
+  margin-top: var(--space-8);
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  line-height: 21px;
+}
+
+.byline {
+  margin-top: var(--space-4);
+  color: var(--color-text-subtle);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.catalogMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  margin-top: var(--space-16);
+}
+
+.duration {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--color-text-subtle);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.viewCourse {
+  align-self: flex-start;
+  margin: var(--space-12) 0 0 calc(-1 * var(--space-12));
+}
+
+/* ---- Responsive (D9: learner screens on desktop and mobile) ---- */
+/* Three 300px+ columns no longer fit below ~1180px (sidebar + padding) */
+@media (max-width: 1180px) {
+  .gridThree {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .pageHeader {
+    margin-bottom: var(--space-32);
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-8);
+  }
+
+  .gridThree,
+  .gridTwo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

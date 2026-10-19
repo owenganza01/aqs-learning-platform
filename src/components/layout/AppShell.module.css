@@ -62,6 +62,15 @@
   color: var(--color-white);
 }
 
+/* Destination not built yet (NavItem.unavailable) */
+.navItemUnavailable,
+.navItemUnavailable:hover {
+  background: transparent;
+  color: var(--color-border-strong);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .navItem[aria-current='page'] {
   background: var(--color-navy-light);
   color: var(--color-white);
@@ -124,6 +133,30 @@
 
 .signOut:hover {
   color: var(--color-white);
+}
+
+/* Help link, sign out and notifications when unavailableActions is set */
+.unavailable {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.unavailable:hover {
+  text-decoration: none;
+}
+
+.signOut:disabled,
+.iconButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.signOut:disabled:hover {
+  color: var(--color-border-strong);
+}
+
+.iconButton:disabled:hover {
+  background: transparent;
 }
 
 .copyright {

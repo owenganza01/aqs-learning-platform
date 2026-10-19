@@ -12,6 +12,12 @@ const DesignSystemPage = import.meta.env.DEV
   ? lazy(() => import('./dev/design-system/DesignSystemPage'))
   : null
 
+/* Development-only preview of the learner dashboard (frame 1). Same pattern:
+ * excluded from production builds until routing (A1) and sign-in exist. */
+const LearnerDashboardPage = import.meta.env.DEV
+  ? lazy(() => import('./pages/LearnerDashboardPage'))
+  : null
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -23,6 +29,16 @@ export default function App() {
             element={
               <Suspense fallback={<p style={{ padding: 24 }}>Loading design system…</p>}>
                 <DesignSystemPage />
+              </Suspense>
+            }
+          />
+        ) : null}
+        {LearnerDashboardPage ? (
+          <Route
+            path="/dev/learner-dashboard"
+            element={
+              <Suspense fallback={<p style={{ padding: 24 }}>Loading learner dashboard…</p>}>
+                <LearnerDashboardPage />
               </Suspense>
             }
           />

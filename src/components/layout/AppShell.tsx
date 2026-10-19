@@ -17,6 +17,11 @@ type AppShellProps = {
   helpTitle?: string
   /** Full-width strip under the header, e.g. an offline <Banner flush>. */
   banner?: ReactNode
+  /**
+   * Show notifications, "Visit help center" and "Sign out" as unavailable
+   * (dimmed, not clickable) until their behaviour exists. Default false.
+   */
+  unavailableActions?: boolean
   children: ReactNode
   mainId?: string
 }
@@ -32,6 +37,7 @@ export function AppShell({
   searchPlaceholder,
   helpTitle = 'Here to help you learn',
   banner,
+  unavailableActions = false,
   children,
   mainId = 'main-content',
 }: AppShellProps) {
@@ -85,15 +91,23 @@ export function AppShell({
           <ul className={styles.navList}>
             {navItems.map((item) => (
               <li key={item.to}>
-                <Link
-                  to={item.to}
-                  className={styles.navItem}
-                  aria-current={isActive(item) ? 'page' : undefined}
-                  onClick={() => setDrawerOpen(false)}
-                >
-                  {item.icon ? <Icon name={item.icon} size={20} /> : null}
-                  {item.label}
-                </Link>
+                {item.unavailable ? (
+                  <span className={`${styles.navItem} ${styles.navItemUnavailable}`} aria-disabled="true">
+                    {item.icon ? <Icon name={item.icon} size={20} /> : null}
+                    {item.label}
+                    <span className="visually-hidden"> (not available yet)</span>
+                  </span>
+                ) : (
+                  <Link
+                    to={item.to}
+                    className={styles.navItem}
+                    aria-current={isActive(item) ? 'page' : undefined}
+                    onClick={() => setDrawerOpen(false)}
+                  >
+                    {item.icon ? <Icon name={item.icon} size={20} /> : null}
+                    {item.label}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
@@ -103,13 +117,20 @@ export function AppShell({
           <Icon name="help" size={24} />
           <p className={styles.helpTitle}>{helpTitle}</p>
           <p className={styles.helpText}>Find answers or get support from our learning team.</p>
-          <Link to="/help" className={styles.helpLink}>
-            Visit help center <Icon name="arrowRight" size={16} />
-          </Link>
+          {unavailableActions ? (
+            <span className={`${styles.helpLink} ${styles.unavailable}`} aria-disabled="true">
+              Visit help center <Icon name="arrowRight" size={16} />
+              <span className="visually-hidden"> (not available yet)</span>
+            </span>
+          ) : (
+            <Link to="/help" className={styles.helpLink}>
+              Visit help center <Icon name="arrowRight" size={16} />
+            </Link>
+          )}
         </div>
 
         <div className={styles.sidebarBottom}>
-          <button type="button" className={styles.signOut}>
+          <button type="button" className={styles.signOut} disabled={unavailableActions}>
             <Icon name="logOut" size={20} />
             Sign out
           </button>
@@ -150,8 +171,8 @@ export function AppShell({
           ) : null}
 
           <div className={styles.headerEnd}>
-            <button type="button" className={styles.iconButton}>
-              <Icon name="bell" size={22} label="Notifications" />
+            <button type="button" className={styles.iconButton} disabled={unavailableActions}>
+              <Icon name="bell" size={22} label={unavailableActions ? 'Notifications (not available yet)' : 'Notifications'} />
             </button>
             <span className={styles.divider} aria-hidden="true" />
             <div className={styles.user}>
