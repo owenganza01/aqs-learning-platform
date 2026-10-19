@@ -149,3 +149,201 @@ These are small design-system choices that the designs left open. Change them he
 5. **Wordmark** is text-only ("AQS / E-LEARNING") because no logo file exists yet.
 6. **Footer contact details** are left blank until AQS confirms real ones. The design shows placeholders.
 7. The **`/design-system` preview is development-only.** It is excluded from production builds.
+
+---
+
+# Decisions recorded after 13 October 2026
+
+Entries above this line are unchanged and keep their original wording, IDs and dates. Entries below use these status labels:
+
+- **Confirmed in conversation** — agreed by the project owner in conversation on the date shown; this file records it.
+- **Proposed** — a recommendation awaiting the project owner's approval. Do not build against it until its status is updated.
+- **Open** — an unresolved question. No default has been chosen.
+
+Entries below use the role terms proposed in D22 (Platform Admin, Organization Admin, Instructor, Learner).
+
+## D12 — Implementation foundation, working copy and preservation
+
+**Confirmed in conversation (19 October 2026)**
+- The implementation working copy is `C:\Dev\aqs-platform`, on branch `phase-1-foundations` at commit `1ee920d`. It is outside OneDrive.
+- Normal development is permitted in that working copy, within the other decisions in this file.
+- The earlier folder `OneDrive\Desktop\AQS-New-Platform\aqs-platform` is preserved untouched and is not used for implementation.
+- Project B (`owenganza01/aqs-landing-page-planning`, last audited at commit `38c4358`) is a **read-only reference**. It is not merged wholesale, and the recovery repository is never modified.
+- The v0 chat connected to that repository stays **connected but unused** while auditing and planning continue, because any v0 edit creates commits in the recovery repository.
+- The following remain preserved, unmodified and never moved, renamed or deleted: the original Figma designs; everything in `design-reference/`, including `new designs/`; all design ZIPs; `backups/`; the OneDrive folder; the recovery repository; and the untracked files `AQS-design-audit.md` and `decision-record.md` in both the OneDrive folder and the working copy. This preservation rule covers only the items listed. It does not restrict normal development of the project's tracked files in the working copy.
+
+**Verified on 19 October 2026 (read-only)**
+- `C:\Dev\aqs-platform`: branch `phase-1-foundations`, `HEAD` = `1ee920dd12df5399a405afefce2a8cf78b26c825` (same as GitHub). All 66 committed files match `1ee920d`. No tracked changes. Two untracked files (`AQS-design-audit.md`, `decision-record.md`), byte-identical to the copies in the OneDrive folder.
+- OneDrive folder: branch `master` at `524c7d4`, unchanged since 13 October 2026.
+
+**Proposed (19 October 2026)**
+- Project A's approved Phase 1 foundation (design tokens, components, layouts and responsive behaviour at `1ee920d`) is the definitive implementation foundation.
+- Project B may be used as a reference for its screen inventory, domain types, service contracts, mock-data shapes and useful copy, after correction against these decisions.
+
+**Why:** Project A is the only codebase that implements D1, the measured type scale, focus states and tested responsive layouts. The 19 October 2026 audit found that Project B regresses D1 and conflicts with D4, D6, D8 and D10.
+
+## D13 — Framework reaffirmed; hosting, backend, database and authentication deferred
+
+**Confirmed in conversation (19 October 2026)**
+- D10 stays in force: React, TypeScript, Vite, React Router, CSS Modules and CSS custom properties.
+- Next.js, Tailwind, shadcn or any other framework may be introduced only with a separate, explicitly recorded approval.
+- No hosting platform, backend, database or authentication provider is selected.
+- A separate comparison will be prepared. It considers **Render first** and evaluates alternatives on: free tiers and their limits, total stack cost, limits and costs beyond free tiers, fit with D15–D21, tenant isolation and maintenance burden.
+- Preparing a Render-first comparison does **not** select Render or any other provider. Hosting, backend, database and authentication-provider decisions remain open until separately approved and recorded.
+
+**Proposed (19 October 2026)**
+- The provisional approval given in conversation on 18 October 2026 to a Next.js, Neon and Better Auth stack ("Proposal A") is withdrawn. That approval was never recorded in this file.
+
+**Open**
+- The hosting platform, backend, database and authentication provider.
+- Technologies discussed earlier but never recorded as decisions remain candidates only: PostgreSQL, Firebase Authentication, Render hosting, Node.js + Express, Drizzle ORM and Resend (stated in a 12 October 2026 conversation outside this Project, available only as a summary); Neon and Better Auth (18 October 2026). None is selected.
+
+**Consequences:** a Vite single-page app has no server of its own, so the backend will be a separate API service or a hosted backend platform. This is a fact for the comparison, not a choice.
+
+**Note (verified 19 October 2026):** `react-router` 8.4.0 is installed in the local development environment. D10's note of 13 October that it was not yet installed is out of date. D10's text is left unchanged.
+
+## D14 — Design scope and asset handling
+
+**Confirmed in conversation (18 October 2026) — design scope**
+- Use the updated designs in `design-reference/new designs/` only for screens whose content changed: Landing; Authentication (updated sign-in and the new Google sign-up frame); Learner dashboard; and the minor changes to Admin › Organization detail and Admin › Users and roles.
+- Keep the earlier designs for unchanged screens, including the Admin board, Course player, Instructor screens, Learner courses & quizzes, and all pending and archived screens. D2's classification is unchanged.
+- Preserve every original design and recovery copy.
+
+**Confirmed in conversation (19 October 2026) — measurement references**
+- Verified, content-identical 2× exports may be used as measurement references for **unchanged screens only**. On 18 October 2026, the 2× exports of the Admin board, Course player, Instructor screens and Learner courses & quizzes differed from the originals by less than 0.5% of pixels. The original exports remain the primary reference and are preserved.
+
+**Proposed (19 October 2026)**
+- Build page structures against the relevant design reference first. Track missing assets in a list and use clearly labelled placeholders.
+- Do not finalize or replace the landing page's original Figma assets yet. After all page structures exist, source the correct original assets and review visual fidelity.
+
+**Open**
+- The landing hero choice. **D3 remains open and is not superseded**; it is reviewed with the landing assets.
+
+## D15 — Authentication and invitation policy
+
+**Proposed policy (19 October 2026) — amends D8; conflicts with provisional A3**
+- Public Learners may sign in with email and password, or with Google.
+- One authentication system serves everyone. Staff access is granted through a separate invitation and onboarding workflow, not a separate sign-in system.
+- Staff access requires a valid invitation naming the intended role and organization.
+- An existing account holder signs in to that account and may accept an invitation only when the account email matches the invited email.
+- A new invitee completes the invitation and account-activation flow, including email verification, before receiving the invited access.
+
+**Confirmed in conversation (19 October 2026) — what is authorized now. This is the explicit instruction D11 requires, limited as follows**
+- Non-functional page layouts may be prepared **only** for the existing approved Google-only authentication designs: sign-in, sign-in error, mobile sign-in and Google sign-up (`design-reference/new designs/2 Screens/Auth [Ready].png`).
+- **No authentication behaviour is authorized**, including password handling of any kind, sessions, tokens, provider integration and route protection.
+- Email/password sign-in, password-reset, email-verification and invitation-activation layouts require **separate design approval** before any layout work.
+- Real authentication requires its own separate authorization and a provider decision (D13).
+- D11's "no stored passwords" is read as: no password storage in mock development, and never plaintext password storage anywhere in the application.
+
+**Open**
+- Designs for email/password sign-in, password reset, email verification and invitation activation.
+- The pending "Accept invitation" and "Not linked" designs (`3 Pending & Archive/Auth/`) are not covered by the layout authorization above.
+
+## D16 — Course ownership and sharing
+
+**Confirmed in conversation (18 October 2026)**
+- Courses may be platform-owned or organization-owned.
+- Sharing a course with another organization requires explicit permission.
+
+**Open:** who grants and who receives sharing permission; whether sharing can be withdrawn, and what Learners keep if it is.
+
+## D17 — Administrative scope
+
+**Confirmed in conversation (18 October 2026)**
+- Organization Admins are restricted to their own organization.
+- Platform Admins manage the platform globally but cannot impersonate users.
+
+**Confirmed in conversation (19 October 2026)**
+- Platform-wide administration does not automatically grant access to private learner content.
+
+**Open:** which learner information, if any, Platform Admins may see (for example aggregate figures), and how any exceptional access would be granted and recorded.
+
+## D18 — Staff invitations
+
+*Relates to D4 and D6; their text is unchanged.*
+
+**Confirmed in conversation (18 October 2026)**
+- Organization Admins may invite Instructors for their own organization.
+- Only Platform Admins may invite Organization Admins.
+- Invitations expire after seven days.
+- Acceptance and email verification are required. No further approval is needed once an authorized invitation is accepted and verified.
+
+**Confirmed in conversation (19 October 2026)**
+- Staff invitations must be revocable by authorized administrators.
+
+**Open**
+- Which administrators may revoke which invitations.
+- Platform Admin provisioning: the procedure for creating Platform Admins, including whether any form of self-registration is allowed. No policy has been decided.
+- Whether a revoked or expired invitation can be reissued.
+
+## D19 — Quizzes
+
+**Confirmed in conversation (18 October 2026)**
+- The passing score defaults to 70%.
+- Attempt limits are configurable per quiz. Retakes are allowed while attempts remain.
+- Grading happens on the server.
+- Historical attempts are retained.
+- Duplicate submissions are handled idempotently.
+
+**Open:** which attempt counts (for example highest, latest or first pass); the default attempt limit; whether the passing score can be changed per quiz; how historical attempts are treated when a quiz is edited.
+
+## D20 — Protected resources
+
+**Confirmed in conversation (18 October 2026)**
+- Protected resources are available only to enrolled Learners or Learners with an explicit access grant.
+- Public previews require separate, explicit approval.
+- Signed URLs expire after 15 minutes.
+- Downloads require both an authorization check and a downloadable flag on the resource.
+
+**Open:** the scope of an access grant (resource, lesson or course); the video playback approach within the 15-minute limit (to be covered by the D13 comparison).
+
+## D21 — Security and architecture baseline
+
+**Existing requirements (restated here; not new decisions)**
+- Project instructions §6 (Multi-Tenant Security): "Enforce authorization on the server and, where applicable, at the database level. Do not rely on frontend filtering, hidden navigation items, URLs, organization slugs, or email domains as security controls." Also: "Use explicit organization membership and scoped permissions."
+- Project instructions §9 (Engineering Approach): "Prefer a modular architecture with clear boundaries. Avoid unnecessary microservices and premature complexity."
+- D11 (approved 13 October 2026), **Decision** section: build the UI in stages before real authentication; use clearly labelled mock users and mock data in local development only; keep routing, authentication and authorization behind replaceable interfaces. D11's architecture table and A1–A6 remain provisional, as recorded in D11.
+
+**Proposed (19 October 2026)**
+- Roles and memberships used for authorization come only from trusted server-side data, never from client-supplied values (consistent with project instructions §6).
+- Known Project B issues are not carried forward: fake partner endorsements; the "Northstar Learning" metadata; `typescript.ignoreBuildErrors`; production analytics without an approved privacy decision.
+
+## D22 — Canonical role terminology
+
+**Proposed (19 October 2026)**
+
+New decisions use **Platform Admin**, **Organization Admin**, **Instructor** and **Learner**. Older entries keep their original wording. No code, permission names or interface labels are renamed as part of this documentation change.
+
+| Canonical term | Earlier labels |
+|---|---|
+| Platform Admin | Global Admin |
+| Organization Admin | General Admin |
+| Instructor | Course Creator (project instructions); "Instructor" (designs) |
+| Learner | Student/Learner; Public Learner |
+
+**Open:** whether "Public Learner" is a Learner without organization membership or a separate role; whether the AQS Owner role (project instructions §4) is a separate role or a Platform Admin capability.
+
+## D23 — Decision-record housekeeping
+
+**Proposed (19 October 2026)**
+- The authoritative record is `aqs-platform/docs/decisions.md` in the implementation working copy (D12). The Claude Project document `decisions/decision-record.md` is a secondary, read-only mirror, updated only after this file is approved and written.
+- The root file `aqs-platform/decision-record.md` is **non-authoritative and stale**: it contains D1–D10 only and is untracked by Git. Identical copies exist in the working copy and the OneDrive folder. It is neither deleted nor archived.
+- On 19 October 2026, no file in either folder (excluding `node_modules`, `dist` and `.git`) referred to it. The only match for "decision-record" is this file's reference to the Project mirror. Its eventual disposition will be proposed separately.
+- On 19 October 2026, the Project mirror's decision content matched this file at `1ee920d` line for line. The only differences were the mirror's own title and its read-only notice.
+
+## Amendment index
+
+The older entries listed here keep their original text. This index records how later entries relate to them.
+
+| Older entry | Related entry | Relationship |
+|---|---|---|
+| D2 | D12, D14 | Consistent: design references are preserved; D2's classification is unchanged. |
+| D3 | D14 | Remains open. The landing design it refers to has since been updated. |
+| D4, D6 | D18 | Refined in conversation: Organization Admins are appointed by invitation from Platform Admins, and staff invitations must be revocable. D4's opt-in domain admission and D6's exclusion of Instructor-sent invitations are unchanged. |
+| D8 | D15 | Proposed amendment: email and password sign-in for Public Learners. |
+| D10 | D13 | Reaffirmed in conversation. The installation note is out of date (see D13). |
+| D11 | D15 | Limited explicit instruction: non-functional layouts for the approved Google-only authentication designs only. The "no stored passwords" interpretation is recorded in D15. |
+| A3 (provisional) | D13, D15 | **Proposed amendment note:** A3's "Google sign-in only" conflicts with D15's proposed email/password sign-in, and its naming of Firebase Authentication conflicts with D13 (no provider selected). A3's text is unchanged; it remains provisional and is not approved. |
+| A2 (provisional) | D16–D20 | Open: will need permissions for course sharing, preview approval, inviting Organization Admins, revoking invitations and resource grants. |
+| A5 (provisional) | D16, D22 | Open: may need an Instructor persona for platform-owned courses. |
+| A1, A4, A6 (provisional) | — | Unchanged and still provisional. |
