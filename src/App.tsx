@@ -18,6 +18,10 @@ const LearnerDashboardPage = import.meta.env.DEV
   ? lazy(() => import('./pages/LearnerDashboardPage'))
   : null
 
+/* Development-only preview of the public course detail page (provisional,
+ * design still "Needs review"). No permanent /courses/:slug route yet. */
+const CourseDetailPage = import.meta.env.DEV ? lazy(() => import('./pages/CourseDetailPage')) : null
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -39,6 +43,16 @@ export default function App() {
             element={
               <Suspense fallback={<p style={{ padding: 24 }}>Loading learner dashboard…</p>}>
                 <LearnerDashboardPage />
+              </Suspense>
+            }
+          />
+        ) : null}
+        {CourseDetailPage ? (
+          <Route
+            path="/dev/course-detail"
+            element={
+              <Suspense fallback={<p style={{ padding: 24 }}>Loading course detail…</p>}>
+                <CourseDetailPage />
               </Suspense>
             }
           />
