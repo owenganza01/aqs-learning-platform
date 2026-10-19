@@ -1,43 +1,45 @@
 import { useId, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router'
-import { ButtonLink, Icon } from '../ui'
+import { Button, Icon } from '../ui'
 import type { NavItem } from './types'
 import { Wordmark } from './Wordmark'
 import styles from './PublicLayout.module.css'
 
-// Navigation labels from the Landing design. These routes are built in Phase 2.
+// Navigation labels from the Landing design. Courses and For Organizations link to
+// sections of the landing page, because their own routes are not built yet. Pages
+// that are not built are marked unavailable (shown as dimmed text, not a link).
 const defaultNav: NavItem[] = [
-  { label: 'Courses', to: '/courses' },
-  { label: 'For Organizations', to: '/for-organizations' },
-  { label: 'About', to: '/about' },
-  { label: 'Contact', to: '/contact' },
+  { label: 'Courses', to: '/#courses' },
+  { label: 'For Organizations', to: '/#for-organizations' },
+  { label: 'About', to: '/about', unavailable: true },
+  { label: 'Contact', to: '/contact', unavailable: true },
 ]
 
 const footerColumns: Array<{ heading: string; links: NavItem[] }> = [
   {
     heading: 'Platform',
     links: [
-      { label: 'Courses', to: '/courses' },
-      { label: 'For Organizations', to: '/for-organizations' },
-      { label: 'About', to: '/about' },
-      { label: 'Contact', to: '/contact' },
+      { label: 'Courses', to: '/#courses' },
+      { label: 'For Organizations', to: '/#for-organizations' },
+      { label: 'About', to: '/about', unavailable: true },
+      { label: 'Contact', to: '/contact', unavailable: true },
     ],
   },
   {
     heading: 'Company',
     links: [
-      { label: 'Our Story', to: '/about' },
-      { label: 'Instructors', to: '/instructors' },
-      { label: 'Careers', to: '/careers' },
-      { label: 'Blog', to: '/blog' },
+      { label: 'Our Story', to: '/about', unavailable: true },
+      { label: 'Instructors', to: '/instructors', unavailable: true },
+      { label: 'Careers', to: '/careers', unavailable: true },
+      { label: 'Blog', to: '/blog', unavailable: true },
     ],
   },
   {
     heading: 'Legal',
     links: [
-      { label: 'Privacy Policy', to: '/privacy' },
-      { label: 'Terms', to: '/terms' },
-      { label: 'Cookie Policy', to: '/cookies' },
+      { label: 'Privacy Policy', to: '/privacy', unavailable: true },
+      { label: 'Terms', to: '/terms', unavailable: true },
+      { label: 'Cookie Policy', to: '/cookies', unavailable: true },
     ],
   },
 ]
@@ -88,25 +90,35 @@ export function PublicLayout({
             <ul className={styles.navList}>
               {navItems.map((item) => (
                 <li key={item.to}>
-                  <Link
-                    to={item.to}
-                    className={styles.navLink}
-                    onClick={closeMenu}
-                    aria-current={(item.active ?? pathname === item.to) ? 'page' : undefined}
-                  >
-                    {item.label}
-                  </Link>
+                  {item.unavailable ? (
+                    <span className={`${styles.navLink} ${styles.unavailable}`} aria-disabled="true">
+                      {item.label}
+                      <span className="visually-hidden"> (not available yet)</span>
+                    </span>
+                  ) : (
+                    <Link
+                      to={item.to}
+                      className={styles.navLink}
+                      onClick={closeMenu}
+                      aria-current={(item.active ?? pathname === item.to) ? 'page' : undefined}
+                    >
+                      {item.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
           </nav>
           <div className={styles.actions}>
-            <Link to="/sign-in" className={styles.signIn} onClick={closeMenu}>
+            {/* Sign-in is not built yet (D11, D15), so both actions are shown as unavailable. */}
+            <span className={`${styles.signIn} ${styles.unavailable}`} aria-disabled="true">
               Sign in
-            </Link>
-            <ButtonLink to="/sign-in" className={styles.cta} onClick={closeMenu}>
+              <span className="visually-hidden"> (not available yet)</span>
+            </span>
+            <Button disabled className={styles.cta}>
               Get started
-            </ButtonLink>
+              <span className="visually-hidden"> (not available yet)</span>
+            </Button>
           </div>
         </div>
       </header>
@@ -131,9 +143,16 @@ export function PublicLayout({
                 <ul className={styles.footerList}>
                   {column.links.map((link) => (
                     <li key={link.label}>
-                      <Link to={link.to} className={styles.footerLink}>
-                        {link.label}
-                      </Link>
+                      {link.unavailable ? (
+                        <span className={`${styles.footerLink} ${styles.unavailable}`} aria-disabled="true">
+                          {link.label}
+                          <span className="visually-hidden"> (not available yet)</span>
+                        </span>
+                      ) : (
+                        <Link to={link.to} className={styles.footerLink}>
+                          {link.label}
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>

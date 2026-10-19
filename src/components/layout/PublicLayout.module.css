@@ -167,6 +167,14 @@
   color: var(--color-text-muted);
 }
 
+/* Destination not built yet (NavItem.unavailable): dimmed, not a link */
+.unavailable,
+.unavailable:hover {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  cursor: not-allowed;
+}
+
 /* ---- Tablet & mobile (D9: public screens must work on mobile) ---- */
 @media (max-width: 1023px) {
   .headerInner {

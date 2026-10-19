@@ -98,13 +98,13 @@ const MOCK_COURSE_DETAIL = {
 /*
  * Header links: the course list and organization pages are not built, so
  * Courses and For Organizations go back to the landing page sections.
- * About and Contact keep their planned routes (not built yet).
+ * About and Contact are not built yet, so they are shown as unavailable.
  */
 const COURSE_DETAIL_NAV: NavItem[] = [
   { label: 'Courses', to: '/#courses' },
   { label: 'For Organizations', to: '/#for-organizations' },
-  { label: 'About', to: '/about' },
-  { label: 'Contact', to: '/contact' },
+  { label: 'About', to: '/about', unavailable: true },
+  { label: 'Contact', to: '/contact', unavailable: true },
 ]
 
 function formatMinutes(total: number) {

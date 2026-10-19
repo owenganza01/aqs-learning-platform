@@ -114,14 +114,14 @@ const PARTNER_PLACEHOLDERS = ['Partner 1', 'Partner 2', 'Partner 3']
 
 /*
  * Header links point at sections of this page, because /courses and
- * /for-organizations are not built yet. About and Contact keep their planned
- * routes (not built yet — they show the existing Not Found page).
+ * /for-organizations are not built yet. About and Contact are not built yet,
+ * so they are shown as unavailable instead of linking to a missing page.
  */
 const LANDING_NAV: NavItem[] = [
   { label: 'Courses', to: '#courses' },
   { label: 'For Organizations', to: '#for-organizations' },
-  { label: 'About', to: '/about' },
-  { label: 'Contact', to: '/contact' },
+  { label: 'About', to: '/about', unavailable: true },
+  { label: 'Contact', to: '/contact', unavailable: true },
 ]
 
 const THUMBNAIL_TINTS = [styles.tintBlue, styles.tintOrange, styles.tintBlueStrong]
