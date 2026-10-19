@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router'
-import { HomePlaceholder } from './pages/HomePlaceholder'
+import { LandingPage } from './pages/LandingPage'
 import { NotFound } from './pages/NotFound'
 
 /*
@@ -16,7 +16,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePlaceholder />} />
+        <Route path="/" element={<LandingPage />} />
         {DesignSystemPage ? (
           <Route
             path="/design-system"

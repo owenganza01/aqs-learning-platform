@@ -63,6 +63,9 @@ export function PublicLayout({
   const [menuOpen, setMenuOpen] = useState(false)
   const { pathname } = useLocation()
   const menuId = useId()
+  // Close the mobile menu once a link in it is chosen (no effect on desktop,
+  // where the menu is never open).
+  const closeMenu = () => setMenuOpen(false)
 
   return (
     <div className={styles.page}>
@@ -88,6 +91,7 @@ export function PublicLayout({
                   <Link
                     to={item.to}
                     className={styles.navLink}
+                    onClick={closeMenu}
                     aria-current={(item.active ?? pathname === item.to) ? 'page' : undefined}
                   >
                     {item.label}
@@ -97,10 +101,10 @@ export function PublicLayout({
             </ul>
           </nav>
           <div className={styles.actions}>
-            <Link to="/sign-in" className={styles.signIn}>
+            <Link to="/sign-in" className={styles.signIn} onClick={closeMenu}>
               Sign in
             </Link>
-            <ButtonLink to="/sign-in" className={styles.cta}>
+            <ButtonLink to="/sign-in" className={styles.cta} onClick={closeMenu}>
               Get started
             </ButtonLink>
           </div>

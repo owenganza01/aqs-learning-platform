@@ -1,0 +1,549 @@
+/*
+ * Landing page — measured from `Landing [Ready].png` at 1440px wide.
+ * Content column: 1296px with 72px side padding (same grid as the header).
+ * The hero text column starts further in, at x = 160.
+ */
+
+.container {
+  width: 100%;
+  max-width: calc(var(--content-max-width) + 2 * 72px);
+  margin: 0 auto;
+  padding: 0 72px;
+}
+
+/* Anchor targets sit below the 96px sticky header */
+.hero,
+.section {
+  scroll-margin-top: 96px;
+}
+
+.hero:focus,
+.section:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* ------------------------------------------------------------------ Hero */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  /* #E6F8FF to ~y400, fading to white by the end of the hero (measured) */
+  background: linear-gradient(180deg, #e6f8ff 0, #e6f8ff 38%, var(--color-white) 100%);
+}
+
+.heroDecor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Large pale circle behind the headline */
+.heroCircle {
+  position: absolute;
+  left: 96px;
+  top: 160px;
+  width: 490px;
+  height: 490px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.45);
+}
+
+/* Small orange accent dot (decorative only, D1 allows #F97316 here) */
+.heroDot {
+  position: absolute;
+  left: 93px;
+  top: 633px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-orange);
+}
+
+.heroInner {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 500px) minmax(0, 540px);
+  justify-content: start;
+  align-items: center;
+  gap: 0;
+  /* text column starts at x = 160 in the design */
+  padding-left: 160px;
+  padding-right: 160px;
+  min-height: 804px;
+  padding-top: var(--space-64);
+  padding-bottom: var(--space-64);
+}
+
+.heroText {
+  min-width: 0;
+}
+
+.audience {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  margin-bottom: var(--space-32);
+}
+
+.audienceButton {
+  min-height: 33px;
+  padding: 0 var(--space-16);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-white);
+  color: var(--color-navy);
+  font: inherit;
+  font-size: var(--text-caption);
+  line-height: 1;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.audienceButton:hover {
+  border-color: var(--color-navy);
+}
+
+/* Selected: the design shows #F97316; D1 requires #C2410C under white text */
+.audienceButton[aria-pressed='true'] {
+  border-color: var(--color-action);
+  background: var(--color-action);
+  color: var(--color-white);
+}
+
+.heroHeading {
+  max-width: 440px;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.heroLead {
+  max-width: 500px;
+  margin: 28px 0 0;
+  color: var(--color-text-muted);
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  margin-top: 28px;
+}
+
+.heroMedia {
+  position: relative;
+  min-width: 0;
+}
+
+/* Tilted pale-blue panel behind the photo */
+.heroShape {
+  position: absolute;
+  top: -24px;
+  bottom: 88px;
+  left: -40px;
+  width: 280px;
+  border-radius: 20px;
+  background: #dbeefe;
+  transform: rotate(4deg);
+}
+
+.heroImage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 540 / 596;
+  border: 2px dashed var(--color-border-strong);
+  border-radius: 0 0 0 24px;
+  background: rgb(255 255 255 / 0.7);
+  text-align: center;
+}
+
+/* "For organizations" frame shows a photo with evenly rounded corners */
+.heroImageSquare {
+  border-radius: var(--radius);
+}
+
+.placeholderText {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  font-weight: var(--weight-medium);
+}
+
+/* -------------------------------------------------------------- Partners */
+
+.partners {
+  padding: var(--space-48) 0;
+  background: var(--color-canvas);
+  border-bottom: 1px solid #dce4ee;
+}
+
+.partnerList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 13px;
+  margin-top: 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+
+.partner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 205px;
+  height: 71px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+}
+
+/* -------------------------------------------------------------- Sections */
+
+.section {
+  padding: 48px 0 40px;
+}
+
+/* Featured courses has more breathing room above the eyebrow */
+.section#courses {
+  padding: 79px 0 80px;
+}
+
+.sectionMuted {
+  background: var(--color-canvas);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sectionBordered {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sectionHeading {
+  max-width: 880px;
+  margin: var(--space-12) 0 var(--space-24);
+  color: var(--color-text);
+}
+
+.coursesHeading {
+  margin-bottom: var(--space-12);
+}
+
+.sectionLead {
+  max-width: 620px;
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+/* ------------------------------------------------------- Course carousel */
+
+.carousel {
+  margin-top: var(--space-48);
+}
+
+.carouselHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  margin-bottom: var(--space-24);
+}
+
+.carouselTitle {
+  margin: 0;
+  color: var(--color-navy);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.carouselMeta {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.carouselControls {
+  display: flex;
+  gap: var(--space-12);
+}
+
+.arrowButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 10px;
+  background: var(--color-white);
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.arrowButton:hover:not(:disabled) {
+  border-color: var(--color-navy);
+  color: var(--color-navy);
+}
+
+.arrowButton:disabled {
+  color: var(--color-disabled-text);
+  background: var(--color-disabled-bg);
+  cursor: not-allowed;
+}
+
+/* Scroll container. Scrollbar hidden: the arrow buttons, trackpad and
+ * arrow keys (when focused) all scroll it. Small padding keeps the focus
+ * ring and card borders from being clipped. */
+.track {
+  margin: -4px;
+  padding: 4px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 4px;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  border-radius: var(--radius);
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.trackList {
+  display: flex;
+  gap: var(--space-24);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.courseItem {
+  flex: 0 0 392px;
+  scroll-snap-align: start;
+}
+
+.courseCard {
+  height: 100%;
+  padding: var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+}
+
+.thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 156px;
+  border-radius: var(--radius);
+  color: var(--color-text-subtle);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+}
+
+.tintBlue {
+  background: var(--color-blue-50);
+}
+
+.tintOrange {
+  background: var(--color-orange-50);
+}
+
+.tintBlueStrong {
+  background: var(--color-blue-100);
+}
+
+.courseBody {
+  padding: var(--space-16) 0 var(--space-8);
+}
+
+.courseTitle {
+  margin: 0;
+  color: var(--color-navy);
+  font-size: var(--text-card-md);
+  line-height: var(--leading-card-md);
+  font-weight: var(--weight-bold);
+}
+
+.courseDescription {
+  margin: var(--space-12) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  line-height: 23px;
+}
+
+.courseMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-8);
+}
+
+.duration {
+  color: var(--color-text-subtle);
+  font-size: var(--text-caption);
+}
+
+.instructor {
+  margin: var(--space-16) 0 0;
+  color: var(--color-text-subtle);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+}
+
+/* ---------------------------------------------------- Steps and features */
+
+.steps,
+.features {
+  display: grid;
+  gap: 25px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps {
+  grid-template-columns: repeat(3, minmax(0, 383px));
+}
+
+.features {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.steps > li,
+.features > li {
+  display: flex;
+}
+
+.infoCard {
+  flex: 1;
+  min-height: 163px;
+}
+
+.features .infoCard {
+  min-height: 187px;
+}
+
+.stepLabel {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-subtle);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.infoTitle {
+  margin: 0;
+  color: var(--color-navy);
+  font-size: var(--text-card-md);
+  line-height: var(--leading-card-md);
+  font-weight: var(--weight-semibold);
+}
+
+.infoText {
+  margin: var(--space-16) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  line-height: 23px;
+}
+
+.steps .infoText {
+  margin-top: var(--space-24);
+}
+
+/* ------------------------------------------------------------ Responsive */
+
+@media (max-width: 1279px) {
+  .heroInner {
+    gap: var(--space-32);
+    padding-left: 72px;
+    padding-right: 72px;
+  }
+
+  .heroCircle,
+  .heroDot {
+    left: 24px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .container {
+    padding: 0 var(--space-32);
+  }
+
+  .heroInner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-40);
+    min-height: 0;
+    padding: var(--space-48) var(--space-32) var(--space-64);
+  }
+
+  .heroMedia {
+    max-width: 540px;
+  }
+
+  .heroImage {
+    aspect-ratio: 16 / 10;
+  }
+
+  .heroShape,
+  .heroDot {
+    display: none;
+  }
+
+  .steps,
+  .features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .container,
+  .heroInner {
+    padding-left: var(--space-16);
+    padding-right: var(--space-16);
+  }
+
+  .heroCircle {
+    left: -120px;
+    top: 40px;
+    width: 360px;
+    height: 360px;
+  }
+
+  .heroLead {
+    margin-top: var(--space-24);
+  }
+
+  .section#courses {
+    padding: 56px 0;
+  }
+
+  .partner {
+    flex: 1 1 140px;
+    width: auto;
+  }
+
+  .courseItem {
+    flex-basis: min(320px, 82vw);
+  }
+
+  .steps,
+  .features {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
