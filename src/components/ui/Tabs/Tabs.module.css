@@ -53,6 +53,14 @@
   font-weight: var(--weight-semibold);
 }
 
+/* pill variant: wrap onto a second row when the filters do not fit (phones),
+ * instead of scrolling them out of view. On wide screens they stay on one row. */
+.pill {
+  flex-wrap: wrap;
+  overflow-x: visible;
+  row-gap: var(--space-8);
+}
+
 /* pill variant */
 .pill .tab {
   padding: var(--space-8) var(--space-12);
