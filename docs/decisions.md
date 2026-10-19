@@ -331,6 +331,18 @@ New decisions use **Platform Admin**, **Organization Admin**, **Instructor** and
 - On 19 October 2026, no file in either folder (excluding `node_modules`, `dist` and `.git`) referred to it. The only match for "decision-record" is this file's reference to the Project mirror. Its eventual disposition will be proposed separately.
 - On 19 October 2026, the Project mirror's decision content matched this file at `1ee920d` line for line. The only differences were the mirror's own title and its read-only notice.
 
+## D24 — Unavailable navigation destinations
+
+**Confirmed in conversation (20 October 2026)**
+- Public navigation destinations that are not built yet are shown as **unavailable**, never as working links. This covers Sign in, Get started, About, Contact, and the unfinished footer destinations (Our Story, Instructors, Careers, Blog, Privacy Policy, Terms and Cookie Policy). They must not lead to a missing page or the Not Found page.
+- Unavailable items are displayed as dimmed text and include a visually hidden "(not available yet)" label that is exposed to screen readers. Because these items are not interactive links or buttons, they are not included in the keyboard tab order.
+- The footer **Courses** and **For Organizations** links go to the corresponding sections of the landing page (`/#courses` and `/#for-organizations`) until dedicated pages exist.
+- **Sign in** and **Get started** stay unavailable until sign-in is separately approved. This entry does not approve or implement authentication. D11, D13 and D15 still apply.
+
+**Why:** unbuilt features must not appear to work (D7), public screens must work on mobile and desktop (D9), and authentication work is limited to the approved layouts (D11, D15).
+
+**Implemented in:** commit `09139a4` on `phase-1-foundations` (public header and footer, and the About and Contact items on the landing and course-detail pages).
+
 ## Amendment index
 
 The older entries listed here keep their original text. This index records how later entries relate to them.
