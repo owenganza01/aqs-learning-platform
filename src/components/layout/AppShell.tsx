@@ -5,6 +5,10 @@ import type { CurrentUser, NavItem } from './types'
 import { Wordmark } from './Wordmark'
 import styles from './AppShell.module.css'
 
+/** Elements a keyboard user can reach, used to keep focus inside the open drawer. */
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
 type AppShellProps = {
   /** Sidebar links for this role (learner, instructor, admin…). */
   navItems: NavItem[]
@@ -47,41 +51,84 @@ export function AppShell({
   const searchId = useId()
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const sidebarRef = useRef<HTMLElement>(null)
+  const wasOpenRef = useRef(false)
 
-  // Close the mobile drawer with the Escape key and return focus to the menu button.
+  // On small screens the open drawer is a modal dialog. Escape closes it, and Tab
+  // and Shift+Tab stay inside it. The page behind it is made inert (see below).
   useEffect(() => {
     if (!drawerOpen) return
-    closeButtonRef.current?.focus()
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setDrawerOpen(false)
-        menuButtonRef.current?.focus()
+        return
+      }
+      const drawer = sidebarRef.current
+      if (event.key !== 'Tab' || !drawer) return
+      const focusable = Array.from(drawer.querySelectorAll<HTMLElement>(FOCUSABLE))
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      const insideDrawer = drawer.contains(document.activeElement)
+      if (event.shiftKey && (!insideDrawer || document.activeElement === first)) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && (!insideDrawer || document.activeElement === last)) {
+        event.preventDefault()
+        first.focus()
       }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [drawerOpen])
 
+  // Move focus into the drawer when it opens, and back to the menu button when it closes
+  // by any route (Escape, close button, backdrop, or choosing a link).
+  useEffect(() => {
+    if (drawerOpen) {
+      wasOpenRef.current = true
+      closeButtonRef.current?.focus()
+    } else if (wasOpenRef.current) {
+      wasOpenRef.current = false
+      menuButtonRef.current?.focus()
+    }
+  }, [drawerOpen])
+
+  // The drawer only exists below 1024px (see AppShell.module.css). Close it if the window
+  // grows, so the page is never left inert while the sidebar is shown inline.
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 1024px)')
+    const onChange = () => {
+      if (desktop.matches) setDrawerOpen(false)
+    }
+    desktop.addEventListener('change', onChange)
+    return () => desktop.removeEventListener('change', onChange)
+  }, [])
+
   const isActive = (item: NavItem) =>
     item.active ?? (pathname === item.to || pathname.startsWith(`${item.to}/`))
 
   return (
     <div className={styles.shell} data-drawer={drawerOpen ? 'open' : 'closed'}>
-      <a className="skip-link" href={`#${mainId}`}>
+      <a className="skip-link" href={`#${mainId}`} inert={drawerOpen}>
         Skip to content
       </a>
 
-      <aside id={sidebarId} className={`${styles.sidebar} on-dark`} aria-label="Sidebar">
+      <aside
+        ref={sidebarRef}
+        id={sidebarId}
+        className={`${styles.sidebar} on-dark`}
+        aria-label="Sidebar"
+        role={drawerOpen ? 'dialog' : undefined}
+        aria-modal={drawerOpen ? true : undefined}
+      >
         <div className={styles.sidebarTop}>
           <Wordmark light />
           <button
             ref={closeButtonRef}
             type="button"
             className={styles.closeButton}
-            onClick={() => {
-              setDrawerOpen(false)
-              menuButtonRef.current?.focus()
-            }}
+            onClick={() => setDrawerOpen(false)}
           >
             <Icon name="close" size={22} label="Close menu" />
           </button>
@@ -140,7 +187,7 @@ export function AppShell({
 
       <div className={styles.backdrop} onClick={() => setDrawerOpen(false)} aria-hidden="true" />
 
-      <div className={styles.main}>
+      <div className={styles.main} inert={drawerOpen}>
         <header className={styles.header}>
           <button
             ref={menuButtonRef}
