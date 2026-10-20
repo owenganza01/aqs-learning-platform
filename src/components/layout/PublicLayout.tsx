@@ -66,6 +66,9 @@ export function PublicLayout({
   const { pathname } = useLocation()
   const menuId = useId()
   const menuButtonRef = useRef<HTMLButtonElement>(null)
+  // The element that last had focus. When the layout changes, focus can fall to <body>
+  // because that element was hidden, so this records where focus was.
+  const lastFocusedRef = useRef<Element | null>(null)
   // Close the mobile menu once a link in it is chosen (no effect on desktop,
   // where the menu is never open).
   const closeMenu = () => setMenuOpen(false)
@@ -83,6 +86,39 @@ export function PublicLayout({
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [menuOpen])
+
+  useEffect(() => {
+    const onFocusIn = (event: FocusEvent) => {
+      lastFocusedRef.current = event.target instanceof Element ? event.target : null
+    }
+    document.addEventListener('focusin', onFocusIn)
+    return () => document.removeEventListener('focusin', onFocusIn)
+  }, [])
+
+  // The mobile menu and its toggle exist only below 1024px (PublicLayout.module.css uses
+  // max-width: 1023px). When the layout crosses that breakpoint, close the menu and keep
+  // keyboard focus on a visible element, without moving focus when it is still visible.
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 1024px)')
+    const onChange = () => {
+      // Focus counts as lost when it is on <body>, or still on an element that is now hidden.
+      // The browser may not have moved focus yet when this event runs.
+      const current = document.activeElement
+      const focusLost = !current || current === document.body || current.getClientRects().length === 0
+      const previous = lastFocusedRef.current
+      if (desktop.matches) {
+        setMenuOpen(false)
+        // The toggle had focus and is now hidden, so move focus to the content.
+        if (focusLost && previous === menuButtonRef.current) document.getElementById(mainId)?.focus()
+      } else if (focusLost && previous?.closest('header') && previous.getClientRects().length === 0) {
+        // A desktop navigation link had focus and is now hidden, so move focus to the mobile
+        // toggle. The menu stays closed.
+        menuButtonRef.current?.focus()
+      }
+    }
+    desktop.addEventListener('change', onChange)
+    return () => desktop.removeEventListener('change', onChange)
+  }, [mainId])
 
   return (
     <div className={styles.page}>
