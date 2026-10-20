@@ -1,4 +1,4 @@
-import { useId, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router'
 import { Button, Icon } from '../ui'
 import type { NavItem } from './types'
@@ -65,9 +65,24 @@ export function PublicLayout({
   const [menuOpen, setMenuOpen] = useState(false)
   const { pathname } = useLocation()
   const menuId = useId()
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
   // Close the mobile menu once a link in it is chosen (no effect on desktop,
   // where the menu is never open).
   const closeMenu = () => setMenuOpen(false)
+
+  // Escape closes the open mobile menu. Focus returns to the toggle, unless the toggle is
+  // hidden (desktop width), in which case the menu just closes.
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setMenuOpen(false)
+      const toggle = menuButtonRef.current
+      if (toggle && getComputedStyle(toggle).display !== 'none') toggle.focus()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [menuOpen])
 
   return (
     <div className={styles.page}>
@@ -78,6 +93,7 @@ export function PublicLayout({
         <div className={styles.headerInner}>
           <Wordmark />
           <button
+            ref={menuButtonRef}
             type="button"
             className={styles.menuButton}
             aria-expanded={menuOpen}
