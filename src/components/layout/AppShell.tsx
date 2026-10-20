@@ -83,16 +83,19 @@ export function AppShell({
   }, [drawerOpen])
 
   // Move focus into the drawer when it opens, and back to the menu button when it closes
-  // by any route (Escape, close button, backdrop, or choosing a link).
+  // by any route (Escape, close button, backdrop, or choosing a link). At desktop width the
+  // menu button is hidden, so focus goes to the page content instead.
   useEffect(() => {
     if (drawerOpen) {
       wasOpenRef.current = true
       closeButtonRef.current?.focus()
     } else if (wasOpenRef.current) {
       wasOpenRef.current = false
-      menuButtonRef.current?.focus()
+      const menuVisible = !!menuButtonRef.current && getComputedStyle(menuButtonRef.current).display !== 'none'
+      const target = menuVisible ? menuButtonRef.current : document.getElementById(mainId)
+      target?.focus()
     }
-  }, [drawerOpen])
+  }, [drawerOpen, mainId])
 
   // The drawer only exists below 1024px (see AppShell.module.css). Close it if the window
   // grows, so the page is never left inert while the sidebar is shown inline.
