@@ -1,17 +1,23 @@
 import { useState } from 'react'
-import { Badge, Banner, Button, ButtonLink, Card, CardHeader, TextArea, TextField } from '../../../components/ui'
+import { Badge, Banner, Button, ButtonLink, Card, CardHeader, TextArea, TextField, useConfirm } from '../../../components/ui'
 import base from '../../../pages/InstructorCoursePage.module.css'
 import { ActionFeedback } from '../../components/States'
 import { authoring, type AuthoringCourse, type AuthoringLesson } from '../../data/authoring'
 import { formatBytes, LESSON_TYPE_LABEL } from '../../learner-model'
+import { toAppError } from '../../api'
+import { UploadStatus } from '../../components/UploadStatus'
+import type { UploadState } from '../../components/upload-status'
 import { useAction } from '../../useResource'
 import styles from './CourseEditor.module.css'
+import { VideoSection } from './VideoSection'
 
 /*
  * Lesson editor (the approved builder's right-hand card). Lesson text is plain text: blank
  * lines make paragraphs and web addresses become links. The design's "Required to complete"
  * switch is not shown: every lesson is required (L6). Uploads go to the exact path the
- * database issues and only while the course is an editable draft (0010).
+ * database issues and only while the course is an editable draft (0010). The video section
+ * (VideoSection.tsx) follows D39: AQS review and YouTube for public courses, stored video with
+ * confirmed captions for organisation-only courses.
  */
 
 const MATERIAL_TYPES = '.pdf,.txt,.csv,.png,.jpg,.jpeg,.webp,.zip,.mp3,.m4a,.doc,.docx,.xls,.xlsx,.ppt,.pptx'
@@ -33,19 +39,32 @@ export function LessonPanel({
 }) {
   const [title, setTitle] = useState(lesson.title)
   const [body, setBody] = useState(lesson.body)
-  const [youtube, setYoutube] = useState(lesson.youtubeId ?? '')
-  const [attest, setAttest] = useState(false)
   const [downloadable, setDownloadable] = useState(true)
   const [saved, setSaved] = useState<string | null>(null)
+  // CM3-1 (G16): one accessible confirmation instead of window.confirm.
+  const { confirm, dialog } = useConfirm()
   const run = useAction(async (work: () => Promise<unknown>, message: string) => {
     await work()
     setSaved(message)
     onChanged()
   })
+  // CM3-8: the file upload's own status, next to its control, with a cause-specific error.
+  const [upload, setUpload] = useState<UploadState>({ phase: 'idle' })
+  const uploadFile = async (file: File) => {
+    setUpload({ phase: 'uploading', name: file.name })
+    try {
+      await authoring.addResource(lesson.id, file, downloadable)
+      setUpload({ phase: 'done', message: `${file.name} uploaded.` })
+      onChanged()
+    } catch (error) {
+      setUpload({ phase: 'failed', error: toAppError(error) })
+    }
+  }
   const textChanged = title.trim() !== lesson.title || body !== lesson.body
 
   return (
     <Card as="section" padding="md" aria-label="Lesson editor" className={base.editor}>
+      {dialog}
       <CardHeader title="Lesson editor" subtitle={`${LESSON_TYPE_LABEL[lesson.type]} lesson`} headingLevel="h2" size="md" />
       <ActionFeedback error={run.error} success={saved} />
 
@@ -80,8 +99,13 @@ export function LessonPanel({
             </Button>
             <Button
               variant="text"
-              onClick={() => {
-                if (window.confirm(`Delete the lesson "${lesson.title}"?`)) {
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Delete the lesson “${lesson.title}”?`,
+                  message: 'It is removed from the course with its content. This cannot be undone.',
+                  confirmLabel: 'Delete lesson',
+                })
+                if (ok) {
                   void run.run(async () => {
                     await authoring.deleteLesson(lesson.id)
                     onDeleted()
@@ -105,68 +129,7 @@ export function LessonPanel({
         </section>
       ) : null}
 
-      {lesson.type === 'video' ? (
-        <section className={base.materials} aria-labelledby={`video-${lesson.id}`}>
-          <h3 id={`video-${lesson.id}`} className={base.sectionTitle}>
-            Video
-          </h3>
-          <p className={styles.muted}>
-            {lesson.videoPath ? 'An uploaded video is attached.' : lesson.youtubeId ? `YouTube video ${lesson.youtubeId}` : 'No video yet.'}
-          </p>
-          {editable ? (
-            <>
-              <label className={base.dropzone}>
-                Upload a video file
-                <span className={base.dropzoneHint}>MP4 or WebM, up to 500 MB (the current plan may allow less).</span>
-                <input
-                  type="file"
-                  accept="video/mp4,video/webm"
-                  className="visually-hidden"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0]
-                    event.target.value = ''
-                    if (file) void run.run(() => authoring.uploadVideo(lesson.id, file, Boolean(lesson.videoPath || lesson.youtubeId)), 'Video uploaded.')
-                  }}
-                />
-              </label>
-              {course.visibility === 'public' ? (
-                <form
-                  className={styles.addForm}
-                  onSubmit={(event) => {
-                    event.preventDefault()
-                    const id = /(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/.exec(youtube)?.[1] ?? youtube.trim()
-                    void run.run(() => authoring.setYoutube(lesson.id, id, attest), 'YouTube video set.')
-                  }}
-                >
-                  <TextField
-                    id={`youtube-${lesson.id}`}
-                    label="Or an unlisted YouTube video"
-                    hint="Paste the link or the 11-character video ID. Public courses only."
-                    value={youtube}
-                    onChange={(e) => setYoutube(e.target.value)}
-                  />
-                  <label className={styles.row}>
-                    <input type="checkbox" checked={attest} onChange={(e) => setAttest(e.target.checked)} />
-                    <span>This course contains nothing sensitive, so it may use YouTube (P16).</span>
-                  </label>
-                  <div>
-                    <Button type="submit" size="sm" variant="neutral" disabled={!attest || !youtube.trim()} loading={run.busy}>
-                      Use this YouTube video
-                    </Button>
-                  </div>
-                </form>
-              ) : (
-                <p className={styles.muted}>YouTube videos are allowed only in public courses.</p>
-              )}
-              {lesson.videoPath || lesson.youtubeId ? (
-                <Button variant="text" size="sm" onClick={() => run.run(() => authoring.clearVideo(lesson.id), 'Video removed.')}>
-                  Remove video
-                </Button>
-              ) : null}
-            </>
-          ) : null}
-        </section>
-      ) : null}
+      {lesson.type === 'video' ? <VideoSection course={course} lesson={lesson} editable={editable} onChanged={onChanged} /> : null}
 
       {lesson.type !== 'quiz' ? (
         <section className={base.materials} aria-labelledby={`materials-${lesson.id}`}>
@@ -189,10 +152,12 @@ export function LessonPanel({
                   onChange={(event) => {
                     const file = event.target.files?.[0]
                     event.target.value = ''
-                    if (file) void run.run(() => authoring.addResource(lesson.id, file, downloadable), `${file.name} uploaded.`)
+                    if (file) void uploadFile(file)
                   }}
+                  aria-describedby={`upload-status-${lesson.id}`}
                 />
               </label>
+              <UploadStatus state={upload} id={`upload-status-${lesson.id}`} />
             </>
           ) : null}
           {lesson.resources.length > 0 ? (
@@ -216,7 +181,10 @@ export function LessonPanel({
                         <Button
                           variant="text"
                           size="sm"
-                          onClick={() => run.run(() => authoring.deleteResource(file.id, file.storagePath), 'File removed.')}
+                          onClick={async () => {
+                            if (await confirm({ title: `Remove ${file.fileName}?`, message: 'Learners will no longer see this file.', confirmLabel: 'Remove file' }))
+                              void run.run(() => authoring.deleteResource(file.id, file.storagePath), 'File removed.')
+                          }}
                         >
                           Remove<span className="visually-hidden"> {file.fileName}</span>
                         </Button>

@@ -18,7 +18,8 @@ const infoPagesUnavailable = !PUBLIC_INFO_PAGES_AVAILABLE
 /** Header navigation. `courses` and `organizations` let a page point at its own sections. */
 export function publicHeaderNav(options: { courses?: string; organizations?: string } = {}): NavItem[] {
   return [
-    { label: 'Courses', to: options.courses ?? '/#courses' },
+    // CM3-7: the landing page's featured section exists only when real courses do; the catalog always does.
+    { label: 'Courses', to: options.courses ?? '/catalog' },
     { label: 'For Organizations', to: options.organizations ?? '/#for-organizations' },
     { label: 'About', to: '/about', unavailable: infoPagesUnavailable },
     { label: 'Contact', to: '/contact', unavailable: infoPagesUnavailable },
@@ -29,7 +30,7 @@ export const PUBLIC_FOOTER_COLUMNS: Array<{ heading: string; links: NavItem[] }>
   {
     heading: 'Platform',
     links: [
-      { label: 'Courses', to: '/#courses' },
+      { label: 'Courses', to: '/catalog' },
       { label: 'For Organizations', to: '/#for-organizations' },
       { label: 'About', to: '/about', unavailable: infoPagesUnavailable },
       { label: 'Contact', to: '/contact', unavailable: infoPagesUnavailable },
