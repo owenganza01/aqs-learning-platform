@@ -245,9 +245,25 @@ select set_eq(
             ('public.set_course_thumbnail(uuid, text)'),
             ('public.clear_course_thumbnail(uuid)'),
             ('public.set_lesson_video_upload(uuid, text, text, bigint)'),
-            ('public.set_lesson_youtube(uuid, text, boolean)'),
             ('public.clear_lesson_video(uuid)'),
             ('public.media_access(text, uuid)'),
+            ('public.begin_video_submission(uuid, text, text, bigint, text, text)'),  -- 0019 (D39)
+            ('public.begin_submission_captions(uuid)'),  -- 0019 (D39)
+            ('public.finish_video_submission(uuid, jsonb, boolean)'),  -- 0019 (D39)
+            ('public.withdraw_video_submission(uuid)'),  -- 0019 (D39)
+            ('public.my_video_submissions(uuid)'),  -- 0019 (D39)
+            ('public.video_review_queue(text)'),  -- 0019 (D39)
+            ('public.video_submission_detail(uuid)'),  -- 0019 (D39)
+            ('public.start_content_review(uuid)'),  -- 0019 (D39)
+            ('public.decide_content_review(uuid, text, text)'),  -- 0019 (D39)
+            ('public.attach_verified_youtube(uuid, text, jsonb)'),  -- 0019 (D39)
+            ('public.reattach_master_youtube(uuid, text, jsonb, text)'),  -- 0019 (D39)
+            ('public.begin_lesson_captions(uuid, text)'),  -- 0019 (D39)
+            ('public.finish_lesson_captions(uuid)'),  -- 0019 (D39)
+            ('public.confirm_lesson_captions(uuid, text)'),  -- 0019 (D39)
+            ('public.lesson_caption_status(uuid)'),  -- 0019 (D39)
+            ('public.lesson_spoken_language(uuid)'),  -- 0019 (D39)
+            ('public.submission_media_access(text, uuid)'),  -- 0019 (D39)
             ('authz.can_write_course_object(text, text, boolean)'),
             ('authz.can_read_course_object(text)'),
             ('public.platform_report(uuid, organization_status)'),
@@ -321,6 +337,24 @@ select set_eq(
             ('public.storage_cleanup_candidates(integer, integer)'),  -- 0017, service_role only
             ('public.storage_cleanup_check(uuid, text, text, integer, boolean)'),  -- 0017, service_role only
             ('public.storage_cleanup_result(uuid, text, text, boolean, text)'),  -- 0017, service_role only
+            ('public.begin_video_submission(uuid, text, text, bigint, text, text)'),  -- 0019 (D39)
+            ('public.begin_submission_captions(uuid)'),  -- 0019 (D39)
+            ('public.finish_video_submission(uuid, jsonb, boolean)'),  -- 0019 (D39)
+            ('public.withdraw_video_submission(uuid)'),  -- 0019 (D39)
+            ('public.my_video_submissions(uuid)'),  -- 0019 (D39)
+            ('public.video_review_queue(text)'),  -- 0019 (D39)
+            ('public.video_submission_detail(uuid)'),  -- 0019 (D39)
+            ('public.start_content_review(uuid)'),  -- 0019 (D39)
+            ('public.decide_content_review(uuid, text, text)'),  -- 0019 (D39)
+            ('public.attach_verified_youtube(uuid, text, jsonb)'),  -- 0019 (D39)
+            ('public.reattach_master_youtube(uuid, text, jsonb, text)'),  -- 0019 (D39)
+            ('public.begin_lesson_captions(uuid, text)'),  -- 0019 (D39)
+            ('public.finish_lesson_captions(uuid)'),  -- 0019 (D39)
+            ('public.confirm_lesson_captions(uuid, text)'),  -- 0019 (D39)
+            ('public.lesson_caption_status(uuid)'),  -- 0019 (D39)
+            ('public.lesson_spoken_language(uuid)'),  -- 0019 (D39)
+            ('public.submission_media_access(text, uuid)'),  -- 0019 (D39)
+            ('public.record_youtube_check(uuid, text, text, jsonb)'),  -- 0019 (D39), service_role only
             ('authz.can_view_learner_record(uuid, uuid)'),
             ('public.set_quiz_settings(uuid, integer, integer, boolean, quiz_reveal_policy)'),
             ('public.add_quiz_question(uuid, text, quiz_question_type)'),

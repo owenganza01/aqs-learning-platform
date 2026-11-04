@@ -3,7 +3,8 @@
 // Run after `npm run build`. Fails if the built site in dist/ contains:
 //   - development-only routes or pages (D27, A6: production builds expose no preview pages),
 //   - development sample data (src/dev, D27),
-//   - anything that looks like a secret (T6: only the public URL and publishable key may ship).
+//   - anything that looks like a secret (T6: only the public URL and publishable key may ship),
+//   - invented content presented as real (CM3-7: placeholder hero, partner logos, mock featured courses).
 // Usage: node scripts/check-production-build.mjs [distDir]
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
@@ -18,6 +19,12 @@ const FORBIDDEN = [
   { name: 'mock sign-in screens', pattern: /Demo only\. Sign-in is not available yet/ },
   // Development sample data (src/dev): every sample person uses a *-sample.test address.
   { name: 'sample data', pattern: /[a-z0-9.-]+-sample\.test\b/ },
+  // CM3-7 (G10, G11; PB): invented content presented as real never ships. Identifiers are minified,
+  // so the content itself is matched as well: the placeholders and the invented featured courses.
+  { name: 'invented featured courses', pattern: /MOCK_FEATURED_COURSES|Maya Chen|Daniel Park|Sofia Alvarez|Noah Reed|Priya Shah|Elena Brooks/ },
+  { name: 'hero image placeholder', pattern: /Hero image placeholder/ },
+  { name: 'partner logo placeholders', pattern: /Partner logos \(placeholders|PARTNER_PLACEHOLDERS/ },
+  { name: 'thumbnail placeholder text', pattern: /Thumbnail placeholder/ },
   // Secrets (T6). The publishable key (sb_publishable_…) is public by design and allowed.
   { name: 'Supabase secret key', pattern: /sb_secret_[A-Za-z0-9_-]{10,}/ },
   { name: 'service-role key name', pattern: /SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEYS/ },

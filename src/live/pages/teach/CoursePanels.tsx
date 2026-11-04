@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Badge, Banner, Button, Card, CardHeader, Select, TextArea, TextField } from '../../../components/ui'
+import { Badge, Banner, Button, Card, CardHeader, Select, TextArea, TextField, useConfirm } from '../../../components/ui'
 import { rpc } from '../../api'
 import { ActionFeedback, Loaded } from '../../components/States'
 import { authoring, slugify, type AuthoringCourse } from '../../data/authoring'
@@ -11,6 +11,7 @@ import styles from './CourseEditor.module.css'
 /* Panels of the course page below the builder: details, staff, publication and lifecycle. */
 
 export function DetailsPanel({ course, editable, onChanged }: { course: AuthoringCourse; editable: boolean; onChanged: () => void }) {
+  const { confirm, dialog } = useConfirm()
   const [title, setTitle] = useState(course.title)
   const [summary, setSummary] = useState(course.summary)
   const [visibility, setVisibility] = useState<string>(course.visibility)
@@ -26,6 +27,7 @@ export function DetailsPanel({ course, editable, onChanged }: { course: Authorin
 
   return (
     <Card as="section" padding="md" aria-label="Course details">
+      {dialog}
       <CardHeader title="Course details" subtitle="What learners see before they enroll." headingLevel="h2" size="md" />
       <ActionFeedback error={run.error} success={saved} />
       <form
@@ -89,6 +91,7 @@ export function DetailsPanel({ course, editable, onChanged }: { course: Authorin
             </label>
             <input
               id="thumbnail-file"
+              className={styles.fileInput}
               type="file"
               accept="image/png,image/jpeg,image/webp"
               onChange={(event) => {
@@ -98,7 +101,14 @@ export function DetailsPanel({ course, editable, onChanged }: { course: Authorin
               }}
             />
             {course.thumbnailPath ? (
-              <Button variant="text" size="sm" onClick={() => run.run(() => authoring.clearThumbnail(course.id), 'Thumbnail removed.')}>
+              <Button
+                variant="text"
+                size="sm"
+                onClick={async () => {
+                  if (await confirm({ title: 'Remove the thumbnail?', message: 'The course shows no image until a new one is added.', confirmLabel: 'Remove thumbnail' }))
+                    void run.run(() => authoring.clearThumbnail(course.id), 'Thumbnail removed.')
+                }}
+              >
                 Remove thumbnail
               </Button>
             ) : null}

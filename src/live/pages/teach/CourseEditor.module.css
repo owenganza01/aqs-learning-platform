@@ -1,6 +1,8 @@
 /* Live-only additions to the approved course builder layout (InstructorCoursePage.module.css). */
 .stack {
   display: grid;
+  /* CM3-8: one column that may shrink below its content (e.g. a native file input) on 390 px screens. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-16);
 }
 
@@ -8,6 +10,17 @@
   display: grid;
   gap: var(--space-24);
   margin-top: var(--space-24);
+}
+
+/* CM3-8: panels may shrink below their content's natural width (the native file input of the
+   Thumbnail block made the column 3 px wider than a 390 px screen). */
+.panelGrid > * {
+  min-width: 0;
+}
+
+.fileInput {
+  max-width: 100%;
+  min-width: 0;
 }
 
 @media (min-width: 1024px) {

@@ -1,12 +1,15 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useId, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { FocusLayout } from '../../../components/layout/FocusLayout'
-import { Banner, Button, ButtonLink, Icon } from '../../../components/ui'
+import { Banner, Button, ButtonLink, Icon, Skeleton } from '../../../components/ui'
 import { cx } from '../../../lib/cx'
 import { countOf } from '../../../lib/plural'
 import styles from '../../../pages/LessonPage.module.css'
 import { NotFound } from '../../../pages/NotFound'
-import { ErrorBanner, LoadingBlock } from '../../components/States'
+import { ErrorBanner } from '../../components/States'
+import { LessonSheet } from '../../components/LessonSheet/LessonSheet'
+import sheetStyles from '../../components/LessonSheet/LessonSheet.module.css'
+import { VideoPlayer } from '../../components/VideoPlayer/VideoPlayer'
 import { LessonText } from '../../components/LessonText'
 import {
   completeLesson,
@@ -58,7 +61,16 @@ export default function LiveLessonPage() {
   if (data.state === 'loading') {
     return (
       <main id="main-content" style={{ maxWidth: 960, margin: '32px auto', padding: '0 16px' }}>
-        <LoadingBlock label="Loading lesson" rows={4} />
+        {/* CM3-8: a content-shaped skeleton (player frame, meta line, title, text). */}
+        <div aria-busy="true" role="status" style={{ display: 'grid', gap: 12 }}>
+          <span className="visually-hidden">Loading lesson</span>
+          <Skeleton height="auto" className={styles.video} />
+          <Skeleton shape="text" width="40%" />
+          <Skeleton shape="text" width="70%" height={28} />
+          <Skeleton shape="text" />
+          <Skeleton shape="text" />
+          <Skeleton shape="text" width="85%" />
+        </div>
       </main>
     )
   }
@@ -106,6 +118,9 @@ function LessonContentView({
   const [outlineOpen, setOutlineOpen] = useState(false)
   const outlineId = useId()
   const complete = useAction(() => completeLesson(lesson.id))
+  // CM2-4: the saved video position is kept per learner (browser storage only).
+  const { userId: sessionUserId } = useSession()
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   if (!data.enrollment) {
     return (
@@ -187,116 +202,61 @@ function LessonContentView({
         </aside>
 
         <article className={styles.content}>
-          {lesson.type === 'video' ? <VideoPlayer lessonId={lesson.id} content={data.content} title={lesson.title} /> : null}
+          {lesson.type === 'video' ? (
+            <VideoPlayer
+              lessonId={lesson.id}
+              userId={sessionUserId ?? ''}
+              title={lesson.title}
+              videoPath={data.content.videoPath}
+              youtubeId={data.content.youtubeId}
+              className={styles.video}
+            />
+          ) : null}
 
           <p className={styles.meta}>
             {moduleTitle} · Lesson {index + 1} of {lessons.length} · {LESSON_TYPE_LABEL[lesson.type]}
           </p>
           <h2 className={styles.lessonTitle}>{lesson.title}</h2>
 
-          {data.content.body ? (
-            <section className={styles.section} aria-label="Lesson text">
-              <LessonText body={data.content.body} className={styles.aboutText} />
-            </section>
-          ) : null}
+          {/* CM3-4 (G15): on narrow screens Overview and Documents open in the sheet. */}
+          <div className={sheetStyles.mobileOnly}>
+            <Button variant="secondary" onClick={() => setSheetOpen(true)}>
+              Lesson details
+            </Button>
+            <LessonSheet
+              open={sheetOpen}
+              onClose={() => setSheetOpen(false)}
+              title={lesson.title}
+              overview={data.content.body ? <LessonText body={data.content.body} className={styles.aboutText} /> : <p>This lesson has no text.</p>}
+              documents={data.content.resources.some((r) => r.downloadable) ? <Attachments resources={data.content.resources} /> : <p>No documents for this lesson.</p>}
+              documentCount={data.content.resources.filter((r) => r.downloadable).length}
+            />
+          </div>
 
-          {data.content.resources.length > 0 ? <Attachments resources={data.content.resources} /> : null}
+          <div className={sheetStyles.desktopOnly}>
+            {data.content.body ? (
+              <section className={styles.section} aria-label="Lesson text">
+                <LessonText body={data.content.body} className={styles.aboutText} />
+              </section>
+            ) : null}
+
+            {data.content.resources.length > 0 ? <Attachments resources={data.content.resources} /> : null}
+          </div>
         </article>
       </div>
     </FocusLayout>
   )
 }
 
-/** Stored video through a signed URL, refreshed a minute before it expires (P16); or YouTube. */
-function VideoPlayer({ lessonId, content, title }: { lessonId: string; content: LessonContent; title: string }) {
-  const [source, setSource] = useState<{ url: string; expiresAt: number } | null>(null)
-  const [failed, setFailed] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  // Where to continue after a URL refresh, and whether the video was playing.
-  const resume = useRef<{ time: number; playing: boolean }>({ time: 0, playing: false })
-
-  useEffect(() => {
-    if (!content.videoPath) return
-    let cancelled = false
-    let timer: ReturnType<typeof setTimeout> | undefined
-    const fetchUrl = async () => {
-      try {
-        const signed = await mediaUrl('video', lessonId)
-        if (cancelled) return
-        const expiresAt = new Date(signed.expiresAt).getTime()
-        const video = videoRef.current
-        if (video) resume.current = { time: video.currentTime, playing: !video.paused }
-        setSource({ url: signed.url, expiresAt })
-        timer = setTimeout(fetchUrl, Math.max(30_000, expiresAt - Date.now() - 60_000))
-      } catch {
-        if (!cancelled) setFailed(true)
-      }
-    }
-    void fetchUrl()
-    return () => {
-      cancelled = true
-      if (timer) clearTimeout(timer)
-    }
-  }, [lessonId, content.videoPath])
-
-  if (content.youtubeId) {
-    return (
-      <div className={styles.video}>
-        <iframe
-          src={`https://www.youtube-nocookie.com/embed/${content.youtubeId}`}
-          title={title}
-          allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-          referrerPolicy="strict-origin-when-cross-origin"
-          style={{ width: '100%', height: '100%', border: 0, borderRadius: 'inherit' }}
-        />
-      </div>
-    )
-  }
-  if (!content.videoPath) {
-    return (
-      <div className={styles.video} role="img" aria-label="No video">
-        <span aria-hidden="true">This lesson has no video yet.</span>
-      </div>
-    )
-  }
-  if (failed) return <Banner tone="danger">The video could not be loaded. Reload the page to try again.</Banner>
-  if (!source) {
-    return (
-      <div className={styles.video} aria-busy="true">
-        <span>Loading video…</span>
-      </div>
-    )
-  }
-  return (
-    <div className={styles.video}>
-      {/* Keeps the playback position when the URL is refreshed: the element is reused. */}
-      <video
-        ref={videoRef}
-        src={source.url}
-        onLoadedMetadata={(event) => {
-          const { time, playing } = resume.current
-          if (time > 0) event.currentTarget.currentTime = time
-          if (playing) void event.currentTarget.play().catch(() => undefined)
-        }}
-        controls
-        controlsList="nodownload"
-        preload="metadata"
-        style={{ width: '100%', height: '100%', borderRadius: 'inherit', background: '#000' }}
-        onError={() => setFailed(true)}
-      >
-        Your browser cannot play this video.
-      </video>
-    </div>
-  )
-}
-
 function Attachments({ resources }: { resources: LessonContent['resources'] }) {
   const [error, setError] = useState<string | null>(null)
+  // CM3-4: rendered on the page and in the mobile sheet, so the heading ID must be unique.
+  const headingId = useId()
   const downloadable = resources.filter((r) => r.downloadable)
   if (downloadable.length === 0) return null
   return (
-    <section className={styles.section} aria-labelledby="attachments-heading">
-      <h2 className="text-section" id="attachments-heading">
+    <section className={styles.section} aria-labelledby={headingId}>
+      <h2 className="text-section" id={headingId}>
         Documents and attachments <span className={styles.count}>{countOf(downloadable.length, 'file')}</span>
       </h2>
       {error ? <Banner tone="danger">{error}</Banner> : null}
