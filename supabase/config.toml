@@ -406,6 +406,10 @@ verify_jwt = false
 [functions.media-url]
 verify_jwt = false
 
+# CM2-2 (D39): gate 2 technical check. Prepared only, not deployed. Checks the session itself (http.ts).
+[functions.youtube-verify]
+verify_jwt = false
+
 # 0017 orphaned-file cleanup: prepared only, not deployed. Server-to-server; checks its own shared secret.
 [functions.storage-cleanup]
 verify_jwt = false

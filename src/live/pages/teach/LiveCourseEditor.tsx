@@ -12,6 +12,7 @@ import { useCurrentOrgOptional } from '../../org-context'
 import { useSession } from '../../session-context'
 import { useResource } from '../../useResource'
 import { CorrectionsPanel } from './CorrectionsPanel'
+import { CaptionConfirmationPanel } from './CaptionConfirmationPanel'
 import { AssignPanel, DetailsPanel, PublicationPanel, StaffPanel } from './CoursePanels'
 import styles from './CourseEditor.module.css'
 import { LessonPanel } from './LessonPanel'
@@ -133,6 +134,10 @@ function Editor({
 
       <div className={styles.panelGrid}>
         <PublicationPanel course={course} userId={userId} isStaff={isStaff} canApprove={canApprove} canArchive={canArchive} teachBase={teachBase} onChanged={onChanged} />
+        {/* D39 #7: the owning organisation's admins confirm the captions of organisation-only videos. */}
+        {!platform && isOrgAdmin && orgId === course.orgId && course.visibility === 'organization' && course.status === 'draft' ? (
+          <CaptionConfirmationPanel course={course} />
+        ) : null}
         <DetailsPanel key={`${course.title}:${course.summary}:${course.visibility}:${course.enrollmentPolicy}`} course={course} editable={editable} onChanged={onChanged} />
         {!platform ? <StaffPanel course={course} isOrgAdmin={isOrgAdmin} editable={course.status === 'draft'} onChanged={onChanged} /> : null}
         {course.status === 'published' && !platform && isOrgAdmin ? <AssignPanel course={course} /> : null}

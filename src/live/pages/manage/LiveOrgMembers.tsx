@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { PageHeader } from '../../../components/layout/PageHeader'
-import { Avatar, Badge, Button, ButtonLink, EmptyState, Pagination, Table, Tabs, TextField, usePagination, type BadgeTone, type TableColumn } from '../../../components/ui'
+import { Avatar, Badge, Button, ButtonLink, EmptyState, Pagination, Table, Tabs, TextField, usePagination, type BadgeTone, type TableColumn, useConfirm } from '../../../components/ui'
 import styles from '../../../pages/OrgAdminMembersPage.module.css'
 import { ActionFeedback, ErrorBanner, LoadingBlock } from '../../components/States'
 import { LiveShell } from '../../components/LiveShell'
@@ -31,6 +31,8 @@ export default function LiveOrgMembers() {
   const [filter, setFilter] = useState<Filter>('all')
   const [query, setQuery] = useState('')
   const [message, setMessage] = useState<string | null>(null)
+  // CM3-1 (G16): one accessible confirmation instead of window.confirm.
+  const { confirm, dialog } = useConfirm()
   const act = useAction(async (work: () => Promise<unknown>, done: string) => {
     await work()
     setMessage(done)
@@ -103,9 +105,13 @@ export default function LiveOrgMembers() {
             <Button
               variant="text"
               size="sm"
-              onClick={() => {
-                if (window.confirm(`Suspend ${m.fullName || m.email}? They lose access until reactivated.`))
-                  void act.run(() => memberActions.setStatus(org.id, m.userId, 'suspended'), `${m.fullName || m.email} is suspended.`)
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Suspend ${m.fullName || m.email}?`,
+                  message: 'They lose access until reactivated.',
+                  confirmLabel: 'Suspend member',
+                })
+                if (ok) void act.run(() => memberActions.setStatus(org.id, m.userId, 'suspended'), `${m.fullName || m.email} is suspended.`)
               }}
             >
               Suspend<span className="visually-hidden"> {m.fullName || m.email}</span>
@@ -113,9 +119,13 @@ export default function LiveOrgMembers() {
             <Button
               variant="text"
               size="sm"
-              onClick={() => {
-                if (window.confirm(`Remove ${m.fullName || m.email} from ${org.name}? Their learning records are kept.`))
-                  void act.run(() => memberActions.setStatus(org.id, m.userId, 'removed'), `${m.fullName || m.email} was removed.`)
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Remove ${m.fullName || m.email} from ${org.name}?`,
+                  message: 'Their learning records are kept.',
+                  confirmLabel: 'Remove member',
+                })
+                if (ok) void act.run(() => memberActions.setStatus(org.id, m.userId, 'removed'), `${m.fullName || m.email} was removed.`)
               }}
             >
               Remove<span className="visually-hidden"> {m.fullName || m.email}</span>
@@ -128,6 +138,7 @@ export default function LiveOrgMembers() {
 
   return (
     <LiveShell shell={orgAdminShell(org.slug, org.name)}>
+      {dialog}
       <PageHeader
         title="Members"
         description="Manage your people, their roles and access to learning."
