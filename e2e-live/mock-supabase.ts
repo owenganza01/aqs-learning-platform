@@ -18,6 +18,76 @@ export interface Mock {
   /** Storage uploads, keyed by bucket (POST /storage/v1/object/<bucket>/<path>). */
   storage: Record<string, Handler>
   calls: Array<{ kind: string; name: string; body: unknown; url: string }>
+  /** CM2-3: a small tus (resumable upload) server at /storage/v1/upload/resumable. */
+  tus?: TusMock
+}
+
+/**
+ * CM2-3: the resumable-upload endpoint. Every request is recorded in `requests` (method, headers,
+ * decoded Upload-Metadata, bytes). `createStatus` refuses the upload at creation (for example 413);
+ * `failPatches` makes that many PATCH requests fail with 500 before they succeed (an interruption
+ * the client resumes after asking the offset with HEAD); `noDataOnCreate` accepts no bytes with
+ * the creation request, so the data must come by PATCH.
+ */
+export interface TusMock {
+  createStatus?: number
+  failPatches?: number
+  noDataOnCreate?: boolean
+  requests: Array<{ method: string; headers: Record<string, string>; metadata: Record<string, string>; bytes: number }>
+  uploads: Map<string, { length: number; offset: number; metadata: Record<string, string> }>
+}
+
+export function tusMock(options: Partial<Pick<TusMock, 'createStatus' | 'failPatches' | 'noDataOnCreate'>> = {}): TusMock {
+  return { requests: [], uploads: new Map(), ...options }
+}
+
+function decodeMetadata(header: string | undefined): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const pair of (header ?? '').split(',')) {
+    const [key, value] = pair.trim().split(' ')
+    if (key) out[key] = value ? Buffer.from(value, 'base64').toString('utf8') : ''
+  }
+  return out
+}
+
+async function handleTus(route: Route, tus: TusMock, parts: string[]) {
+  const request = route.request()
+  const headers = request.headers()
+  const bytes = request.postDataBuffer()?.length ?? 0
+  const method = request.method()
+  const base = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Methods': '*',
+    'Access-Control-Expose-Headers': 'Location, Upload-Offset, Upload-Length, Tus-Resumable',
+    'Tus-Resumable': '1.0.0',
+  }
+  if (method === 'OPTIONS') return route.fulfill({ status: 204, headers: base })
+  const metadata = decodeMetadata(headers['upload-metadata'])
+  tus.requests.push({ method, headers, metadata, bytes })
+  const id = parts[4]
+  if (method === 'POST') {
+    if (tus.createStatus) return route.fulfill({ status: tus.createStatus, headers: base, body: 'refused' })
+    const key = `u${tus.uploads.size + 1}`
+    const length = Number(headers['upload-length'] ?? 0)
+    const offset = tus.noDataOnCreate ? 0 : Math.min(bytes, length)
+    tus.uploads.set(key, { length, offset, metadata })
+    return route.fulfill({ status: 201, headers: { ...base, Location: `${API}/storage/v1/upload/resumable/${key}`, 'Upload-Offset': String(offset) }, body: '' })
+  }
+  const upload = id ? tus.uploads.get(id) : undefined
+  if (!upload) return route.fulfill({ status: 404, headers: base, body: 'unknown upload' })
+  if (method === 'HEAD') {
+    return route.fulfill({ status: 200, headers: { ...base, 'Upload-Offset': String(upload.offset), 'Upload-Length': String(upload.length), 'Cache-Control': 'no-store' }, body: '' })
+  }
+  if (method === 'PATCH') {
+    if ((tus.failPatches ?? 0) > 0) {
+      tus.failPatches = (tus.failPatches ?? 0) - 1
+      return route.fulfill({ status: 500, headers: base, body: 'interrupted' })
+    }
+    upload.offset = Math.min(upload.length, upload.offset + bytes)
+    return route.fulfill({ status: 204, headers: { ...base, 'Upload-Offset': String(upload.offset) }, body: '' })
+  }
+  return route.fulfill({ status: 405, headers: base, body: '' })
 }
 
 export async function signIn(page: Page) {
@@ -46,6 +116,10 @@ export async function mockSupabase(page: Page, partial: Partial<Omit<Mock, 'call
       body = request.postData()
     }
     const parts = url.pathname.split('/').filter(Boolean)
+    if (parts[0] === 'storage' && parts[2] === 'upload' && parts[3] === 'resumable') {
+      if (!mock.tus) return route.fulfill({ status: 500, headers: cors, json: { message: 'unmocked resumable upload' } })
+      return handleTus(route, mock.tus, parts)
+    }
     let kind = ''
     let name = ''
     if (parts[0] === 'rest' && parts[2] === 'rpc') [kind, name] = ['rpc', parts[3]]
