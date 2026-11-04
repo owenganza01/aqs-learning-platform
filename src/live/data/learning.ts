@@ -129,6 +129,36 @@ export async function listCatalog(): Promise<CourseSummary[]> {
   return rows.map(summaryOf)
 }
 
+export const CATALOG_PAGE_SIZE = 12
+
+/** Escape LIKE wildcards so a search for "100%" or "a_b" matches those characters literally. */
+export function likePattern(term: string): string {
+  return `%${term.replace(/[\\%_]/g, (c) => `\\${c}`)}%`
+}
+
+/**
+ * One page of the catalog (CM3-2, G30): the database pages and counts (`count: 'exact'`), and the
+ * title search runs there too, so only one page of courses is fetched. Row rules still decide
+ * which courses the person may see (F1, L8).
+ */
+export async function listCatalogPage(page: number, search: string, pageSize = CATALOG_PAGE_SIZE): Promise<{ courses: CourseSummary[]; total: number }> {
+  const from = Math.max(0, (page - 1) * pageSize)
+  const term = search.trim()
+  let result
+  try {
+    let q = client().from('courses').select(`${COURSE_COLUMNS}, ${OUTLINE}`, { count: 'exact' }).eq('status', 'published')
+    if (term) q = q.ilike('title', likePattern(term))
+    result = await q.order('title').order('id').range(from, from + pageSize - 1)
+  } catch (error) {
+    throw toAppError(error)
+  }
+  if (result.error) throw toAppError(result.error)
+  const rows = (result.data ?? []) as unknown as CourseRow[]
+  // The client reports NaN (not null) when the server sends no total; fall back to what was fetched.
+  const total = typeof result.count === 'number' && Number.isFinite(result.count) ? result.count : from + rows.length
+  return { courses: rows.map(summaryOf), total }
+}
+
 /** Courses by ID with their outlines (any status the person may see, e.g. archived, L13). */
 export async function listCoursesWithOutline(ids: string[]): Promise<Array<CourseSummary & { outline: OutlineModule[] }>> {
   if (ids.length === 0) return []

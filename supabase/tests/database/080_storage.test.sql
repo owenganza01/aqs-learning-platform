@@ -57,6 +57,53 @@ grant execute on function pg_temp.del(text) to authenticated;
 -- Split "<bucket>/<path>" as returned by set_course_thumbnail.
 create function pg_temp.obj(p_full text) returns text language sql as $$ select substr(p_full, strpos(p_full, '/') + 1) $$;
 grant execute on function pg_temp.obj(text) to anon, authenticated;
+-- 0019 (D39) fixtures, written by the test owner like pg_temp.stored: the publication state a video
+-- lesson needs under D39, for courses whose subject here is not the video review itself (tested in 087).
+-- Organisation-only stored video: a timed caption track confirmed by p_confirmer for the current video.
+create function pg_temp.d39_captions(p_lesson uuid, p_confirmer uuid) returns void language sql security definer as $d39$
+  insert into public.lesson_caption_tracks (lesson_id, course_id, caption_path, language, uploaded_by, confirmed_by,
+                                            confirmed_at, confirmation_note, confirmed_video_path, confirmed_caption_path)
+  select b.lesson_id, b.course_id, p.path, 'en', p_confirmer, p_confirmer, now(), 'Test fixture', b.video_path, p.path
+    from public.lesson_contents b
+    cross join lateral (select b.course_id::text || '/' || b.lesson_id::text || '/captions-' || gen_random_uuid()::text || '.vtt' as path) p
+   where b.lesson_id = p_lesson;
+$d39$;
+grant execute on function pg_temp.d39_captions(uuid, uuid) to authenticated;
+-- Public course: a published master submission (gate 1 and gate 2 passed) attached to the lesson.
+create function pg_temp.d39_youtube(p_lesson uuid, p_youtube text, p_submitter uuid, p_verifier uuid) returns void
+language sql security definer as $d39$
+  insert into public.video_submissions (course_id, lesson_id, version, submitted_by, submitted_at, object_path, content_type,
+    size_bytes, file_name, spoken_language, caption_source, non_sensitive_attested, requirements_confirmed, status,
+    content_reviewer_id, content_decided_at, youtube_id, publication_verifier_id, publication_verified_at,
+    publication_confirmations, is_master)
+  select l.course_id, l.id, 1, p_submitter, now(), l.course_id::text || '/' || l.id::text || '/submission-fixture.mp4',
+         'video/mp4', 1000, 'fixture.mp4', 'en', 'youtube_automatic', true,
+         '{"schema": "aqs.video_requirements.v1", "format_and_size": true, "spoken_language_stated": true,
+           "captions_plan": true, "audio_intelligible": true, "content_matches_lesson": true,
+           "no_third_party_personal_data": true, "rights_cleared": true, "non_sensitive": true,
+           "no_external_advertising": true}'::jsonb,
+         'published', p_verifier, now(), p_youtube, p_verifier, now(),
+         jsonb_build_object('schema', 'aqs.video_publication.v1',
+           'aqs_channel', jsonb_build_object('confirmed', true, 'note', 'fixture'),
+           'visibility_unlisted', jsonb_build_object('confirmed', true, 'note', 'fixture'),
+           'embedding_allowed', jsonb_build_object('confirmed', true, 'note', 'fixture'),
+           'audience_set', jsonb_build_object('confirmed', true, 'note', 'fixture'),
+           'captions_published', jsonb_build_object('confirmed', true, 'note', 'fixture', 'language', 'en'),
+           'non_sensitive', jsonb_build_object('confirmed', true, 'note', 'fixture')), true
+    from public.lessons l where l.id = p_lesson;
+  insert into public.lesson_contents (lesson_id, course_id, body, updated_by, youtube_id, youtube_attested_by)
+  select l.id, l.course_id, '', p_verifier, p_youtube, p_verifier from public.lessons l where l.id = p_lesson
+  on conflict (lesson_id) do update
+    set youtube_id = excluded.youtube_id, youtube_attested_by = excluded.youtube_attested_by,
+        video_path = null, video_content_type = null, video_size_bytes = null, updated_at = now();
+$d39$;
+grant execute on function pg_temp.d39_youtube(uuid, text, uuid, uuid) to authenticated;
+-- 0019 (D39 #2): set_lesson_youtube is no longer executable by authenticated (asserted in 087). Its own
+-- 0010 checks are still exercised here through the function owner, as the signed-in caller.
+create function pg_temp.legacy_youtube(p_lesson uuid, p_id text, p_attest boolean) returns void language sql security definer as $$
+  select public.set_lesson_youtube(p_lesson, p_id, p_attest);
+$$;
+grant execute on function pg_temp.legacy_youtube(uuid, text, boolean) to authenticated;
 
 select plan(51);
 
@@ -103,7 +150,7 @@ select results_eq($$ select id, public, file_size_limit from storage.buckets ord
   $$ values ('course-files', false, 104857600::bigint), ('course-thumbnails', true, 5242880::bigint), ('course-video', false, 524288000::bigint) $$,
   'T8: one public bucket for thumbnails, private buckets for materials and video, with size limits');
 select results_eq($$ select allowed_mime_types from storage.buckets where id = 'course-video' $$,
-  $$ values (array['video/mp4', 'video/webm']) $$, 'the video bucket accepts MP4 and WebM only');
+  $$ values (array['video/mp4', 'video/webm', 'text/vtt']) $$, 'the video bucket accepts MP4 and WebM video, and WebVTT captions (0019, D39)');
 select policies_are('storage', 'objects', array['aqs_course_objects_insert', 'aqs_course_objects_delete', 'aqs_course_objects_select'],
   'storage.objects has exactly the three AQS rules: no UPDATE rule and nothing for anon');
 
@@ -120,7 +167,7 @@ select throws_ok($$ select public.set_lesson_video_upload(pg_temp.id('v'), 'a.av
   'videos must be MP4 or WebM');
 select throws_ok($$ select public.set_lesson_video_upload(pg_temp.id('v'), 'a.mp4', 'video/mp4', 524288001) $$, '22023', null,
   'Q-07-8: videos above 500 MB are refused');
-select throws_ok($$ select public.set_lesson_youtube(pg_temp.id('v'), 'dQw4w9WgXcQ', true) $$, '22023',
+select throws_ok($$ select pg_temp.legacy_youtube(pg_temp.id('v'), 'dQw4w9WgXcQ', true) $$, '22023',
   'AQS: YouTube videos are allowed only in public courses (P16)', 'P16: no YouTube in an organization-only course');
 select set_config('t.vp', public.set_lesson_video_upload(pg_temp.id('v'), 'lecture.mp4', 'video/mp4', 50000000), true);
 select lives_ok($$ select pg_temp.upload('course-files', pg_temp.obj(pg_temp.s('th'))) $$, 'staff upload the thumbnail to the issued path');
@@ -151,6 +198,7 @@ select is_empty($$ select 1 from storage.objects $$,
 -- Publish C and assign L1
 select pg_temp.act_as(pg_temp.u('8a2'));
 select pg_temp.upload('course-files', pg_temp.s('np'));
+select pg_temp.d39_captions(pg_temp.id('v'), pg_temp.u('8a1'));   -- 0019 fixture: captions confirmed by an org admin
 select public.request_course_publication(pg_temp.id('c'));
 select pg_temp.act_as(pg_temp.u('8a1'));
 select public.approve_course_publication(pg_temp.id('c'));
@@ -210,11 +258,12 @@ select set_config('t.pm', public.add_course_module(pg_temp.id('p'), 'M')::text, 
 select set_config('t.y', public.add_lesson(pg_temp.id('pm'), 'Watch', 'video')::text, true);
 
 -- 36-42. YouTube (P16) and the public bucket (T8) --------------------------------------------------------
-select throws_ok($$ select public.set_lesson_youtube(pg_temp.id('y'), 'dQw4w9WgXcQ', false) $$, '22023',
+select throws_ok($$ select pg_temp.legacy_youtube(pg_temp.id('y'), 'dQw4w9WgXcQ', false) $$, '22023',
   'AQS: confirm that this course is not sensitive (P16)', 'P16: YouTube needs the non-sensitive attestation');
-select throws_ok($$ select public.set_lesson_youtube(pg_temp.id('y'), 'https://youtu.be/x', true) $$, '22023', null,
+select throws_ok($$ select pg_temp.legacy_youtube(pg_temp.id('y'), 'https://youtu.be/x', true) $$, '22023', null,
   'only an 11-character video ID is accepted');
-select lives_ok($$ select public.set_lesson_youtube(pg_temp.id('y'), 'dQw4w9WgXcQ', true) $$, 'staff set an unlisted YouTube video on a public course');
+select lives_ok($$ select pg_temp.legacy_youtube(pg_temp.id('y'), 'dQw4w9WgXcQ', true) $$, 'staff set an unlisted YouTube video on a public course');
+select pg_temp.d39_youtube(pg_temp.id('y'), 'dQw4w9WgXcQ', pg_temp.u('8a2'), pg_temp.u('8a1'));   -- 0019 fixture: the same video through AQS review
 select set_config('t.pth', public.set_course_thumbnail(pg_temp.id('p'), 'image/webp'), true);
 select ok(pg_temp.s('pth') like 'course-thumbnails/' || pg_temp.s('p') || '/thumbnail-%.webp', 'T8: a public course''s thumbnail goes to the public bucket');
 select lives_ok($$ select pg_temp.upload('course-thumbnails', pg_temp.obj(pg_temp.s('pth'))) $$, 'staff upload it');
@@ -236,7 +285,7 @@ select set_config('t.xm', public.add_course_module(pg_temp.id('x'), 'M')::text, 
 select set_config('t.xv', public.add_lesson(pg_temp.id('xm'), 'Video', 'video')::text, true);
 select throws_ok($$ select public.request_course_publication(pg_temp.id('x')) $$, '22023',
   'AQS: every video lesson needs a video', 'a video lesson without a video blocks publication');
-select public.set_lesson_youtube(pg_temp.id('xv'), 'dQw4w9WgXcQ', true);
+select pg_temp.legacy_youtube(pg_temp.id('xv'), 'dQw4w9WgXcQ', true);
 select public.set_course_thumbnail(pg_temp.id('x'), 'image/png');
 select public.update_course_details(pg_temp.id('x'), 'Checks', '', 'organization', 'assigned');
 select throws_ok($$ select public.request_course_publication(pg_temp.id('x')) $$, '22023',
@@ -246,6 +295,7 @@ select throws_ok($$ select public.request_course_publication(pg_temp.id('x')) $$
   'AQS: the visibility changed after the thumbnail was added; add the thumbnail again (T8)',
   'T8: an organization-only course cannot publish a thumbnail from the public bucket');
 select pg_temp.upload('course-files', pg_temp.obj(public.set_course_thumbnail(pg_temp.id('x'), 'image/png')));
+select pg_temp.d39_captions(pg_temp.id('xv'), pg_temp.u('8a1'));   -- 0019 fixture: captions confirmed by an org admin
 select lives_ok($$ select public.request_course_publication(pg_temp.id('x')) $$, 'with a private thumbnail and a stored video it can be proposed');
 select throws_ok($$ select pg_temp.upload('course-video', (select video_path from public.lesson_contents where lesson_id = pg_temp.id('xv'))) $$,
   '42501', null, 'Q-07-3: no uploads while the course waits for approval');

@@ -11,7 +11,11 @@ const LESSONS = COURSE.course_modules.flatMap((m) => m.lessons.map((l) => l.id))
 function tables() {
   return {
     ...sessionTables(),
-    courses: () => ({ json: [A, B, C] }),
+    // CM3-2: the catalog search runs in the database (title=ilike.%term%); answer like PostgREST would.
+    courses: ({ url }: { url: URL }) => {
+      const term = url.searchParams.get('title')?.replace(/^ilike\.%|%$/g, '').toLowerCase()
+      return { json: [A, B, C].filter((c) => !term || c.title.toLowerCase().includes(term)) }
+    },
     course_instructor_names: () => ({ json: [] }),
     enrollments: () => ({
       json: [
@@ -64,7 +68,7 @@ test('I7: the catalog filters by title as you type and says when nothing matches
   await page.getByLabel('Search courses').fill('  BUDGET ')
   await expect(page.getByRole('heading', { name: 'Budgeting basics' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Zoning law' })).toHaveCount(0)
-  await expect(page.getByText('1 of 3 courses match')).toBeVisible()
+  await expect(page.getByText('1 course match')).toBeVisible() // CM3-2: counted by the database
   await page.getByLabel('Search courses').fill('quantum')
   await expect(page.getByRole('heading', { name: 'No matching courses' })).toBeVisible()
   await page.getByLabel('Search courses').fill('')
