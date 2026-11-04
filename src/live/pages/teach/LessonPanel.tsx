@@ -6,12 +6,15 @@ import { authoring, type AuthoringCourse, type AuthoringLesson } from '../../dat
 import { formatBytes, LESSON_TYPE_LABEL } from '../../learner-model'
 import { useAction } from '../../useResource'
 import styles from './CourseEditor.module.css'
+import { VideoSection } from './VideoSection'
 
 /*
  * Lesson editor (the approved builder's right-hand card). Lesson text is plain text: blank
  * lines make paragraphs and web addresses become links. The design's "Required to complete"
  * switch is not shown: every lesson is required (L6). Uploads go to the exact path the
- * database issues and only while the course is an editable draft (0010).
+ * database issues and only while the course is an editable draft (0010). The video section
+ * (VideoSection.tsx) follows D39: AQS review and YouTube for public courses, stored video with
+ * confirmed captions for organisation-only courses.
  */
 
 const MATERIAL_TYPES = '.pdf,.txt,.csv,.png,.jpg,.jpeg,.webp,.zip,.mp3,.m4a,.doc,.docx,.xls,.xlsx,.ppt,.pptx'
@@ -33,8 +36,6 @@ export function LessonPanel({
 }) {
   const [title, setTitle] = useState(lesson.title)
   const [body, setBody] = useState(lesson.body)
-  const [youtube, setYoutube] = useState(lesson.youtubeId ?? '')
-  const [attest, setAttest] = useState(false)
   const [downloadable, setDownloadable] = useState(true)
   const [saved, setSaved] = useState<string | null>(null)
   const run = useAction(async (work: () => Promise<unknown>, message: string) => {
@@ -105,68 +106,7 @@ export function LessonPanel({
         </section>
       ) : null}
 
-      {lesson.type === 'video' ? (
-        <section className={base.materials} aria-labelledby={`video-${lesson.id}`}>
-          <h3 id={`video-${lesson.id}`} className={base.sectionTitle}>
-            Video
-          </h3>
-          <p className={styles.muted}>
-            {lesson.videoPath ? 'An uploaded video is attached.' : lesson.youtubeId ? `YouTube video ${lesson.youtubeId}` : 'No video yet.'}
-          </p>
-          {editable ? (
-            <>
-              <label className={base.dropzone}>
-                Upload a video file
-                <span className={base.dropzoneHint}>MP4 or WebM, up to 500 MB (the current plan may allow less).</span>
-                <input
-                  type="file"
-                  accept="video/mp4,video/webm"
-                  className="visually-hidden"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0]
-                    event.target.value = ''
-                    if (file) void run.run(() => authoring.uploadVideo(lesson.id, file, Boolean(lesson.videoPath || lesson.youtubeId)), 'Video uploaded.')
-                  }}
-                />
-              </label>
-              {course.visibility === 'public' ? (
-                <form
-                  className={styles.addForm}
-                  onSubmit={(event) => {
-                    event.preventDefault()
-                    const id = /(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/.exec(youtube)?.[1] ?? youtube.trim()
-                    void run.run(() => authoring.setYoutube(lesson.id, id, attest), 'YouTube video set.')
-                  }}
-                >
-                  <TextField
-                    id={`youtube-${lesson.id}`}
-                    label="Or an unlisted YouTube video"
-                    hint="Paste the link or the 11-character video ID. Public courses only."
-                    value={youtube}
-                    onChange={(e) => setYoutube(e.target.value)}
-                  />
-                  <label className={styles.row}>
-                    <input type="checkbox" checked={attest} onChange={(e) => setAttest(e.target.checked)} />
-                    <span>This course contains nothing sensitive, so it may use YouTube (P16).</span>
-                  </label>
-                  <div>
-                    <Button type="submit" size="sm" variant="neutral" disabled={!attest || !youtube.trim()} loading={run.busy}>
-                      Use this YouTube video
-                    </Button>
-                  </div>
-                </form>
-              ) : (
-                <p className={styles.muted}>YouTube videos are allowed only in public courses.</p>
-              )}
-              {lesson.videoPath || lesson.youtubeId ? (
-                <Button variant="text" size="sm" onClick={() => run.run(() => authoring.clearVideo(lesson.id), 'Video removed.')}>
-                  Remove video
-                </Button>
-              ) : null}
-            </>
-          ) : null}
-        </section>
-      ) : null}
+      {lesson.type === 'video' ? <VideoSection course={course} lesson={lesson} editable={editable} onChanged={onChanged} /> : null}
 
       {lesson.type !== 'quiz' ? (
         <section className={base.materials} aria-labelledby={`materials-${lesson.id}`}>

@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useId, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { FocusLayout } from '../../../components/layout/FocusLayout'
 import { Banner, Button, ButtonLink, Icon } from '../../../components/ui'
@@ -7,6 +7,7 @@ import { countOf } from '../../../lib/plural'
 import styles from '../../../pages/LessonPage.module.css'
 import { NotFound } from '../../../pages/NotFound'
 import { ErrorBanner, LoadingBlock } from '../../components/States'
+import { VideoPlayer } from '../../components/VideoPlayer/VideoPlayer'
 import { LessonText } from '../../components/LessonText'
 import {
   completeLesson,
@@ -106,6 +107,8 @@ function LessonContentView({
   const [outlineOpen, setOutlineOpen] = useState(false)
   const outlineId = useId()
   const complete = useAction(() => completeLesson(lesson.id))
+  // CM2-4: the saved video position is kept per learner (browser storage only).
+  const { userId: sessionUserId } = useSession()
 
   if (!data.enrollment) {
     return (
@@ -187,7 +190,16 @@ function LessonContentView({
         </aside>
 
         <article className={styles.content}>
-          {lesson.type === 'video' ? <VideoPlayer lessonId={lesson.id} content={data.content} title={lesson.title} /> : null}
+          {lesson.type === 'video' ? (
+            <VideoPlayer
+              lessonId={lesson.id}
+              userId={sessionUserId ?? ''}
+              title={lesson.title}
+              videoPath={data.content.videoPath}
+              youtubeId={data.content.youtubeId}
+              className={styles.video}
+            />
+          ) : null}
 
           <p className={styles.meta}>
             {moduleTitle} · Lesson {index + 1} of {lessons.length} · {LESSON_TYPE_LABEL[lesson.type]}
@@ -204,89 +216,6 @@ function LessonContentView({
         </article>
       </div>
     </FocusLayout>
-  )
-}
-
-/** Stored video through a signed URL, refreshed a minute before it expires (P16); or YouTube. */
-function VideoPlayer({ lessonId, content, title }: { lessonId: string; content: LessonContent; title: string }) {
-  const [source, setSource] = useState<{ url: string; expiresAt: number } | null>(null)
-  const [failed, setFailed] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  // Where to continue after a URL refresh, and whether the video was playing.
-  const resume = useRef<{ time: number; playing: boolean }>({ time: 0, playing: false })
-
-  useEffect(() => {
-    if (!content.videoPath) return
-    let cancelled = false
-    let timer: ReturnType<typeof setTimeout> | undefined
-    const fetchUrl = async () => {
-      try {
-        const signed = await mediaUrl('video', lessonId)
-        if (cancelled) return
-        const expiresAt = new Date(signed.expiresAt).getTime()
-        const video = videoRef.current
-        if (video) resume.current = { time: video.currentTime, playing: !video.paused }
-        setSource({ url: signed.url, expiresAt })
-        timer = setTimeout(fetchUrl, Math.max(30_000, expiresAt - Date.now() - 60_000))
-      } catch {
-        if (!cancelled) setFailed(true)
-      }
-    }
-    void fetchUrl()
-    return () => {
-      cancelled = true
-      if (timer) clearTimeout(timer)
-    }
-  }, [lessonId, content.videoPath])
-
-  if (content.youtubeId) {
-    return (
-      <div className={styles.video}>
-        <iframe
-          src={`https://www.youtube-nocookie.com/embed/${content.youtubeId}`}
-          title={title}
-          allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-          referrerPolicy="strict-origin-when-cross-origin"
-          style={{ width: '100%', height: '100%', border: 0, borderRadius: 'inherit' }}
-        />
-      </div>
-    )
-  }
-  if (!content.videoPath) {
-    return (
-      <div className={styles.video} role="img" aria-label="No video">
-        <span aria-hidden="true">This lesson has no video yet.</span>
-      </div>
-    )
-  }
-  if (failed) return <Banner tone="danger">The video could not be loaded. Reload the page to try again.</Banner>
-  if (!source) {
-    return (
-      <div className={styles.video} aria-busy="true">
-        <span>Loading video…</span>
-      </div>
-    )
-  }
-  return (
-    <div className={styles.video}>
-      {/* Keeps the playback position when the URL is refreshed: the element is reused. */}
-      <video
-        ref={videoRef}
-        src={source.url}
-        onLoadedMetadata={(event) => {
-          const { time, playing } = resume.current
-          if (time > 0) event.currentTarget.currentTime = time
-          if (playing) void event.currentTarget.play().catch(() => undefined)
-        }}
-        controls
-        controlsList="nodownload"
-        preload="metadata"
-        style={{ width: '100%', height: '100%', borderRadius: 'inherit', background: '#000' }}
-        onError={() => setFailed(true)}
-      >
-        Your browser cannot play this video.
-      </video>
-    </div>
   )
 }
 
