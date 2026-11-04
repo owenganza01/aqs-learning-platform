@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { PageHeader } from '../../../components/layout/PageHeader'
-import { Badge, Banner, Button, Card, CardHeader, StatCard, Table, TextField, type TableColumn } from '../../../components/ui'
+import { Badge, Banner, Button, Card, CardHeader, StatCard, Table, TextField, type TableColumn, useConfirm } from '../../../components/ui'
 import styles from '../../../pages/PlatformAdminOrganizationDetailPage.module.css'
 import { NotFound } from '../../../pages/NotFound'
 import { ActionFeedback, ErrorBanner, LoadingBlock } from '../../components/States'
@@ -35,6 +35,8 @@ export default function LivePlatformOrganizationDetail() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState<InvitationSent | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  // CM3-1 (G16): one accessible confirmation instead of window.confirm.
+  const { confirm, dialog } = useConfirm()
   const invite = useAction(() => invitationActions.create(orgId, email.trim().toLowerCase(), 'org_admin'))
   const act = useAction(async (work: () => Promise<unknown>, done: string) => {
     await work()
@@ -87,6 +89,7 @@ export default function LivePlatformOrganizationDetail() {
 
   return (
     <LiveShell shell={platformShell()}>
+      {dialog}
       <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
         <ol>
           <li>
@@ -127,9 +130,13 @@ export default function LivePlatformOrganizationDetail() {
         {org.status === 'active' ? (
           <Button
             variant="danger"
-            onClick={() => {
-              if (window.confirm(`Suspend ${org.name}? Its members lose access to its courses until it is reactivated.`))
-                void act.run(() => platformActions.setStatus(org.id, 'suspended'), `${org.name} is suspended.`)
+            onClick={async () => {
+              const ok = await confirm({
+                title: `Suspend ${org.name}?`,
+                message: 'Its members lose access to its courses until it is reactivated. Their records are kept.',
+                confirmLabel: 'Suspend organization',
+              })
+              if (ok) void act.run(() => platformActions.setStatus(org.id, 'suspended'), `${org.name} is suspended.`)
             }}
           >
             Suspend organization

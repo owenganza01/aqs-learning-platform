@@ -58,6 +58,47 @@ create function pg_temp.stored(p_bucket text, p_name text) returns void language
   insert into storage.objects (bucket_id, name) values (p_bucket, p_name) on conflict do nothing;
 $$;
 grant execute on function pg_temp.stored(text, text) to authenticated;
+-- 0019 (D39) fixtures, written by the test owner like pg_temp.stored: the publication state a video
+-- lesson needs under D39, for courses whose subject here is not the video review itself (tested in 087).
+-- Organisation-only stored video: a timed caption track confirmed by p_confirmer for the current video.
+create function pg_temp.d39_captions(p_lesson uuid, p_confirmer uuid) returns void language sql security definer as $d39$
+  insert into public.lesson_caption_tracks (lesson_id, course_id, caption_path, language, uploaded_by, confirmed_by,
+                                            confirmed_at, confirmation_note, confirmed_video_path, confirmed_caption_path)
+  select b.lesson_id, b.course_id, p.path, 'en', p_confirmer, p_confirmer, now(), 'Test fixture', b.video_path, p.path
+    from public.lesson_contents b
+    cross join lateral (select b.course_id::text || '/' || b.lesson_id::text || '/captions-' || gen_random_uuid()::text || '.vtt' as path) p
+   where b.lesson_id = p_lesson;
+$d39$;
+grant execute on function pg_temp.d39_captions(uuid, uuid) to authenticated;
+-- Public course: a published master submission (gate 1 and gate 2 passed) attached to the lesson.
+create function pg_temp.d39_youtube(p_lesson uuid, p_youtube text, p_submitter uuid, p_verifier uuid) returns void
+language sql security definer as $d39$
+  insert into public.video_submissions (course_id, lesson_id, version, submitted_by, submitted_at, object_path, content_type,
+    size_bytes, file_name, spoken_language, caption_source, non_sensitive_attested, requirements_confirmed, status,
+    content_reviewer_id, content_decided_at, youtube_id, publication_verifier_id, publication_verified_at,
+    publication_confirmations, is_master)
+  select l.course_id, l.id, 1, p_submitter, now(), l.course_id::text || '/' || l.id::text || '/submission-fixture.mp4',
+         'video/mp4', 1000, 'fixture.mp4', 'en', 'youtube_automatic', true,
+         '{"schema": "aqs.video_requirements.v1", "format_and_size": true, "spoken_language_stated": true,
+           "captions_plan": true, "audio_intelligible": true, "content_matches_lesson": true,
+           "no_third_party_personal_data": true, "rights_cleared": true, "non_sensitive": true,
+           "no_external_advertising": true}'::jsonb,
+         'published', p_verifier, now(), p_youtube, p_verifier, now(),
+         jsonb_build_object('schema', 'aqs.video_publication.v1',
+           'aqs_channel', jsonb_build_object('confirmed', true, 'note', 'fixture'),
+           'visibility_unlisted', jsonb_build_object('confirmed', true, 'note', 'fixture'),
+           'embedding_allowed', jsonb_build_object('confirmed', true, 'note', 'fixture'),
+           'audience_set', jsonb_build_object('confirmed', true, 'note', 'fixture'),
+           'captions_published', jsonb_build_object('confirmed', true, 'note', 'fixture', 'language', 'en'),
+           'non_sensitive', jsonb_build_object('confirmed', true, 'note', 'fixture')), true
+    from public.lessons l where l.id = p_lesson;
+  insert into public.lesson_contents (lesson_id, course_id, body, updated_by, youtube_id, youtube_attested_by)
+  select l.id, l.course_id, '', p_verifier, p_youtube, p_verifier from public.lessons l where l.id = p_lesson
+  on conflict (lesson_id) do update
+    set youtube_id = excluded.youtube_id, youtube_attested_by = excluded.youtube_attested_by,
+        video_path = null, video_content_type = null, video_size_bytes = null, updated_at = now();
+$d39$;
+grant execute on function pg_temp.d39_youtube(uuid, text, uuid, uuid) to authenticated;
 select plan(112);
 
 insert into auth.users (id, email, raw_user_meta_data) values
@@ -172,6 +213,7 @@ select lives_ok($$ select public.set_lesson_body(pg_temp.id('l1'), 'Body of read
   'staff write lesson text');
 -- 0010 fixture: a video lesson needs a video before publication (synthetic object path).
 select pg_temp.stored('course-video', public.set_lesson_video_upload(pg_temp.id('l2'), 'intro.mp4', 'video/mp4', 1000));
+select pg_temp.d39_captions(pg_temp.id('l2'), '00000000-0000-4000-8000-000000000711');   -- 0019 fixture: captions confirmed by an org admin
 select results_eq($$ select title, position from public.course_modules where course_id = pg_temp.id('ca') order by position $$,
   $$ values ('Module 1', 0), ('Module 2', 1) $$, 'modules are appended in order');
 select throws_ok($$ select public.reorder_course_modules(pg_temp.id('ca'), array[pg_temp.id('m2')]) $$,
@@ -341,6 +383,7 @@ select set_config('t.pl3', public.add_lesson(pg_temp.id('pm'), 'Video', 'video')
 select public.set_lesson_body(pg_temp.id('pl1'), 'Preview text');
 select public.set_lesson_body(pg_temp.id('pl2'), 'Members-only text');
 select pg_temp.stored('course-video', public.set_lesson_video_upload(pg_temp.id('pl3'), 'clip.mp4', 'video/mp4', 1000));   -- 0010 fixture (+0018: file present)
+select pg_temp.d39_youtube(pg_temp.id('pl3'), 'dQw4w9WgXcQ', '00000000-0000-4000-8000-000000000713', '00000000-0000-4000-8000-000000000702');   -- 0019 fixture: public video through AQS review
 select throws_ok($$ select public.request_lesson_preview(pg_temp.id('pl3')) $$,
   '22023', null, 'previews are text only (L3)');
 select throws_ok($$ select public.request_lesson_preview(pg_temp.id('l1')) $$,

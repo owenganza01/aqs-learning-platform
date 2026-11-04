@@ -55,17 +55,15 @@ test.describe('public navigation at mobile width', () => {
     await expect(toggle(page)).toBeFocused()
   })
 
-  test('choosing Courses closes the menu and focuses the courses section', async ({ page }) => {
+  test('choosing Courses closes the menu and opens the catalog (CM3-7: no featured section without real courses)', async ({ page }) => {
     await page.goto('/')
     await toggle(page).focus()
     await page.keyboard.press('Enter')
     await mainNav(page).getByRole('link', { name: 'Courses', exact: true }).focus()
     await page.keyboard.press('Enter')
 
-    await expect(page).toHaveURL(/\/#courses$/)
-    await expect(toggle(page)).toHaveAttribute('aria-expanded', 'false')
+    await expect(page).toHaveURL(/\/catalog$/)
     await expect(mainNav(page)).toBeHidden()
-    await expect(page.locator('#courses')).toBeFocused()
   })
 })
 
