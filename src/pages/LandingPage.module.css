@@ -329,6 +329,8 @@
  * arrow keys (when focused) all scroll it. Small padding keeps the focus
  * ring and card borders from being clipped. */
 .track {
+  /* CM3-7: contain visually hidden link text inside the scroll box, so it never widens the page. */
+  position: relative;
   margin: -4px;
   padding: 4px;
   overflow-x: auto;

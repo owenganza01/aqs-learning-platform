@@ -2,7 +2,9 @@ import { expect, test } from '@playwright/test'
 
 // Public landing page: one page built from frame 1 (learner hero, decision D3 Option A).
 // Header navigation for Courses and the mobile menu are covered in public-nav.spec.ts.
-// The hero photo is still a placeholder (decision D3), so the test checks for the placeholder.
+// CM3-7 (owner, 4 November 2026): no invented content. The hero image placeholder, the partner logo
+// strip and the mock featured courses are removed; the design preview has no course data, so the
+// featured section is not rendered and Courses leads to the catalog.
 
 const HERO_HEADING = 'Build the skills that move your career forward.'
 const HERO_LEAD = 'Practical courses, expert instruction, and flexible pathways help you build capability that lasts.'
@@ -14,13 +16,15 @@ test.describe('landing page single-page content', () => {
 
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(HERO_HEADING)
     await expect(page.getByText(HERO_LEAD, { exact: true })).toBeVisible()
-    await expect(page.getByRole('img', { name: 'Hero image placeholder' })).toBeVisible()
+    await expect(page.getByText(/Hero image placeholder|Partner 1|Thumbnail placeholder/)).toHaveCount(0)
+    await expect(page.getByRole('region', { name: /Partner logos/ })).toHaveCount(0)
 
     // One page-level heading, then the three content sections in document order
     await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
     // Limited to <main>: the footer has its own h2 column headings
     const sectionHeadings = await page.getByRole('main').getByRole('heading', { level: 2 }).allTextContents()
-    expect(sectionHeadings).toEqual([COURSES_HEADING, 'From sign-in to completion.', 'Support at every step.'])
+    // No featured section without real published courses (CM3-7)
+    expect(sectionHeadings).toEqual(['From sign-in to completion.', 'Support at every step.'])
 
     // Frame 2 copy must not appear on this page
     await expect(page.getByText('Build stronger teams through learning.', { exact: true })).toHaveCount(0)
@@ -79,17 +83,13 @@ test.describe('landing page header and hero navigation', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(HERO_HEADING)
   })
 
-  test('Browse courses scrolls to the featured courses and focuses them', async ({ page }) => {
+  test('Browse courses goes to the catalog when there are no featured courses (CM3-7)', async ({ page }) => {
     await page.goto('/')
 
     await page.getByRole('link', { name: 'Browse courses' }).click()
 
-    await expect(page).toHaveURL(/\/#courses$/)
-    await expect(page.locator('#courses')).toBeFocused()
-    await expect(page.getByRole('heading', { level: 2, name: COURSES_HEADING })).toBeVisible()
-    const courses = page.getByRole('region', { name: 'Featured courses' }).locator('article')
-    await expect(courses).toHaveCount(6)
-    await expect(courses.first().getByRole('heading', { level: 4 })).toHaveText('Strategic leadership')
+    await expect(page).toHaveURL(/\/catalog$/)
+    await expect(page.getByRole('heading', { level: 2, name: COURSES_HEADING })).toHaveCount(0)
   })
 
   test('Sign in and Get started are unavailable, not links or working buttons', async ({ page }) => {

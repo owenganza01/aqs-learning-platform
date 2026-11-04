@@ -6,6 +6,8 @@ import { Badge, ButtonLink, Card, Icon } from '../components/ui'
 import { cx } from '../lib/cx'
 import { publicHeaderNav } from '../lib/public-navigation'
 import styles from './LandingPage.module.css'
+import { featuredCourses, type CourseSummary } from '../live/data/learning'
+import { countOf } from '../lib/plural'
 import { LIVE_MODE } from '../live/mode'
 
 /*
@@ -13,74 +15,13 @@ import { LIVE_MODE } from '../live/mode'
  * `design-reference/new designs/2 Screens/Landing [Ready].png`. Frame 2 ("For
  * organizations") is not a separate page.
  *
- * Everything here is presentation only: no authentication, no API calls.
- * Hero imagery (D3, still open) and partner logos are placeholders.
+ * CM3-7 (G10, G11; owner instruction 4 November 2026): no invented content is presented as real.
+ * The hero image placeholder and the partner logo strip are removed (no owner content yet). The
+ * featured section shows real published public courses (live mode) and is not rendered when there
+ * are none; the Courses links then go to the catalog. `npm run check:build` fails if the old
+ * placeholders or invented courses reach the production build.
  */
 
-// ---------------------------------------------------------------------------
-// MOCK CONTENT — sample courses for the layout only. Not real courses, not
-// live data. Replace with a course service (D11) when public courses exist.
-// ---------------------------------------------------------------------------
-type MockCourse = {
-  id: string
-  title: string
-  description: string
-  level: 'Beginner' | 'Intermediate'
-  duration: string
-  instructor: string
-}
-
-const MOCK_FEATURED_COURSES: MockCourse[] = [
-  {
-    id: 'mock-1',
-    title: 'Strategic leadership',
-    description: 'Build a clear direction, align teams, and make decisions that drive long-term impact.',
-    level: 'Intermediate',
-    duration: '4h 30m',
-    instructor: 'Maya Chen',
-  },
-  {
-    id: 'mock-2',
-    title: 'Agile operations',
-    description: 'Learn how to plan, prioritize, and deliver work with more speed, clarity, and collaboration.',
-    level: 'Beginner',
-    duration: '3h 15m',
-    instructor: 'Daniel Park',
-  },
-  {
-    id: 'mock-3',
-    title: 'Data storytelling',
-    description: 'Turn insights into clear recommendations that stakeholders can act on with confidence.',
-    level: 'Intermediate',
-    duration: '2h 45m',
-    instructor: 'Sofia Alvarez',
-  },
-  {
-    id: 'mock-4',
-    title: 'Coaching for managers',
-    description: 'Help your team grow through better questions, feedback, and everyday conversations.',
-    level: 'Intermediate',
-    duration: '5h 00m',
-    instructor: 'Noah Reed',
-  },
-  {
-    id: 'mock-5',
-    title: 'Project planning',
-    description: 'Define scope, set realistic timelines, and keep cross-functional work on track.',
-    level: 'Beginner',
-    duration: '3h 00m',
-    instructor: 'Priya Shah',
-  },
-  {
-    id: 'mock-6',
-    title: 'Stakeholder engagement',
-    description: 'Map audiences, craft a clear message, and build support for your most important initiatives.',
-    level: 'Intermediate',
-    duration: '4h 15m',
-    instructor: 'Elena Brooks',
-  },
-]
-// --------------------------------------------------------------------------- end mock content
 
 const HERO_COPY = {
   heading: 'Build the skills that move your career forward.',
@@ -106,19 +47,32 @@ const SUPPORT_FEATURES: Array<{ title: string; text: string; comingLater?: boole
   { title: 'Messaging with instructors', text: 'Messaging with instructors is coming in a later release.', comingLater: true },
 ]
 
-/** Partner logos are not confirmed. These are labelled placeholders, not endorsements. */
-const PARTNER_PLACEHOLDERS = ['Partner 1', 'Partner 2', 'Partner 3']
 
 /*
  * Header links point at sections of this page, because /courses and /for-organizations are not
  * built yet. About and Contact come from the shared public navigation (lib/public-navigation.ts).
  */
-const LANDING_NAV: NavItem[] = publicHeaderNav({ courses: '#courses', organizations: '#for-organizations' })
+const navFor = (hasFeatured: boolean): NavItem[] =>
+  publicHeaderNav({ courses: hasFeatured ? '#courses' : '/catalog', organizations: '#for-organizations' })
 
 const THUMBNAIL_TINTS = [styles.tintBlue, styles.tintOrange, styles.tintBlueStrong]
 
 export function LandingPage() {
   const location = useLocation()
+  // Real published public courses (live mode only; the design preview has no data).
+  const [featured, setFeatured] = useState<CourseSummary[]>([])
+  useEffect(() => {
+    if (!LIVE_MODE) return
+    let current = true
+    featuredCourses().then(
+      (rows) => current && setFeatured(rows),
+      () => current && setFeatured([]),
+    )
+    return () => {
+      current = false
+    }
+  }, [])
+  const hasFeatured = featured.length > 0
 
   // React Router does not scroll to #anchors by itself, so do it here and move
   // keyboard focus to the section so the next Tab continues from there.
@@ -128,12 +82,12 @@ export function LandingPage() {
     if (!target) return
     target.scrollIntoView({ block: 'start' })
     target.focus({ preventScroll: true })
-  }, [location.key, location.hash])
+  }, [location.key, location.hash, hasFeatured])
 
   const heroHeadingId = useId()
 
   return (
-    <PublicLayout navItems={LANDING_NAV}>
+    <PublicLayout navItems={navFor(hasFeatured)}>
       {/* ---------------------------------------------------------------- Hero */}
       <section className={styles.hero} id="for-organizations" tabIndex={-1} aria-labelledby={heroHeadingId}>
         <div className={styles.heroDecor} aria-hidden="true">
@@ -167,51 +121,28 @@ export function LandingPage() {
                   Continue with Google
                 </ButtonLink>
               ) : null}
-              <ButtonLink to={LIVE_MODE ? '/catalog' : '#courses'} iconEnd="arrowRight">
+              <ButtonLink to={LIVE_MODE || !hasFeatured ? '/catalog' : '#courses'} iconEnd="arrowRight">
                 Browse courses
               </ButtonLink>
             </div>
           </div>
 
-          <div className={styles.heroMedia}>
-            <span className={styles.heroShape} aria-hidden="true" />
-            <div className={styles.heroImage} role="img" aria-label="Hero image placeholder">
-              <span className={styles.placeholderText} aria-hidden="true">
-                Hero image placeholder
-                <br />
-                (pending asset decision D3)
-              </span>
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* ------------------------------------------------------------ Partners */}
-      <section className={styles.partners} aria-label="Partner logos (placeholders, no partners confirmed)">
-        <ul className={cx(styles.container, styles.partnerList)}>
-          {PARTNER_PLACEHOLDERS.map((name) => (
-            <li key={name} className={styles.partner}>
-              {name}
-              <span className="visually-hidden"> (placeholder)</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       {/* ---------------------------------------------------- Featured courses */}
+      {hasFeatured ? (
       <section className={styles.section} id="courses" tabIndex={-1} aria-labelledby="courses-heading">
         <div className={styles.container}>
           <p className="eyebrow">Featured courses</p>
           <h2 className={cx('text-h2', styles.sectionHeading, styles.coursesHeading)} id="courses-heading">
             {HERO_COPY.coursesHeading}
           </h2>
-          <p className={cx('text-lead', styles.sectionLead)}>
-            From leadership to operations, every course is designed to be practical, flexible, and easy to apply.
-          </p>
 
-          <CourseCarousel courses={MOCK_FEATURED_COURSES} />
+          <CourseCarousel courses={featured} />
         </div>
       </section>
+      ) : null}
 
       {/* --------------------------------------------------------------- Steps */}
       <section className={cx(styles.section, styles.sectionMuted)} aria-labelledby="steps-heading">
@@ -295,7 +226,7 @@ function HeroNetwork() {
 }
 
 /** Single-row carousel: native horizontal scrolling plus previous/next buttons. */
-function CourseCarousel({ courses }: { courses: MockCourse[] }) {
+function CourseCarousel({ courses }: { courses: CourseSummary[] }) {
   const trackRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
   const [canPrev, setCanPrev] = useState(false)
@@ -336,7 +267,7 @@ function CourseCarousel({ courses }: { courses: MockCourse[] }) {
           <h3 className={styles.carouselTitle} id={labelId}>
             Featured courses
           </h3>
-          <p className={styles.carouselMeta}>Explore {courses.length} practical courses</p>
+          <p className={styles.carouselMeta}>{countOf(courses.length, 'published course')}</p>
         </div>
         <div className={styles.carouselControls}>
           <button
@@ -371,17 +302,16 @@ function CourseCarousel({ courses }: { courses: MockCourse[] }) {
         {courses.map((course, index) => (
           <li key={course.id} className={styles.courseItem}>
             <article className={styles.courseCard}>
-              <div className={cx(styles.thumbnail, THUMBNAIL_TINTS[index % THUMBNAIL_TINTS.length])}>
-                Thumbnail placeholder
-              </div>
+              <div className={cx(styles.thumbnail, THUMBNAIL_TINTS[index % THUMBNAIL_TINTS.length])} aria-hidden="true" />
               <div className={styles.courseBody}>
                 <h4 className={styles.courseTitle}>{course.title}</h4>
-                <p className={styles.courseDescription}>{course.description}</p>
+                {course.summary ? <p className={styles.courseDescription}>{course.summary}</p> : null}
                 <div className={styles.courseMeta}>
-                  <Badge tone={course.level === 'Beginner' ? 'warning' : 'info'}>{course.level}</Badge>
-                  <span className={styles.duration}>{course.duration}</span>
+                  <span className={styles.duration}>{countOf(course.lessonCount, 'lesson')}</span>
                 </div>
-                <p className={styles.instructor}>Instructor: {course.instructor}</p>
+                <ButtonLink to={`/courses/${course.id}`} variant="secondary" size="sm">
+                  View course<span className="visually-hidden"> {course.title}</span>
+                </ButtonLink>
               </div>
             </article>
           </li>
