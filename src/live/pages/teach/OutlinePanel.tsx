@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Card, CardHeader, Icon, Select, TextField } from '../../../components/ui'
+import { Button, Card, CardHeader, Icon, Select, TextField, useConfirm } from '../../../components/ui'
 import { countOf } from '../../../lib/plural'
 import base from '../../../pages/InstructorCoursePage.module.css'
 import { ActionFeedback } from '../../components/States'
@@ -39,6 +39,8 @@ export function OutlinePanel({
   const [adding, setAdding] = useState<string | null>(null)
   const [lessonTitle, setLessonTitle] = useState('')
   const [lessonType, setLessonType] = useState<LessonType>('reading')
+  // CM3-1 (G16): one accessible confirmation instead of window.confirm.
+  const { confirm, dialog } = useConfirm()
   const run = useAction(async (work: () => Promise<unknown>) => {
     await work()
     onChanged()
@@ -47,6 +49,7 @@ export function OutlinePanel({
 
   return (
     <Card as="section" padding="md" aria-label="Course modules" className={base.outline}>
+      {dialog}
       <CardHeader
         title="Modules"
         subtitle={editable ? 'Use the arrows to reorder modules and lessons.' : 'The outline is locked while the course is not an editable draft.'}
@@ -98,8 +101,13 @@ export function OutlinePanel({
                     type="button"
                     className={styles.iconButton}
                     disabled={run.busy}
-                    onClick={() => {
-                      if (window.confirm(`Delete the module "${module.title}" and its lessons?`)) void run.run(() => authoring.deleteModule(module.id))
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: `Delete the module “${module.title}”?`,
+                        message: 'Its lessons are deleted with it. This cannot be undone.',
+                        confirmLabel: 'Delete module',
+                      })
+                      if (ok) void run.run(() => authoring.deleteModule(module.id))
                     }}
                   >
                     <Icon name="close" size={16} label={`Delete ${module.title}`} />

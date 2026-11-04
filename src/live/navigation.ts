@@ -32,5 +32,9 @@ export function orgAdminShell(orgSlug: string, orgName: string): ShellDefinition
 }
 
 export function platformShell(): ShellDefinition {
-  return off(getPlatformAdminShell(), ['Settings'])
+  const shell = off(getPlatformAdminShell(), ['Settings'])
+  // CM2-3 (D39): the video review queue, after Courses. Not in the approved shell: a proposal.
+  const at = shell.navItems.findIndex((item) => item.label === 'Courses') + 1
+  const navItems = [...shell.navItems.slice(0, at), { label: 'Video reviews', to: '/admin/video-reviews' }, ...shell.navItems.slice(at)]
+  return { ...shell, navItems }
 }
