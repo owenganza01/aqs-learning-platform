@@ -1,0 +1,85 @@
+AQS final draft revision — evidence run — 2026-10-26T09:11:02Z
+Environment: Claude cloud workspace; PostgreSQL 16.15 (SIMULATED: scripts/db-sandbox shim, not Supabase); pgTAP via pg_prove.
+Each run creates a new cluster in a new temp folder (Unix socket only, no TCP) and deletes it afterwards.
+
+### R1 baseline: 0001-0005 + supabase/tests/database/* (unchanged files)
+$ scripts/db-sandbox/run.sh 
+sandbox cluster: /tmp/aqs-db-sandbox.Rq8zDQ/data (socket only, no TCP); server postgres (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
+/home/claude/be/supabase/tests/database/000_foundation.test.sql ................. ok
+/home/claude/be/supabase/tests/database/010_profiles_platform_admins.test.sql ... 
+/home/claude/be/supabase/tests/database/020_organizations_memberships.test.sql .. ok
+/home/claude/be/supabase/tests/database/030_invitations.test.sql ................ ok
+/home/claude/be/supabase/tests/database/900_api_exposure.test.sql ............... ok
+Files=5, Tests=298,  2 wallclock secs ( 0.06 usr  0.02 sys +  0.15 cusr  0.05 csys =  0.28 CPU)
+Result: PASS
+
+### R2 stage 0005a+0005b (T4, P12) with the P12 copies
+$ scripts/db-sandbox/run.sh --draft T4/T4_graphql_off.DRAFT.sql --draft P12/P12_activation_requires_org_admin.DRAFT.sql --test 000_foundation.test.sql --test 010_profiles_platform_admins.test.sql --test P12/tests/020_organizations_memberships.test.sql --test P12/tests/030_invitations.test.sql --test P12/tests/045_p12_activation.test.sql --test 900_api_exposure.test.sql --test T4/tests/905_graphql_off.test.sql
+sandbox cluster: /tmp/aqs-db-sandbox.UlxHZZ/data (socket only, no TCP); server postgres (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
+supabase/tests/database/000_foundation.test.sql ......................... ok
+supabase/tests/database/010_profiles_platform_admins.test.sql ........... 
+docs/review-artifacts/P12/tests/020_organizations_memberships.test.sql .. ok
+docs/review-artifacts/P12/tests/030_invitations.test.sql ................ ok
+docs/review-artifacts/P12/tests/045_p12_activation.test.sql ............. ok
+supabase/tests/database/900_api_exposure.test.sql ....................... ok
+docs/review-artifacts/T4/tests/905_graphql_off.test.sql ................. ok
+Files=7, Tests=307,  2 wallclock secs ( 0.10 usr  0.01 sys +  0.21 cusr  0.06 csys =  0.38 CPU)
+Result: PASS
+
+### R3 stage through 0006
+$ scripts/db-sandbox/run.sh --draft T4/T4_graphql_off.DRAFT.sql --draft P12/P12_activation_requires_org_admin.DRAFT.sql --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --test 000_foundation.test.sql --test 010_profiles_platform_admins.test.sql --test 0006/tests/020_organizations_memberships.test.sql --test 0006/tests/030_invitations.test.sql --test 0006/tests/035_verified_google_identity.test.sql --test 0006/tests/040_invitation_visibility.test.sql --test 0006/tests/042_member_visibility.test.sql --test P12/tests/045_p12_activation.test.sql --test 0006/tests/900_api_exposure.test.sql
+sandbox cluster: /tmp/aqs-db-sandbox.bmjNaV/data (socket only, no TCP); server postgres (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
+supabase/tests/database/000_foundation.test.sql .......................... ok
+supabase/tests/database/010_profiles_platform_admins.test.sql ............ 
+docs/review-artifacts/0006/tests/020_organizations_memberships.test.sql .. ok
+docs/review-artifacts/0006/tests/030_invitations.test.sql ................ ok
+docs/review-artifacts/0006/tests/035_verified_google_identity.test.sql ... ok
+docs/review-artifacts/0006/tests/040_invitation_visibility.test.sql ...... ok
+docs/review-artifacts/0006/tests/042_member_visibility.test.sql .......... ok
+docs/review-artifacts/P12/tests/045_p12_activation.test.sql .............. ok
+docs/review-artifacts/0006/tests/900_api_exposure.test.sql ............... ok
+Files=9, Tests=400,  3 wallclock secs ( 0.09 usr  0.02 sys +  0.31 cusr  0.10 csys =  0.52 CPU)
+Result: PASS
+
+### R4 stage through 0007 (0007 cumulative 900)
+$ scripts/db-sandbox/run.sh --draft T4/T4_graphql_off.DRAFT.sql --draft P12/P12_activation_requires_org_admin.DRAFT.sql --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft 0007/0007_courses.DRAFT.sql --test 0007/tests/050_courses.test.sql --test 0007/tests/900_api_exposure.test.sql
+sandbox cluster: /tmp/aqs-db-sandbox.tqtkQI/data (socket only, no TCP); server postgres (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
+docs/review-artifacts/0007/tests/050_courses.test.sql ....... ok
+docs/review-artifacts/0007/tests/900_api_exposure.test.sql .. ok
+Files=2, Tests=122,  0 wallclock secs ( 0.04 usr  0.01 sys +  0.07 cusr  0.02 csys =  0.14 CPU)
+Result: PASS
+
+### R5 full proposed chain 0005a, 0005b, 0006, 0007, 0008 with every final copy
+$ scripts/db-sandbox/run.sh --draft T4/T4_graphql_off.DRAFT.sql --draft P12/P12_activation_requires_org_admin.DRAFT.sql --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft 0007/0007_courses.DRAFT.sql --draft 0008/0008_enrolment_progress.DRAFT.sql --test 000_foundation.test.sql --test 010_profiles_platform_admins.test.sql --test 0006/tests/020_organizations_memberships.test.sql --test 0006/tests/030_invitations.test.sql --test 0006/tests/035_verified_google_identity.test.sql --test 0006/tests/040_invitation_visibility.test.sql --test 0006/tests/042_member_visibility.test.sql --test P12/tests/045_p12_activation.test.sql --test 0007/tests/050_courses.test.sql --test 0008/tests/060_enrolment_progress.test.sql --test 0008/tests/900_api_exposure.test.sql --test T4/tests/905_graphql_off.test.sql
+sandbox cluster: /tmp/aqs-db-sandbox.Qt0d8I/data (socket only, no TCP); server postgres (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
+supabase/tests/database/000_foundation.test.sql .......................... ok
+supabase/tests/database/010_profiles_platform_admins.test.sql ............ 
+docs/review-artifacts/0006/tests/020_organizations_memberships.test.sql .. ok
+docs/review-artifacts/0006/tests/030_invitations.test.sql ................ ok
+docs/review-artifacts/0006/tests/035_verified_google_identity.test.sql ... ok
+docs/review-artifacts/0006/tests/040_invitation_visibility.test.sql ...... ok
+docs/review-artifacts/0006/tests/042_member_visibility.test.sql .......... ok
+docs/review-artifacts/P12/tests/045_p12_activation.test.sql .............. ok
+docs/review-artifacts/0007/tests/050_courses.test.sql .................... ok
+docs/review-artifacts/0008/tests/060_enrolment_progress.test.sql ......... ok
+docs/review-artifacts/0008/tests/900_api_exposure.test.sql ............... ok
+docs/review-artifacts/T4/tests/905_graphql_off.test.sql .................. ok
+Files=12, Tests=587,  4 wallclock secs ( 0.12 usr  0.03 sys +  0.38 cusr  0.11 csys =  0.64 CPU)
+Result: PASS
+
+### F1-F12 deliberate faults on the full chain (each MUST fail the named tests)
+F1 0004 invitation rule restored: docs/review-artifacts/0006/tests/040_invitation_visibility.test.sql   Failed tests: 5-8, 10, 37
+F2 proposer approves own course: docs/review-artifacts/0007/tests/050_courses.test.sql   Failed tests: 59-60, 87-88, 90, 99, 102, 104, 112
+F3 P11 dropped from signed-out rule: docs/review-artifacts/0007/tests/050_courses.test.sql   Failed tests: 94-95, 101
+F4 Platform Admins read org lesson text: docs/review-artifacts/0007/tests/050_courses.test.sql   Failed tests: 57-58
+F5 P11 dropped from self enrolments: docs/review-artifacts/0008/tests/060_enrolment_progress.test.sql   Failed tests: 63-64, 66
+F6 membership check dropped from assignments: docs/review-artifacts/0008/tests/060_enrolment_progress.test.sql   Failed tests: 60-61
+F7 org admins see all learners: docs/review-artifacts/0008/tests/060_enrolment_progress.test.sql   Failed test: 45
+F8 completion in archived courses: docs/review-artifacts/0008/tests/060_enrolment_progress.test.sql   Failed test: 57
+F9 pre-fix preview approval (X-1): docs/review-artifacts/0007/tests/050_courses.test.sql   Failed tests: 82-83
+F10 Platform Admins read all memberships: docs/review-artifacts/0006/tests/042_member_visibility.test.sql   Failed test: 6 docs/review-artifacts/0006/tests/020_organizations_memberships.test.sql   Failed test: 21
+F11 P7 lists inactive members: docs/review-artifacts/0006/tests/042_member_visibility.test.sql   Failed test: 16
+F12 service_role read restored: docs/review-artifacts/0007/tests/050_courses.test.sql   Failed test: 4 docs/review-artifacts/0008/tests/060_enrolment_progress.test.sql   Failed test: 3
+
+### Probe: the course's proposer approving a colleague's preview (X-1), on 0006+0007+0008
+psql:/tmp/probe/p2.sql:27: ERROR:  AQS: the person who proposed the course cannot approve its previews (P2)

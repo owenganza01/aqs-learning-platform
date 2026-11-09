@@ -1,0 +1,173 @@
+AQS backend evidence run — 2026-10-26T08:39:07Z — PostgreSQL 16.15 sandbox, pgTAP via pg_prove
+Each run: brand-new cluster in a new temp folder, Unix socket only (no TCP), deleted afterwards.
+
+### S1 baseline: 0001-0005 + supabase/tests/database/*
+$ scripts/db-sandbox/run.sh 
+/home/claude/be/supabase/tests/database/000_foundation.test.sql ................. ok
+/home/claude/be/supabase/tests/database/010_profiles_platform_admins.test.sql ... 
+/home/claude/be/supabase/tests/database/020_organizations_memberships.test.sql .. ok
+/home/claude/be/supabase/tests/database/030_invitations.test.sql ................ ok
+/home/claude/be/supabase/tests/database/900_api_exposure.test.sql ............... ok
+Files=5, Tests=298,  2 wallclock secs ( 0.08 usr  0.01 sys +  0.14 cusr  0.05 csys =  0.28 CPU)
+Result: PASS
+
+### S2 drafts 0006+0007+0008 with draft test copies
+$ scripts/db-sandbox/run.sh --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft 0007/0007_courses.DRAFT.sql --draft 0008/0008_enrolment_progress.DRAFT.sql --test 000_foundation.test.sql --test 010_profiles_platform_admins.test.sql --test 020_organizations_memberships.test.sql --test 0006/tests/030_invitations.test.sql --test 0006/tests/035_verified_google_identity.test.sql --test 0006/tests/040_invitation_visibility.test.sql --test 0007/tests/050_courses.test.sql --test 0008/tests/060_enrolment_progress.test.sql --test 0008/tests/900_api_exposure.test.sql
+supabase/tests/database/000_foundation.test.sql ......................... ok
+supabase/tests/database/010_profiles_platform_admins.test.sql ........... 
+supabase/tests/database/020_organizations_memberships.test.sql .......... ok
+docs/review-artifacts/0006/tests/030_invitations.test.sql ............... ok
+docs/review-artifacts/0006/tests/035_verified_google_identity.test.sql .. ok
+docs/review-artifacts/0006/tests/040_invitation_visibility.test.sql ..... ok
+docs/review-artifacts/0007/tests/050_courses.test.sql ................... ok
+docs/review-artifacts/0008/tests/060_enrolment_progress.test.sql ........ ok
+docs/review-artifacts/0008/tests/900_api_exposure.test.sql .............. ok
+Files=9, Tests=545,  3 wallclock secs ( 0.09 usr  0.03 sys +  0.26 cusr  0.10 csys =  0.48 CPU)
+Result: PASS
+
+### S3 drafts 0006+0007 only, with the 0007 cumulative 900 copy
+$ scripts/db-sandbox/run.sh --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft 0007/0007_courses.DRAFT.sql --test 0007/tests/050_courses.test.sql --test 0007/tests/900_api_exposure.test.sql
+docs/review-artifacts/0007/tests/050_courses.test.sql ....... ok
+docs/review-artifacts/0007/tests/900_api_exposure.test.sql .. ok
+Files=2, Tests=115,  1 wallclock secs ( 0.03 usr  0.00 sys +  0.07 cusr  0.01 csys =  0.11 CPU)
+Result: PASS
+
+### S4 draft 0006 only, with the 0006 copies
+$ scripts/db-sandbox/run.sh --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --test 0006/tests/030_invitations.test.sql --test 0006/tests/035_verified_google_identity.test.sql --test 0006/tests/040_invitation_visibility.test.sql --test 0006/tests/900_api_exposure.test.sql
+docs/review-artifacts/0006/tests/030_invitations.test.sql ............... ok
+docs/review-artifacts/0006/tests/035_verified_google_identity.test.sql .. ok
+docs/review-artifacts/0006/tests/040_invitation_visibility.test.sql ..... ok
+docs/review-artifacts/0006/tests/900_api_exposure.test.sql .............. ok
+Files=4, Tests=168,  0 wallclock secs ( 0.05 usr  0.01 sys +  0.12 cusr  0.03 csys =  0.21 CPU)
+Result: PASS
+
+### S5 P12 draft on 0006 (its own test) — and the existing 020 test, expected to FAIL (fixture impact)
+$ scripts/db-sandbox/run.sh --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft P12/P12_activation_requires_org_admin.DRAFT.sql --test P12/tests/045_p12_activation.test.sql --test 020_organizations_memberships.test.sql
+docs/review-artifacts/P12/tests/045_p12_activation.test.sql ..... ok
+supabase/tests/database/020_organizations_memberships.test.sql .. 
+# Failed test 16: "PA can activate an organization"
+Files=2, Tests=23,  1 wallclock secs ( 0.03 usr  0.00 sys +  0.05 cusr  0.02 csys =  0.10 CPU)
+Result: FAIL
+
+### S6 T4 draft (trivial in sandbox: pg_graphql never installed)
+$ scripts/db-sandbox/run.sh --draft T4/T4_graphql_off.DRAFT.sql --test T4/tests/905_graphql_off.test.sql
+docs/review-artifacts/T4/tests/905_graphql_off.test.sql .. ok
+Files=1, Tests=2,  0 wallclock secs ( 0.03 usr  0.00 sys +  0.03 cusr  0.00 csys =  0.06 CPU)
+Result: PASS
+
+### S7 unchanged 0004-era tests against draft 0006 (expected to FAIL: no Google identities in fixtures)
+$ scripts/db-sandbox/run.sh --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --test 030_invitations.test.sql
+supabase/tests/database/030_invitations.test.sql .. 
+# Failed test 34: "a Platform Admin sees all invitations (A: 7, B: 2, D: 2)"
+# Failed test 35: "the invitee can preview their invitation (email matches despite different capitalisation)"
+#     Results differ beginning at row 1:
+# Failed test 41: "the failed attempt left the invitation open (the invitee still previews it, so it is still pending)"
+#     Results differ beginning at row 1:
+# Failed test 42: "the invitee accepts their invitation"
+# Failed test 43: "acceptance creates an active membership with exactly the invited role"
+#     Results differ beginning at row 1:
+# Failed test 44: "the new learner has access to the active organization"
+# Failed test 45: "an accepted invitation cannot be used again"
+# Failed test 47: "an existing member accepts an invitation for an extra role"
+# Failed test 49: "the existing member now holds both roles"
+# Failed test 50: "a removed member can rejoin through a new invitation"
+# Failed test 51: "the rejoined member holds only the invited role; the old instructor role is gone (C2)"
+#     Results differ beginning at row 1:
+# Failed test 52: "a suspended member cannot use an invitation to lift their suspension (C2)"
+# Failed test 54: "a learner can accept an invitation to a draft organization"
+# Failed test 56: "an instructor can accept an invitation to a draft organization"
+# Failed test 57: "the instructor works in the draft organization (C1, F4)"
+# Failed test 58: "an invited org admin accepts"
+# Failed test 59: "the new org admin holds org_admin in B"
+# Failed test 64: "an accepted invitation cannot be revoked"
+# Failed test 66: "the old, revoked link no longer works"
+# Failed test 67: "the reissued link works"
+# Failed test 69: "an expired invitation cannot be accepted"
+# Failed test 86: "invitation creation, revocation, acceptance and reactivation are audited"
+# Failed test 87: "the audit records which old roles were cleared on rejoining (C2)"
+#     Results differ beginning at row 1:
+# Looks like you failed 23 tests of 88
+Files=1, Tests=88,  1 wallclock secs ( 0.03 usr  0.00 sys +  0.02 cusr  0.01 csys =  0.06 CPU)
+Result: FAIL
+
+### F1-F8 deliberate faults (each MUST fail the named tests)
+F1 0004 broad invitation policy restored
+$ scripts/db-sandbox/run.sh --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft /tmp/revert_policy.sql --test 0006/tests/040_invitation_visibility.test.sql
+docs/review-artifacts/0006/tests/040_invitation_visibility.test.sql .. 
+# Failed test 5: "PA1 reads another PA's pending org_admin invitation and the invitations PA1 sent (any status), nothing else"
+# Failed test 6: "PA1 cannot read another PA's revoked org_admin invitation"
+# Failed test 7: "PA1 cannot read an org admin's learner invitation"
+# Failed test 8: "PA1 cannot read another PA's learner invitations"
+# Failed test 10: "PA2 reads i1 (pending org_admin, own) and i2 (own, revoked) outside C"
+# Failed test 36: "the revoked invitation is still not routinely readable by PA1"
+# Looks like you failed 6 tests of 43
+Files=1, Tests=43,  1 wallclock secs ( 0.03 usr  0.00 sys +  0.02 cusr  0.01 csys =  0.06 CPU)
+Result: FAIL
+
+F2 proposer may approve own course
+$ scripts/db-sandbox/run.sh --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft 0007/0007_courses.DRAFT.sql --draft /tmp/mut/m1.sql --test 0007/tests/050_courses.test.sql
+docs/review-artifacts/0007/tests/050_courses.test.sql .. 
+# Failed test 58: "nobody approves a course they proposed (P22)"
+# Failed test 59: "another org admin of the organization approves it (P22)"
+# Failed test 95: "a Platform Admin cannot approve the platform course they proposed (P1)"
+# Failed test 97: "a second Platform Admin approves it (P1)"
+# Failed test 105: "course actions are audited with the course ID"
+#     Results differ beginning at row 4:
+# Looks like you failed 5 tests of 105
+Files=1, Tests=105,  1 wallclock secs ( 0.04 usr  0.00 sys +  0.03 cusr  0.01 csys =  0.08 CPU)
+Result: FAIL
+
+F3 P11 removed from signed-out course rule
+$ scripts/db-sandbox/run.sh --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft 0007/0007_courses.DRAFT.sql --draft /tmp/mut/m2.sql --test 0007/tests/050_courses.test.sql
+docs/review-artifacts/0007/tests/050_courses.test.sql .. 
+# Failed test 87: "P11: anon sees none of a suspended organization's public courses"
+# Failed test 88: "P11: its previews are hidden too"
+# Failed test 94: "a published public course of a draft organization is not listed (Q-07-7)"
+# Looks like you failed 3 tests of 105
+Files=1, Tests=105,  1 wallclock secs ( 0.04 usr  0.00 sys +  0.02 cusr  0.02 csys =  0.08 CPU)
+Result: FAIL
+
+F4 Platform Admins read organization lesson text
+$ scripts/db-sandbox/run.sh --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft 0007/0007_courses.DRAFT.sql --draft /tmp/mut/m3.sql --test 0007/tests/050_courses.test.sql
+docs/review-artifacts/0007/tests/050_courses.test.sql .. 
+# Failed test 56: "a Platform Admin cannot read its lesson text (L11 P3, Q-07-2)"
+# Failed test 57: "a Platform Admin cannot read its file records (L11 P3, Q-07-2)"
+# Looks like you failed 2 tests of 105
+Files=1, Tests=105,  0 wallclock secs ( 0.05 usr  0.00 sys +  0.04 cusr  0.01 csys =  0.10 CPU)
+Result: FAIL
+
+F5 P11 removed from self enrolments
+$ scripts/db-sandbox/run.sh --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft 0007/0007_courses.DRAFT.sql --draft 0008/0008_enrolment_progress.DRAFT.sql --draft /tmp/mut/m4.sql --test 0008/tests/060_enrolment_progress.test.sql
+docs/review-artifacts/0008/tests/060_enrolment_progress.test.sql .. 
+# Failed test 62: "P11: a public learner cannot read a suspended organization's course text"
+# Failed test 63: "P11: nor its course record or outline (Q-08-1)"
+# Failed test 65: "P11: no lesson completions while the organization is suspended"
+# Looks like you failed 3 tests of 72
+Files=1, Tests=72,  0 wallclock secs ( 0.04 usr  0.02 sys +  0.03 cusr  0.01 csys =  0.10 CPU)
+Result: FAIL
+
+F6 membership check removed from assigned enrolments
+$ scripts/db-sandbox/run.sh --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft 0007/0007_courses.DRAFT.sql --draft 0008/0008_enrolment_progress.DRAFT.sql --draft /tmp/mut/m5.sql --test 0008/tests/060_enrolment_progress.test.sql
+docs/review-artifacts/0008/tests/060_enrolment_progress.test.sql .. 
+# Failed test 59: "a removed member loses the text of courses they were assigned, public ones included (F5, Q-08-3)"
+# Failed test 60: "a removed member cannot complete lessons"
+# Looks like you failed 2 tests of 72
+Files=1, Tests=72,  1 wallclock secs ( 0.04 usr  0.01 sys +  0.01 cusr  0.02 csys =  0.08 CPU)
+Result: FAIL
+
+F7 org admins see all learners
+$ scripts/db-sandbox/run.sh --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft 0007/0007_courses.DRAFT.sql --draft 0008/0008_enrolment_progress.DRAFT.sql --draft /tmp/mut/m6.sql --test 0008/tests/060_enrolment_progress.test.sql
+docs/review-artifacts/0008/tests/060_enrolment_progress.test.sql .. 
+# Failed test 44: "an org admin who is not staff sees members only, never public learners (G1)"
+# Looks like you failed 1 test of 72
+Files=1, Tests=72,  0 wallclock secs ( 0.04 usr  0.00 sys +  0.02 cusr  0.01 csys =  0.07 CPU)
+Result: FAIL
+
+F8 completion allowed in archived courses
+$ scripts/db-sandbox/run.sh --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft 0007/0007_courses.DRAFT.sql --draft 0008/0008_enrolment_progress.DRAFT.sql --draft /tmp/mut/m7.sql --test 0008/tests/060_enrolment_progress.test.sql
+docs/review-artifacts/0008/tests/060_enrolment_progress.test.sql .. 
+# Failed test 56: "no lesson can be completed in an archived course (L13)"
+# Looks like you failed 1 test of 72
+Files=1, Tests=72,  1 wallclock secs ( 0.03 usr  0.00 sys +  0.02 cusr  0.01 csys =  0.06 CPU)
+Result: FAIL
+

@@ -1,0 +1,91 @@
+.header {
+  margin-bottom: var(--space-24);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.intro {
+  margin: var(--space-8) 0 0;
+  color: var(--color-text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  height: 100%;
+}
+
+.category {
+  margin: 0;
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  color: var(--color-text-subtle);
+}
+
+.courseTitle {
+  margin: 0;
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.meta {
+  margin: 0;
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--color-text-muted);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.action {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+/* I7 title search (live catalog). */
+.search {
+  display: grid;
+  gap: var(--space-8);
+  max-width: 480px;
+  margin-bottom: var(--space-24);
+}
+
+.searchCount {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}

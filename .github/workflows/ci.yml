@@ -1,0 +1,60 @@
+# Continuous integration for the AQS Learning Platform. Runs on every push and pull request.
+# No secrets are used: database tests run in a throwaway PostgreSQL cluster (scripts/db-sandbox),
+# and live-mode UI tests run against a mocked Supabase API. Nothing here deploys anything.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Lint, build and unit tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run test:functions
+
+  database:
+    name: Database tests (simulated PostgreSQL, not Supabase)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL 16 and pgTAP
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-16 postgresql-16-pgtap libtap-parser-sourcehandler-pgtap-perl
+      - name: Run migrations and pgTAP tests in a throwaway cluster
+        env:
+          PGBIN: /usr/lib/postgresql/16/bin
+        run: bash scripts/db-sandbox/run.sh
+
+  e2e:
+    name: Browser tests (design previews and live mode with a mocked API)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: npm run test:e2e:live
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: test-results
+          retention-days: 7

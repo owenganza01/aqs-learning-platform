@@ -1,0 +1,166 @@
+Pager usage is off.
+== A. functions in public/private/authz: definer?, search_path pinned?, who may execute
+                                          fn                                          | definer | sp_empty | anon_x | auth_x | svc_x 
+--------------------------------------------------------------------------------------+---------+----------+--------+--------+-------
+ authz.can_view_course(uuid)                                                          | t       | t        | f      | t      | f
+ authz.can_view_course_content(uuid)                                                  | t       | t        | f      | t      | f
+ authz.can_view_learner_record(uuid, uuid)                                            | t       | t        | f      | t      | f
+ authz.has_org_role(uuid, org_role[])                                                 | t       | t        | f      | t      | f
+ authz.is_course_org_admin(uuid)                                                      | t       | t        | f      | t      | f
+ authz.is_course_staff(uuid)                                                          | t       | t        | f      | t      | f
+ authz.is_org_member(uuid)                                                            | t       | t        | f      | t      | f
+ authz.is_platform_admin()                                                            | t       | t        | f      | t      | f
+ private.caller_auth_email()                                                          | f       | t        | f      | f      | f
+ private.caller_enrolment_opens_course(uuid, boolean)                                 | f       | t        | f      | f      | f
+ private.caller_is_course_approver(courses)                                           | f       | t        | f      | f      | f
+ private.caller_verified_google_email()                                               | f       | t        | f      | f      | f
+ private.course_audit(text, courses, jsonb)                                           | f       | t        | f      | f      | f
+ private.course_content_guard()                                                       | f       | t        | f      | f      | f
+ private.course_set_org_flag()                                                        | f       | t        | f      | f      | f
+ private.courses_guard()                                                              | f       | t        | f      | f      | f
+ private.enrollments_guard()                                                          | f       | t        | f      | f      | f
+ private.forbid_change()                                                              | f       | t        | f      | f      | f
+ private.grant_platform_admin(uuid, text, text)                                       | f       | t        | f      | f      | f
+ private.handle_new_auth_user()                                                       | t       | t        | f      | f      | f
+ private.invitations_guard()                                                          | f       | t        | f      | f      | f
+ private.lesson_progress_guard()                                                      | f       | t        | f      | f      | f
+ private.lock_course_for_edit(uuid)                                                   | f       | t        | f      | f      | f
+ private.membership_requires_role()                                                   | f       | t        | f      | f      | f
+ private.memberships_guard()                                                          | f       | t        | f      | f      | f
+ private.org_audit(text, uuid, uuid, jsonb)                                           | f       | t        | f      | f      | f
+ private.organization_status_to_courses()                                             | f       | t        | f      | f      | f
+ private.organizations_guard()                                                        | f       | t        | f      | f      | f
+ private.person_is_active_org_member(uuid, uuid)                                      | f       | t        | f      | f      | f
+ private.person_is_instructor_anywhere(uuid)                                          | f       | t        | f      | f      | f
+ private.person_is_org_admin(uuid, uuid)                                              | f       | t        | f      | f      | f
+ private.person_is_org_learner(uuid, uuid)                                            | f       | t        | f      | f      | f
+ private.person_is_platform_admin(uuid)                                               | f       | t        | f      | f      | f
+ private.person_may_be_course_staff(uuid, uuid)                                       | f       | t        | f      | f      | f
+ private.platform_admins_guard()                                                      | f       | t        | f      | f      | f
+ private.profiles_guard()                                                             | f       | t        | f      | f      | f
+ private.recompute_course_completion(uuid)                                            | f       | t        | f      | f      | f
+ private.require_active_user()                                                        | f       | t        | f      | f      | f
+ private.revoke_platform_admin(uuid, text, text)                                      | f       | t        | f      | f      | f
+ private.sync_auth_user_email()                                                       | t       | t        | f      | f      | f
+ public.accept_invitation(text)                                                       | t       | t        | f      | t      | f
+ public.add_course_module(uuid, text)                                                 | t       | t        | f      | t      | f
+ public.add_course_staff(uuid, uuid)                                                  | t       | t        | f      | t      | f
+ public.add_lesson(uuid, text, lesson_type)                                           | t       | t        | f      | t      | f
+ public.add_lesson_resource(uuid, text, text, bigint, boolean)                        | t       | t        | f      | t      | f
+ public.approve_course_publication(uuid)                                              | t       | t        | f      | t      | f
+ public.approve_lesson_preview(uuid)                                                  | t       | t        | f      | t      | f
+ public.archive_course(uuid, text)                                                    | t       | t        | f      | t      | f
+ public.assign_course(uuid, uuid, timestamp with time zone)                           | t       | t        | f      | t      | f
+ public.complete_lesson(uuid)                                                         | t       | t        | f      | t      | f
+ public.course_learners(uuid)                                                         | t       | t        | f      | t      | f
+ public.create_course(uuid, text, text)                                               | t       | t        | f      | t      | f
+ public.create_invitation(uuid, text, org_role, bytea)                                | t       | t        | f      | t      | f
+ public.create_organization(text, text)                                               | t       | t        | f      | t      | f
+ public.decline_course_publication(uuid, text)                                        | t       | t        | f      | t      | f
+ public.delete_course_module(uuid)                                                    | t       | t        | f      | t      | f
+ public.delete_lesson(uuid)                                                           | t       | t        | f      | t      | f
+ public.delete_lesson_resource(uuid)                                                  | t       | t        | f      | t      | f
+ public.enrol_in_course(uuid)                                                         | t       | t        | f      | t      | f
+ public.grant_org_role(uuid, uuid, org_role)                                          | t       | t        | f      | t      | f
+ public.platform_find_invitations(text, text, uuid, text, uuid)                       | t       | t        | f      | t      | f
+ public.preview_invitation(text)                                                      | t       | t        | f      | t      | f
+ public.remove_course_staff(uuid, uuid)                                               | t       | t        | f      | t      | f
+ public.remove_lesson_preview(uuid)                                                   | t       | t        | f      | t      | f
+ public.rename_course_module(uuid, text)                                              | t       | t        | f      | t      | f
+ public.rename_lesson(uuid, text)                                                     | t       | t        | f      | t      | f
+ public.reorder_course_modules(uuid, uuid[])                                          | t       | t        | f      | t      | f
+ public.reorder_lessons(uuid, uuid[])                                                 | t       | t        | f      | t      | f
+ public.request_course_publication(uuid)                                              | t       | t        | f      | t      | f
+ public.request_lesson_preview(uuid)                                                  | t       | t        | f      | t      | f
+ public.revoke_invitation(uuid)                                                       | t       | t        | f      | t      | f
+ public.revoke_org_role(uuid, uuid, org_role)                                         | t       | t        | f      | t      | f
+ public.set_lesson_body(uuid, text)                                                   | t       | t        | f      | t      | f
+ public.set_membership_status(uuid, uuid, membership_status)                          | t       | t        | f      | t      | f
+ public.set_organization_status(uuid, organization_status)                            | t       | t        | f      | t      | f
+ public.update_course_details(uuid, text, text, course_visibility, enrollment_policy) | t       | t        | f      | t      | f
+ public.update_lesson_resource(uuid, text, boolean)                                   | t       | t        | f      | t      | f
+ public.withdraw_course_publication_request(uuid)                                     | t       | t        | f      | t      | f
+(78 rows)
+
+== B. functions WITHOUT an empty search_path (any security mode)
+ ?column? 
+----------
+(0 rows)
+
+== C. table/view privileges for client roles in public
+         relname          | relkind |      rol      |              privs               
+--------------------------+---------+---------------+----------------------------------
+ course_instructor_names  | v       | anon          | SELECT
+ course_instructor_names  | v       | authenticated | SELECT
+ course_modules           | r       | authenticated | SELECT
+ course_modules           | r       | service_role  | REFERENCES,SELECT,TRIGGER
+ course_staff             | r       | authenticated | SELECT
+ course_staff             | r       | service_role  | REFERENCES,SELECT,TRIGGER
+ courses                  | r       | authenticated | SELECT
+ courses                  | r       | service_role  | REFERENCES,SELECT,TRIGGER
+ enrollments              | r       | authenticated | SELECT
+ enrollments              | r       | service_role  | REFERENCES,SELECT,TRIGGER
+ invitations              | r       | service_role  | REFERENCES,SELECT,TRIGGER
+ lesson_contents          | r       | authenticated | SELECT
+ lesson_contents          | r       | service_role  | REFERENCES,SELECT,TRIGGER
+ lesson_progress          | r       | authenticated | SELECT
+ lesson_progress          | r       | service_role  | REFERENCES,SELECT,TRIGGER
+ lesson_resources         | r       | authenticated | SELECT
+ lesson_resources         | r       | service_role  | REFERENCES,SELECT,TRIGGER
+ lessons                  | r       | authenticated | SELECT
+ lessons                  | r       | service_role  | REFERENCES,SELECT,TRIGGER
+ membership_roles         | r       | authenticated | SELECT
+ membership_roles         | r       | service_role  | REFERENCES,SELECT,TRIGGER
+ organization_memberships | r       | authenticated | SELECT
+ organization_memberships | r       | service_role  | REFERENCES,SELECT,TRIGGER
+ organizations            | r       | authenticated | SELECT
+ organizations            | r       | service_role  | REFERENCES,SELECT,TRIGGER
+ profiles                 | r       | authenticated | SELECT
+ profiles                 | r       | service_role  | REFERENCES,SELECT,TRIGGER,UPDATE
+(27 rows)
+
+== D. column-level write privileges for client roles (expect none)
+ relname  |  attname  |      rol      |   p    
+----------+-----------+---------------+--------
+ profiles | full_name | authenticated | UPDATE
+(1 row)
+
+== E. RLS flags and policies
+         relname          | rls | force_rls |                                  policies                                   
+--------------------------+-----+-----------+-----------------------------------------------------------------------------
+ course_modules           | t   | f         | course_modules_select[authenticated:r] course_modules_select_anon[anon:r]
+ course_staff             | t   | f         | course_staff_select[authenticated:r]
+ courses                  | t   | f         | courses_select[authenticated:r] courses_select_anon[anon:r]
+ enrollments              | t   | f         | enrollments_select[authenticated:r]
+ invitations              | t   | f         | invitations_select[authenticated:r]
+ lesson_contents          | t   | f         | lesson_contents_select[authenticated:r] lesson_contents_select_anon[anon:r]
+ lesson_progress          | t   | f         | lesson_progress_select[authenticated:r]
+ lesson_resources         | t   | f         | lesson_resources_select[authenticated:r]
+ lessons                  | t   | f         | lessons_select[authenticated:r] lessons_select_anon[anon:r]
+ membership_roles         | t   | f         | membership_roles_select[authenticated:r]
+ organization_memberships | t   | f         | organization_memberships_select[authenticated:r]
+ organizations            | t   | f         | organizations_select[authenticated:r]
+ platform_admins          | t   | f         | platform_admins_select_own[authenticated:r]
+ profiles                 | t   | f         | profiles_select_own[authenticated:r] profiles_update_own[authenticated:w]
+(14 rows)
+
+== F. views and their options
+         relname         |       reloptions        |  owner   
+-------------------------+-------------------------+----------
+ course_instructor_names | {security_barrier=true} | postgres
+(1 row)
+
+== G. private schema tables (counted outside the 22 public tables)
+       relname        
+----------------------
+ organization_audit
+ platform_admin_audit
+(2 rows)
+
+== H. public table count
+ count 
+-------
+    14
+(1 row)
+
+RESULT: preview approved by the publication proposer = true

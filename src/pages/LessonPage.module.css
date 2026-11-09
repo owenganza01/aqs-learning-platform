@@ -1,0 +1,331 @@
+/*
+ * Lesson player (development only, decision D27). Layout follows `Course player [Needs review].png`:
+ * a course outline beside the lesson on desktop, and the outline behind a toggle on narrow screens.
+ */
+
+.body {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: var(--space-32);
+  align-items: start;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+/* The outline is always visible on desktop. Below 1024px it opens from the toggle. */
+.outlineToggle {
+  display: none;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-12) var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  color: var(--color-navy);
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  text-align: left;
+  cursor: pointer;
+}
+
+.outlineToggle:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 2px;
+}
+
+/* Navy sidebar, as in the Course Player design (desktop). Narrow screens use the white card below. */
+.outline {
+  --outline-text: var(--color-white);
+  --outline-muted: var(--color-border-strong);
+  position: sticky;
+  top: var(--space-16);
+  padding: var(--space-16);
+  border-radius: var(--radius);
+  background: var(--color-navy);
+  color: var(--outline-text);
+}
+
+.outlineSummary {
+  margin: 0 0 var(--space-12);
+  color: var(--outline-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.moduleMeta {
+  margin: 2px 0 var(--space-8);
+  color: var(--outline-muted);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+}
+
+.doneIcon {
+  margin-left: 4px;
+  vertical-align: -1px;
+}
+
+.count {
+  margin-left: var(--space-8);
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+}
+
+.modules {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.module + .module {
+  margin-top: var(--space-16);
+}
+
+.moduleTitle {
+  margin: 0;
+  color: var(--outline-text);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  font-weight: var(--weight-semibold);
+}
+
+.lessons {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lesson {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-8) var(--space-8);
+  border-radius: var(--radius-sm);
+}
+
+.lessonCurrent {
+  background: rgb(255 255 255 / 0.12);
+}
+
+.lessonLink {
+  color: var(--outline-text);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.lessonLink:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 2px;
+}
+
+.lessonMeta {
+  color: var(--outline-muted);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+}
+
+.content {
+  min-width: 0;
+}
+
+.meta {
+  margin: var(--space-16) 0 0;
+  color: var(--color-blue);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+}
+
+.lessonTitle {
+  margin: var(--space-8) 0 0;
+  color: var(--color-navy);
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: var(--weight-bold);
+}
+
+/* Video frame: a placeholder, not playback (D5, D7). */
+.video {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  background: var(--color-navy);
+  color: var(--color-white);
+  padding: var(--space-24);
+  text-align: center;
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.reading {
+  padding: var(--space-24);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.reading p {
+  margin: 0;
+}
+
+.section {
+  margin-top: var(--space-32);
+}
+
+.aboutText {
+  margin: var(--space-8) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.attachments {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-16);
+  margin: var(--space-16) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attachment {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+}
+
+.attachmentText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.attachmentName {
+  color: var(--color-navy);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.attachmentMeta {
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+}
+
+.download {
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.attachmentNote {
+  margin: var(--space-8) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+/* Footer: "Mark as done" beside the previous and next lesson actions (sticky bar of FocusLayout). */
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  width: 100%;
+}
+
+.footerNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+}
+
+/* Development-only preview link, shown only on the last lesson of the sample course. */
+.completionPreview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-4);
+  max-width: 320px;
+  margin-left: auto;
+}
+
+.previewNote {
+  margin: 0;
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+/* Narrow screens follow the design's order: lesson first, then the outline behind "Course content". */
+@media (max-width: 1023px) {
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+  }
+
+  .content {
+    order: 0;
+  }
+
+  .outlineToggle {
+    display: block;
+    order: 1;
+  }
+
+  .outline {
+    display: none;
+    position: static;
+    order: 2;
+    --outline-text: var(--color-navy);
+    --outline-muted: var(--color-text-muted);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+  }
+
+  .outlineOpen {
+    display: block;
+  }
+}
+
+@media (max-width: 767px) {
+  .attachments {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .footerNav {
+    width: 100%;
+  }
+
+  .footerNav > * {
+    flex: 1 1 0;
+  }
+
+  .completionPreview {
+    align-items: stretch;
+    max-width: none;
+  }
+
+  .previewNote {
+    text-align: left;
+  }
+}

@@ -1,0 +1,20 @@
+.header {
+  margin-bottom: var(--space-24);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.intro {
+  margin: var(--space-8) 0 0;
+  color: var(--color-text-muted);
+}
+
+.card {
+  margin-bottom: var(--space-16);
+}

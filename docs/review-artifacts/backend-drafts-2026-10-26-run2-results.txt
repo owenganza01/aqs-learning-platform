@@ -1,0 +1,48 @@
+== Run A: migrations 0001-0005, existing tests
+sandbox cluster: /tmp/aqs-db-sandbox.uWeudw/data (socket only, no TCP); server postgres (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
+/home/claude/be/supabase/tests/database/000_foundation.test.sql ................. ok
+/home/claude/be/supabase/tests/database/010_profiles_platform_admins.test.sql ... 
+/home/claude/be/supabase/tests/database/020_organizations_memberships.test.sql .. ok
+/home/claude/be/supabase/tests/database/030_invitations.test.sql ................ ok
+/home/claude/be/supabase/tests/database/900_api_exposure.test.sql ............... ok
+Files=5, Tests=298,  2 wallclock secs ( 0.06 usr  0.00 sys +  0.18 cusr  0.04 csys =  0.28 CPU)
+Result: PASS
+
+== Run B: + drafts 0006, 0007, 0008, draft test copies
+sandbox cluster: /tmp/aqs-db-sandbox.HZlvTv/data (socket only, no TCP); server postgres (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
+apply 20261021150000_0001_foundation.sql
+apply 20261021160000_0002_profiles_platform_admins.sql
+apply 20261021170000_0003_organizations_memberships.sql
+apply 20261021180000_0004_invitations.sql
+apply 20261022210000_0005_preview_email_gate.sql
+apply 0006_verified_identity_and_invitation_visibility.DRAFT.sql
+apply 0007_courses.DRAFT.sql
+apply 0008_enrolment_progress.DRAFT.sql
+supabase/tests/database/000_foundation.test.sql ......................... ok
+supabase/tests/database/010_profiles_platform_admins.test.sql ........... 
+supabase/tests/database/020_organizations_memberships.test.sql .......... ok
+docs/review-artifacts/0006/tests/030_invitations.test.sql ............... ok
+docs/review-artifacts/0006/tests/035_verified_google_identity.test.sql .. ok
+docs/review-artifacts/0006/tests/040_invitation_visibility.test.sql ..... ok
+docs/review-artifacts/0007/tests/050_courses.test.sql ................... ok
+docs/review-artifacts/0008/tests/060_enrolment_progress.test.sql ........ ok
+docs/review-artifacts/0008/tests/900_api_exposure.test.sql .............. ok
+Files=9, Tests=545,  3 wallclock secs ( 0.12 usr  0.02 sys +  0.25 cusr  0.11 csys =  0.50 CPU)
+Result: PASS
+
+== Run C: deliberate faults (each must FAIL the named tests)
+-- m4 (P11 check removed from self enrolments): 
+# Failed test 62: "P11: a public learner cannot read a suspended organization's course text"
+# Failed test 63: "P11: nor its course record or outline (Q-08-1)"
+# Failed test 65: "P11: no lesson completions while the organization is suspended"
+Result: FAIL
+-- m5 (membership check removed from assigned enrolments): 
+# Failed test 59: "a removed member loses the text of courses they were assigned, public ones included (F5, Q-08-3)"
+# Failed test 60: "a removed member cannot complete lessons"
+Result: FAIL
+-- m6 (org admins see all learners): 
+# Failed test 44: "an org admin who is not staff sees members only, never public learners (G1)"
+Result: FAIL
+-- m7 (completion allowed in archived courses): 
+# Failed test 56: "no lesson can be completed in an archived course (L13)"
+Result: FAIL

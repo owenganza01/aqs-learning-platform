@@ -1,0 +1,84 @@
+.titleRow {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+/* Phones: the name sits on its own line and the status badge below it. 768px and above keep the row. */
+@media (max-width: 767px) {
+  .titleRow {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-8);
+  }
+}
+
+.breadcrumb {
+  margin-bottom: var(--space-12);
+  font-size: 0.875rem;
+}
+
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  color: var(--color-text-muted);
+}
+
+.breadcrumb li + li::before {
+  content: '/';
+  margin-right: var(--space-8);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-16);
+  margin-bottom: var(--space-24);
+}
+
+/* Phones: two equal columns, so all four cards and the tabs fit sooner. 768px and above keep the row. */
+@media (max-width: 767px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-12);
+  }
+}
+
+.panel {
+  margin-top: var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  overflow: hidden;
+}
+
+.toolbar {
+  padding: var(--space-16) var(--space-24);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.muted {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.note {
+  margin: var(--space-24) 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}

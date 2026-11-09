@@ -1,0 +1,82 @@
+/* White panel with a light border and the level-1 shadow (12px radius). */
+.card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+
+.elevated {
+  box-shadow: var(--shadow-1);
+}
+
+.padMd {
+  padding: var(--space-24);
+}
+
+.padLg {
+  padding: var(--space-32);
+}
+
+.padNone {
+  padding: 0;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-16);
+  margin-bottom: var(--space-24);
+}
+
+/* Card title sizes, from the designs:
+ * lg 24 — dashboard cards ("Continue learning", "All organizations")
+ * md 20 — landing course/step/feature cards
+ * sm 18 — panels ("Modules", "Course content", "Documents and attachments") */
+.title {
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+}
+
+.titleMd {
+  font-size: var(--text-card-md);
+  line-height: var(--leading-card-md);
+}
+
+.titleSm {
+  font-size: var(--text-card-sm);
+  line-height: var(--leading-card-sm);
+  letter-spacing: 0;
+}
+
+.subtitle {
+  margin-top: var(--space-4);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--color-text-muted);
+}
+
+/* Stat card ("Courses in progress 3 — Keep your momentum going") */
+.statLabel {
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--color-text-subtle);
+}
+
+.statValue {
+  margin-top: var(--space-4);
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: var(--weight-bold);
+  color: var(--color-navy);
+}
+
+.statNote {
+  margin-top: var(--space-4);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  color: var(--color-text-muted);
+}

@@ -1,0 +1,42 @@
+/* Thin blue progress bar with an optional label row ("42% complete"). */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-16);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.label {
+  color: var(--color-text-subtle);
+}
+
+.value {
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.track {
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-blue);
+  transition: width 300ms ease;
+}
+
+.success .fill {
+  background: var(--color-success);
+}

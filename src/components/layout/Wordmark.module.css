@@ -1,0 +1,30 @@
+/* Text wordmark used in the designs ("AQS" over "E-LEARNING"). No logo file exists yet. */
+.wordmark {
+  display: inline-flex;
+  flex-direction: column;
+  color: var(--color-navy);
+  text-decoration: none;
+  line-height: 1;
+}
+
+.name {
+  font-size: 20px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.01em;
+}
+
+.sub {
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.14em;
+}
+
+.light {
+  color: var(--color-white);
+}
+
+.light .name {
+  font-size: 22px;
+  font-weight: var(--weight-bold);
+}

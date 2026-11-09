@@ -1,0 +1,41 @@
+== Run A: committed/uncommitted migrations 0001-0005, existing tests
+sandbox cluster: /tmp/aqs-db-sandbox.Wuc9uH/data (socket only, no TCP); server postgres (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
+fresh cluster, databases: postgres,template1,template0
+apply 20261021150000_0001_foundation.sql
+apply 20261021160000_0002_profiles_platform_admins.sql
+apply 20261021170000_0003_organizations_memberships.sql
+apply 20261021180000_0004_invitations.sql
+apply 20261022210000_0005_preview_email_gate.sql
+/home/claude/be/supabase/tests/database/000_foundation.test.sql ................. ok
+/home/claude/be/supabase/tests/database/010_profiles_platform_admins.test.sql ... 
+/home/claude/be/supabase/tests/database/020_organizations_memberships.test.sql .. ok
+/home/claude/be/supabase/tests/database/030_invitations.test.sql ................ ok
+/home/claude/be/supabase/tests/database/900_api_exposure.test.sql ............... ok
+Files=5, Tests=298,  1 wallclock secs ( 0.07 usr  0.01 sys +  0.15 cusr  0.05 csys =  0.28 CPU)
+Result: PASS
+
+== Run B: + draft 0006 + draft 0007, draft test copies
+sandbox cluster: /tmp/aqs-db-sandbox.XADjKf/data (socket only, no TCP); server postgres (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
+apply 20261021150000_0001_foundation.sql
+apply 20261021160000_0002_profiles_platform_admins.sql
+apply 20261021170000_0003_organizations_memberships.sql
+apply 20261021180000_0004_invitations.sql
+apply 20261022210000_0005_preview_email_gate.sql
+apply 0006_verified_identity_and_invitation_visibility.DRAFT.sql
+apply 0007_courses.DRAFT.sql
+supabase/tests/database/000_foundation.test.sql ......................... ok
+supabase/tests/database/010_profiles_platform_admins.test.sql ........... 
+supabase/tests/database/020_organizations_memberships.test.sql .......... ok
+docs/review-artifacts/0006/tests/030_invitations.test.sql ............... ok
+docs/review-artifacts/0006/tests/035_verified_google_identity.test.sql .. ok
+docs/review-artifacts/0006/tests/040_invitation_visibility.test.sql ..... ok
+docs/review-artifacts/0007/tests/050_courses.test.sql ................... ok
+docs/review-artifacts/0007/tests/900_api_exposure.test.sql .............. ok
+Files=8, Tests=473,  3 wallclock secs ( 0.11 usr  0.01 sys +  0.29 cusr  0.04 csys =  0.45 CPU)
+Result: PASS
+
+== Run C: + draft P12 (own tests only) and T4
+docs/review-artifacts/P12/tests/045_p12_activation.test.sql .. ok
+docs/review-artifacts/T4/tests/905_graphql_off.test.sql ...... ok
+Files=2, Tests=9,  1 wallclock secs ( 0.03 usr  0.01 sys +  0.07 cusr  0.00 csys =  0.11 CPU)
+Result: PASS

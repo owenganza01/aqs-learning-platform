@@ -1,0 +1,44 @@
+AQS consistency correction (routine Platform Admin names-and-emails function removed) — evidence run — 2026-10-26T09:30:44Z
+Environment: Claude cloud workspace; PostgreSQL 16.15 SIMULATED sandbox (scripts/db-sandbox), not Supabase; pgTAP via pg_prove.
+
+### C1 stage through 0006 with the 0006 copies (900 = 0006 copy)
+$ scripts/db-sandbox/run.sh --draft T4/T4_graphql_off.DRAFT.sql --draft P12/P12_activation_requires_org_admin.DRAFT.sql --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --test 000_foundation.test.sql --test 010_profiles_platform_admins.test.sql --test 0006/tests/020_organizations_memberships.test.sql --test 0006/tests/030_invitations.test.sql --test 0006/tests/035_verified_google_identity.test.sql --test 0006/tests/040_invitation_visibility.test.sql --test 0006/tests/042_member_visibility.test.sql --test P12/tests/045_p12_activation.test.sql --test 0006/tests/900_api_exposure.test.sql
+supabase/tests/database/000_foundation.test.sql .......................... ok
+supabase/tests/database/010_profiles_platform_admins.test.sql ............ 
+docs/review-artifacts/0006/tests/020_organizations_memberships.test.sql .. ok
+docs/review-artifacts/0006/tests/030_invitations.test.sql ................ ok
+docs/review-artifacts/0006/tests/035_verified_google_identity.test.sql ... ok
+docs/review-artifacts/0006/tests/040_invitation_visibility.test.sql ...... ok
+docs/review-artifacts/0006/tests/042_member_visibility.test.sql .......... ok
+docs/review-artifacts/P12/tests/045_p12_activation.test.sql .............. ok
+docs/review-artifacts/0006/tests/900_api_exposure.test.sql ............... ok
+Files=9, Tests=399,  3 wallclock secs ( 0.09 usr  0.02 sys +  0.26 cusr  0.07 csys =  0.44 CPU)
+Result: PASS
+
+### C2 stage through 0007 (900 = 0007 copy)
+$ scripts/db-sandbox/run.sh --draft T4/T4_graphql_off.DRAFT.sql --draft P12/P12_activation_requires_org_admin.DRAFT.sql --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft 0007/0007_courses.DRAFT.sql --test 0007/tests/050_courses.test.sql --test 0007/tests/900_api_exposure.test.sql
+docs/review-artifacts/0007/tests/050_courses.test.sql ....... ok
+docs/review-artifacts/0007/tests/900_api_exposure.test.sql .. ok
+Files=2, Tests=122,  1 wallclock secs ( 0.04 usr  0.00 sys +  0.05 cusr  0.02 csys =  0.11 CPU)
+Result: PASS
+
+### C3 full proposed chain with every final copy (900 = 0008 copy)
+$ scripts/db-sandbox/run.sh --draft T4/T4_graphql_off.DRAFT.sql --draft P12/P12_activation_requires_org_admin.DRAFT.sql --draft 0006/0006_verified_identity_and_invitation_visibility.DRAFT.sql --draft 0007/0007_courses.DRAFT.sql --draft 0008/0008_enrolment_progress.DRAFT.sql --test 000_foundation.test.sql --test 010_profiles_platform_admins.test.sql --test 0006/tests/020_organizations_memberships.test.sql --test 0006/tests/030_invitations.test.sql --test 0006/tests/035_verified_google_identity.test.sql --test 0006/tests/040_invitation_visibility.test.sql --test 0006/tests/042_member_visibility.test.sql --test P12/tests/045_p12_activation.test.sql --test 0007/tests/050_courses.test.sql --test 0008/tests/060_enrolment_progress.test.sql --test 0008/tests/900_api_exposure.test.sql --test T4/tests/905_graphql_off.test.sql
+supabase/tests/database/000_foundation.test.sql .......................... ok
+supabase/tests/database/010_profiles_platform_admins.test.sql ............ 
+docs/review-artifacts/0006/tests/020_organizations_memberships.test.sql .. ok
+docs/review-artifacts/0006/tests/030_invitations.test.sql ................ ok
+docs/review-artifacts/0006/tests/035_verified_google_identity.test.sql ... ok
+docs/review-artifacts/0006/tests/040_invitation_visibility.test.sql ...... ok
+docs/review-artifacts/0006/tests/042_member_visibility.test.sql .......... ok
+docs/review-artifacts/P12/tests/045_p12_activation.test.sql .............. ok
+docs/review-artifacts/0007/tests/050_courses.test.sql .................... ok
+docs/review-artifacts/0008/tests/060_enrolment_progress.test.sql ......... ok
+docs/review-artifacts/0008/tests/900_api_exposure.test.sql ............... ok
+docs/review-artifacts/T4/tests/905_graphql_off.test.sql .................. ok
+Files=12, Tests=586,  3 wallclock secs ( 0.16 usr  0.02 sys +  0.38 cusr  0.10 csys =  0.66 CPU)
+Result: PASS
+
+### Faults touching the changed file
+F10 Platform Admins read all memberships: docs/review-artifacts/0006/tests/042_member_visibility.test.sql   Failed tests: 5, 22 docs/review-artifacts/0006/tests/020_organizations_memberships.test.sql   Failed test: 21
+F11 P7 lists inactive members: docs/review-artifacts/0006/tests/042_member_visibility.test.sql   Failed test: 15

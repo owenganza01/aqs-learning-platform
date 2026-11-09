@@ -1,0 +1,76 @@
+.header {
+  margin-bottom: var(--space-24);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.intro {
+  margin: var(--space-8) 0 0;
+  color: var(--color-text-muted);
+}
+
+.list {
+  display: grid;
+  gap: var(--space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  gap: var(--space-16);
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.category {
+  margin: 0;
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  color: var(--color-text-subtle);
+}
+
+.courseTitle {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.meta {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--color-text-muted);
+}
+
+.action {
+  justify-self: start;
+}
+
+/* I2 sort control (live My courses). */
+.controls {
+  max-width: 280px;
+  margin-bottom: var(--space-16);
+}
+
+/* D38 #10: courses not available right now (live My courses). */
+.unavailable {
+  display: grid;
+  gap: var(--space-16);
+  margin-top: var(--space-32);
+}

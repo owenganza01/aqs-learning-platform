@@ -1,0 +1,45 @@
+.notice {
+  margin-bottom: var(--space-16);
+}
+
+.panel {
+  margin-top: var(--space-24);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  overflow: hidden;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.courseTitle {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.courseMeta {
+  margin: var(--space-4) 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.progressCell {
+  min-width: 120px;
+}
+
+.percent {
+  display: block;
+  margin-bottom: var(--space-4);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.footnote {
+  margin: var(--space-16) 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}

@@ -1,0 +1,79 @@
+/*
+ * Visual-only request-a-demo form (development only, decision D27). Layout follows the
+ * request-a-demo frame of `Admin [Pending backend].png` (frame 3): a centred card on a pale
+ * background, with the form stacked in one column.
+ */
+
+.page {
+  padding: var(--space-48) 0 var(--space-64);
+  background: var(--color-canvas);
+}
+
+.container {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 var(--space-16);
+}
+
+.notice {
+  margin-bottom: var(--space-24);
+}
+
+.card {
+  padding-top: var(--space-32);
+}
+
+.eyebrow {
+  margin: 0;
+  text-align: center;
+  color: var(--color-accent-text);
+}
+
+.heading {
+  margin: var(--space-8) 0 0;
+  text-align: center;
+  color: var(--color-text);
+}
+
+.lead {
+  margin: var(--space-12) 0 var(--space-32);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-16);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  margin-top: var(--space-8);
+}
+
+.note {
+  margin: 0;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 767px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

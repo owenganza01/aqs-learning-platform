@@ -1,0 +1,15 @@
+-- =============================================================================
+-- DRAFT: T4 (D34) — Supabase's GraphQL interface is turned off. NOT APPLIED.
+-- Placement (proposed, needs a T1 amendment; see docs/review-artifacts/migration-plan-2026-10-26.md):
+-- its own migration directly after 0005, before P12 and 0006:
+--   supabase/migrations/20261026120000_0005a_graphql_off.sql
+-- 0006's API tests must find GraphQL unavailable (T11).
+--
+-- Supabase documents disabling an extension with `drop extension`
+-- (https://supabase.com/docs/guides/database/extensions/pg_graphql). Whether the local
+-- CLI stack enables pg_graphql by default is not documented there; `if exists` makes the
+-- statement safe either way. Companion config change (proposed, NOT made; text in
+-- docs/review-artifacts/config/config.toml.PROPOSED.diff):
+--   supabase/config.toml  [api] schemas = ["public", "graphql_public"]  ->  ["public"]
+-- =============================================================================
+drop extension if exists pg_graphql;

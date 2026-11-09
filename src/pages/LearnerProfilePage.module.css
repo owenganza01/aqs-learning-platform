@@ -1,0 +1,72 @@
+.header {
+  margin-bottom: var(--space-24);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.intro {
+  margin: var(--space-8) 0 0;
+  color: var(--color-text-muted);
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-16);
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    align-items: start;
+  }
+}
+
+.card {
+  display: grid;
+  gap: var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  min-width: 0;
+}
+
+.card p {
+  margin: 0;
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.muted {
+  font-size: var(--text-body-sm);
+  color: var(--color-text-muted);
+}
+
+.strong {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.tableWrap {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+/* Phones: the learner screens must work on mobile (D9), so the cards use 24px padding there and the
+   three-column organizations table fits without scrolling sideways. */
+@media (max-width: 767px) {
+  .grid .card {
+    padding: var(--space-24);
+  }
+}

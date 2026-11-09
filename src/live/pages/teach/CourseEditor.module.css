@@ -1,0 +1,147 @@
+/* Live-only additions to the approved course builder layout (InstructorCoursePage.module.css). */
+.stack {
+  display: grid;
+  /* CM3-8: one column that may shrink below its content (e.g. a native file input) on 390 px screens. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-16);
+}
+
+.panelGrid {
+  display: grid;
+  gap: var(--space-24);
+  margin-top: var(--space-24);
+}
+
+/* CM3-8: panels may shrink below their content's natural width (the native file input of the
+   Thumbnail block made the column 3 px wider than a 390 px screen). */
+.panelGrid > * {
+  min-width: 0;
+}
+
+.fileInput {
+  max-width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .panelGrid {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.rowSpread {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.lessonRow {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-4);
+}
+
+.lessonRow > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Module header: the title and lesson count keep the full width of the approved outline
+   column (I1, 260-320 px); the reorder, rename and delete controls sit on their own line. */
+.moduleRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.moduleRow > :first-child {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.iconButton {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  min-height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  color: var(--color-text-subtle);
+  cursor: pointer;
+}
+
+.iconButton:hover:not(:disabled) {
+  background: var(--color-surface-muted);
+}
+
+.iconButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.iconButton:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.muted {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.addForm {
+  display: grid;
+  gap: var(--space-8);
+  padding: var(--space-12);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.correction {
+  display: grid;
+  gap: var(--space-8);
+  padding: var(--space-12) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.diff {
+  display: grid;
+  gap: var(--space-4);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.diff del {
+  color: var(--color-danger);
+}
+
+.diff ins {
+  color: var(--color-success);
+  text-decoration: none;
+}
+
+.thumbnail {
+  width: 160px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+}
+
+.moduleRow > :first-child > :last-child {
+  white-space: nowrap;
+}

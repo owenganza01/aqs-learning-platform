@@ -1,0 +1,294 @@
+.card {
+  display: grid;
+  gap: var(--space-12);
+  margin-top: var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  min-width: 0;
+}
+
+.tableWrap {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.muted {
+  margin: 0;
+  font-size: var(--text-body-sm);
+  color: var(--color-text-muted);
+}
+
+.strong {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.panel {
+  margin-top: var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  overflow: hidden;
+}
+
+.toolbar {
+  display: grid;
+  gap: var(--space-12);
+  padding: var(--space-16) var(--space-24);
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (min-width: 768px) {
+  .toolbar {
+    grid-template-columns: minmax(240px, 360px) 1fr;
+    align-items: end;
+  }
+}
+
+.count {
+  margin: 0;
+  justify-self: end;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.nameCell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.cardPad {
+  padding: var(--space-24) var(--space-24) var(--space-16);
+}
+
+.progressCell {
+  min-width: 120px;
+}
+
+.percent {
+  display: block;
+  margin-bottom: var(--space-4);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* Messages: conversation list beside the open thread, from the Messages design (Pending backend). */
+.messages {
+  display: grid;
+  margin-top: var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  overflow: hidden;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .messages {
+    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  }
+}
+
+.conversations {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (min-width: 1024px) {
+  .conversations {
+    border-bottom: 0;
+    border-right: 1px solid var(--color-border);
+  }
+}
+
+.conversationsHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding: var(--space-24) var(--space-24) var(--space-12);
+}
+
+.paneTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.search {
+  padding: 0 var(--space-24) var(--space-16);
+}
+
+.conversationList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.conversationList li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.conversation {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-12);
+  width: 100%;
+  padding: var(--space-16) var(--space-24);
+  border: 0;
+  border-left: 3px solid transparent;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.conversation:hover {
+  background: var(--color-canvas);
+}
+
+.conversation[aria-current='true'] {
+  border-left-color: var(--color-blue);
+  background: var(--color-blue-50);
+}
+
+.conversation:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: -2px;
+}
+
+.conversationText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.conversationName {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.conversationCourse {
+  font-size: 0.8125rem;
+  color: var(--color-blue);
+}
+
+.conversationLast {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+.conversationWhen {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.paneFoot {
+  margin: 0;
+  margin-top: auto;
+  padding: var(--space-16) var(--space-24);
+  border-top: 1px solid var(--color-border);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.threadHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-24) var(--space-24);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.threadCourse {
+  margin: 2px 0 0;
+  font-size: 0.875rem;
+  color: var(--color-blue);
+}
+
+.messageList {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-24);
+  display: grid;
+  gap: var(--space-16);
+}
+
+.fromLearner,
+.fromMe {
+  display: grid;
+  gap: var(--space-4);
+  max-width: min(520px, 100%);
+}
+
+.fromMe {
+  justify-self: end;
+  justify-items: end;
+}
+
+.sender,
+.time {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.bubble {
+  margin: 0;
+  padding: var(--space-12) var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-canvas);
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.fromMe .bubble {
+  border-color: var(--color-blue);
+  background: var(--color-blue);
+  color: var(--color-white);
+}
+
+.composer {
+  display: grid;
+  gap: var(--space-12);
+  margin-top: auto;
+  padding: var(--space-24) var(--space-24);
+  border-top: 1px solid var(--color-border);
+}
+
+.composerActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.note {
+  margin-top: var(--space-16);
+}

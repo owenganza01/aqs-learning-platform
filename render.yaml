@@ -1,0 +1,43 @@
+# Render Blueprint for the AQS STAGING frontend (T6: Render serves only the static frontend).
+# Free static site; synthetic data only. Production is a separate, owner-approved step.
+# The two VITE_ values are public (project URL and publishable key) and are entered in the
+# Render dashboard (sync: false), never committed. No secret key belongs here.
+services:
+  - type: web
+    runtime: static
+    name: aqs-learning-staging
+    branch: feature/first-release
+    autoDeploy: true
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: VITE_DATA_MODE
+        value: live
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://*.supabase.co; media-src https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.youtube-nocookie.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: "camera=(), microphone=(), geolocation=()"
+      - path: /*
+        name: X-Robots-Tag
+        value: noindex

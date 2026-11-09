@@ -1,0 +1,127 @@
+.panel {
+  margin-top: var(--space-24);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  overflow: hidden;
+}
+
+.summary {
+  padding: var(--space-16) var(--space-24) 0;
+}
+
+.summaryText {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.toolbar {
+  display: grid;
+  gap: var(--space-12);
+  padding: var(--space-16) var(--space-24);
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (min-width: 768px) {
+  .toolbar {
+    grid-template-columns: minmax(220px, 1fr) minmax(180px, 220px) minmax(160px, 200px);
+    align-items: end;
+  }
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+/* Desktop and tablet show the table. Phones (below 768px) show stacked cards instead. */
+.desktopView {
+  display: block;
+}
+
+.mobileView {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .desktopView {
+    display: none;
+  }
+
+  .mobileView {
+    display: block;
+  }
+}
+
+.cardList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  padding: var(--space-16);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.card:last-child {
+  border-bottom: 0;
+}
+
+.cardFields {
+  display: grid;
+  gap: var(--space-12);
+  margin: var(--space-16) 0 0;
+}
+
+.cardField {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+/* Field labels match the table headers. */
+.cardLabel {
+  margin: 0;
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-subtle);
+}
+
+.cardValue {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+}
+
+.nameCell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  min-width: 0;
+}
+
+.initials {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.muted {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}

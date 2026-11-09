@@ -1,0 +1,89 @@
+/* Shared styles for the development-only mock auth screens (sign-in error, sign-up).
+ * The shared auth layout is AuthLayout.module.css; the sign-in screen keeps SignInPage.module.css. */
+
+.notice {
+  margin-bottom: var(--space-24);
+}
+
+/* Slightly tighter tracking than the shared h2 (-0.02em), so "We couldn't sign you" fits on
+ * the first line of the 390px-wide card content, as in the reference. Local to mock auth. */
+.heading {
+  margin-top: 0;
+  margin-bottom: var(--space-8);
+  color: var(--color-text);
+  letter-spacing: -0.03em;
+}
+
+.lead {
+  margin: 0 0 var(--space-32);
+  color: var(--color-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.note {
+  margin: var(--space-16) 0 0;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* The existing-account link on the sign-up screen: a real link to /sign-in. */
+.textLink {
+  color: var(--color-navy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  margin-top: var(--space-32);
+  padding-top: var(--space-24);
+  border-top: 1px solid var(--color-border);
+}
+
+.footerRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-16);
+  margin: 0;
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--color-text-muted);
+}
+
+/* Dot separator between footer items, as in the reference */
+.footerRow > span + span::before {
+  content: '·';
+  margin-right: var(--space-16);
+  color: var(--color-text-subtle);
+}
+
+/* Destination not built yet (D24): dimmed text, no link, no tab stop. The hidden
+ * "(not available yet)" label carries the meaning for screen readers. */
+.unavailable {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+/* Quiet stand-in until the photo is an approved asset; same look as the sign-in screen. */
+.placeholder {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 480px;
+  min-height: 320px;
+  border-radius: 24px 24px 0 0;
+  padding: var(--space-24);
+  background: rgb(255 255 255 / 0.06);
+  font-size: var(--text-hint);
+  line-height: var(--leading-hint);
+  color: var(--color-blue-100);
+}

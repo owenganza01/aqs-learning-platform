@@ -1,0 +1,27 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-16);
+  margin-bottom: var(--space-24);
+}
+
+.text {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.description {
+  margin: var(--space-8) 0 0;
+  color: var(--color-text-muted);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-8);
+}

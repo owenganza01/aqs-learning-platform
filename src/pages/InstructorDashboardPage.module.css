@@ -1,0 +1,91 @@
+.notice {
+  margin-bottom: var(--space-16);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-16);
+  margin-bottom: var(--space-24);
+}
+
+.main {
+  display: grid;
+  gap: var(--space-24);
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .main {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+.cardPad {
+  padding: var(--space-24) var(--space-24) var(--space-16);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.courseCell {
+  min-width: 0;
+}
+
+.courseTitle {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.courseMeta {
+  margin: var(--space-4) 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.progressCell {
+  min-width: 120px;
+}
+
+.percent {
+  display: block;
+  margin-bottom: var(--space-4);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.activityList {
+  list-style: none;
+  margin: var(--space-16) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-16);
+}
+
+.activityItem {
+  display: flex;
+  gap: var(--space-12);
+  padding-bottom: var(--space-16);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.activityItem:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.activityName {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.activityText,
+.activityWhen {
+  margin: var(--space-4) 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
