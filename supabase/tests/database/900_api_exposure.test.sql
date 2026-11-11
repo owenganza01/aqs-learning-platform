@@ -13,7 +13,7 @@
 -- lists in the same pull request, so any unplanned exposure fails here.
 -- Per-migration test files check their own objects; this file checks the whole.
 --
--- Last updated for: migration 0004.
+-- Last updated for: migration 0004 (lists kept current through 0021).
 -- =============================================================================
 begin;
 create extension if not exists pgtap with schema extensions;
@@ -265,6 +265,13 @@ select set_eq(
             ('public.lesson_spoken_language(uuid)'),  -- 0019 (D39)
             ('public.submission_media_access(text, uuid)'),  -- 0019 (D39)
             ('public.record_youtube_check(uuid, text, text, jsonb)'),  -- 0020 (Q-1), Platform Admin only
+            ('public.organization_requests(text)'),  -- 0021 (WP3), Platform Admin only
+            ('public.organization_request_detail(uuid)'),  -- 0021 (WP3), Platform Admin only
+            ('public.start_organization_request_review(uuid)'),  -- 0021 (WP3), Platform Admin only
+            ('public.decline_organization_request(uuid, text)'),  -- 0021 (WP3), Platform Admin only
+            ('public.approve_organization_request(uuid, text, text, text)'),  -- 0021 (WP3), Platform Admin only
+            ('public.organization_profile(uuid)'),  -- 0021 (WP3), own Org Admins and Platform Admins
+            ('public.set_organization_profile(uuid, text, text, text, text, text)'),  -- 0021 (WP3), Platform Admin only
             ('authz.can_write_course_object(text, text, boolean)'),
             ('authz.can_read_course_object(text)'),
             ('public.platform_report(uuid, organization_status)'),
@@ -356,6 +363,14 @@ select set_eq(
             ('public.lesson_spoken_language(uuid)'),  -- 0019 (D39)
             ('public.submission_media_access(text, uuid)'),  -- 0019 (D39)
             ('public.record_youtube_check(uuid, text, text, jsonb)'),  -- 0020 (Q-1), signed-in Platform Admin only
+            ('public.submit_organization_request(jsonb, text)'),  -- 0021 (WP3), service_role only (organisation-request)
+            ('public.organization_requests(text)'),  -- 0021 (WP3)
+            ('public.organization_request_detail(uuid)'),  -- 0021 (WP3)
+            ('public.start_organization_request_review(uuid)'),  -- 0021 (WP3)
+            ('public.decline_organization_request(uuid, text)'),  -- 0021 (WP3)
+            ('public.approve_organization_request(uuid, text, text, text)'),  -- 0021 (WP3)
+            ('public.organization_profile(uuid)'),  -- 0021 (WP3)
+            ('public.set_organization_profile(uuid, text, text, text, text, text)'),  -- 0021 (WP3)
             ('authz.can_view_learner_record(uuid, uuid)'),
             ('public.set_quiz_settings(uuid, integer, integer, boolean, quiz_reveal_policy)'),
             ('public.add_quiz_question(uuid, text, quiz_question_type)'),

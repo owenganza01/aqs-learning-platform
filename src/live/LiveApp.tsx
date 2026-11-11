@@ -43,6 +43,11 @@ const LivePlatformUsers = lazy(() => import('./pages/admin/LivePlatformUsers'))
 const LiveVideoReviews = lazy(() => import('./pages/admin/LiveVideoReviews'))
 const LiveLessonPreview = lazy(() => import('./pages/teach/LiveLessonPreview'))
 const LiveVideoReviewDetail = lazy(() => import('./pages/admin/LiveVideoReviewDetail'))
+// WP3 and WP2 (10 November 2026): workspace requests, their review, and the Get Started chooser.
+const LiveOrganizationRequests = lazy(() => import('./pages/admin/LiveOrganizationRequests'))
+const LiveOrganizationRequestDetail = lazy(() => import('./pages/admin/LiveOrganizationRequestDetail'))
+const GetStartedPage = lazy(() => import('../pages/GetStartedPage'))
+const LiveRequestWorkspacePage = lazy(() => import('./pages/LiveRequestWorkspacePage'))
 // About AQS and Contact (Concept C, approved 10 November 2026): registered only in development builds
 // (marked placeholders) until the owner approves their content (content/public-site.ts).
 // The condition must be a build-time constant so production builds leave the pages out entirely
@@ -75,6 +80,8 @@ export function LiveApp({ extraRoutes }: { extraRoutes?: ReactNode }) {
         <Route path="/invite" element={<Page><LiveInvitePage /></Page>} />
         <Route path="/invite/:token" element={<Page><LiveInvitePage /></Page>} />
         <Route path="/catalog" element={<Page><LiveCatalog /></Page>} />
+        <Route path="/get-started" element={<Page><GetStartedPage /></Page>} />
+        <Route path="/request-workspace" element={<Page><LiveRequestWorkspacePage /></Page>} />
         <Route path="/courses/:courseId" element={<Page><LiveCourseDetail /></Page>} />
         <Route path="/access-denied" element={<LiveAccessDenied />} />
         <Route path="/session-expired" element={<LiveSignInRequired />} />
@@ -111,6 +118,8 @@ export function LiveApp({ extraRoutes }: { extraRoutes?: ReactNode }) {
             <Route path="organizations/new" element={<Page><LiveOrganizationCreate /></Page>} />
             <Route path="organizations/:orgId" element={<Page><LivePlatformOrganizationDetail /></Page>} />
             <Route path="organizations/:orgId/review" element={<Page><LivePlatformOrganizationDetail /></Page>} />
+            <Route path="requests" element={<Page><LiveOrganizationRequests /></Page>} />
+            <Route path="requests/:requestId" element={<Page><LiveOrganizationRequestDetail /></Page>} />
             <Route path="users" element={<Page><LivePlatformUsers /></Page>} />
             <Route path="courses" element={<Page><LivePlatformCourses /></Page>} />
             <Route path="courses/:courseId" element={<Page><LiveCourseEditor /></Page>} />
