@@ -14,14 +14,18 @@
  */
 export const ABOUT_AND_CONTACT_APPROVED = false
 
-/** "Request a workspace" form (task 3-3). Its links appear when the route exists. */
-export const REQUEST_WORKSPACE_AVAILABLE = false
+/**
+ * "Request a workspace" form (task 3-3): built 10 November 2026, so its links appear. It needs
+ * migration 0021 and the organisation-request Edge Function on the same site (staging update
+ * pack 2); until both are there the form says requests can't be sent right now.
+ */
+export const REQUEST_WORKSPACE_AVAILABLE = true
 
 /** Terms of Use, Privacy Policy and Cookie Policy pages (tasks 5-1 to 5-5). */
 export const LEGAL_PAGES_AVAILABLE = false
 
-/** The /get-started page (tasks 2-1 and 2-5). Until it exists, "Get started" opens sign-in. */
-export const GET_STARTED_PAGE_AVAILABLE = false
+/** The /get-started page (tasks 2-1 and 2-5): built 10 November 2026; every "Get started" opens it. */
+export const GET_STARTED_PAGE_AVAILABLE = true
 
 /** Development builds show the About and Contact pages with placeholders, for design review only. */
 export const SHOW_INFO_PAGE_PREVIEWS = import.meta.env.DEV && !ABOUT_AND_CONTACT_APPROVED

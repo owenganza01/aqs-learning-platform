@@ -85,7 +85,7 @@ test.describe('header and footer destinations', () => {
     const footer = page.getByRole('contentinfo')
     await expect(footer.getByRole('heading', { level: 2 })).toHaveText(['Learn', 'Organizations'])
     await expect(footer.getByRole('navigation', { name: 'Learn' }).getByRole('link')).toHaveText(['Courses'])
-    await expect(footer.getByRole('navigation', { name: 'Organizations' }).getByRole('link')).toHaveText(['For organizations'])
+    await expect(footer.getByRole('navigation', { name: 'Organizations' }).getByRole('link')).toHaveText(['For organizations', 'Request a workspace'])
     for (const gone of ['Our Story', 'Instructors', 'Careers', 'Blog', 'Privacy Policy', 'Terms', 'Cookie Policy', 'About', 'Contact']) {
       await expect(footer.getByText(gone, { exact: true })).toHaveCount(0)
     }

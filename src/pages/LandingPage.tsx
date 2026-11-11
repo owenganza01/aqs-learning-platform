@@ -11,6 +11,7 @@ import {
   ABOUT_AND_CONTACT_APPROVED,
   ABOUT_CONTENT,
   claimCleared,
+  REQUEST_WORKSPACE_AVAILABLE,
   SHOW_INFO_PAGE_PREVIEWS,
   type PublicClaimId,
 } from '../content/public-site'
@@ -242,6 +243,13 @@ export function LandingPage() {
               </li>
             ))}
           </ol>
+          {REQUEST_WORKSPACE_AVAILABLE ? (
+            /* Step 1 starts here (WP3, task 3-3). On navy the primary button uses its inverse style (D41). */
+            <div className={cx('on-dark', styles.organizationsAction)}>
+              <ButtonLink to="/request-workspace">Request a workspace</ButtonLink>
+              <p>AQS reviews every request. Nothing is set up until we have checked it with you.</p>
+            </div>
+          ) : null}
         </div>
       </section>
 

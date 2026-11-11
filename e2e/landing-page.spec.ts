@@ -84,10 +84,23 @@ test.describe('landing page content', () => {
     await expect(page.getByText(/certificate/i)).toHaveCount(0)
     await expect(page.getByText(/messag/i)).toHaveCount(0)
     await expect(page.getByText(/company email|domain/i)).toHaveCount(0)
-    await expect(page.getByRole('link', { name: 'Request a workspace' })).toHaveCount(0)
     await expect(page.getByRole('link', { name: 'Continue with Google' })).toHaveCount(0)
     await expect(page.getByRole('list', { name: 'Audiences' })).toHaveCount(0)
     await expect(page.getByText(/Hero image placeholder|Partner 1|Thumbnail placeholder/)).toHaveCount(0)
+  })
+
+  test('the organizations section ends with Request a workspace, styled for the navy band (WP3)', async ({ page }) => {
+    await page.goto('/')
+    const section = page.locator('#organizations')
+    const request = section.getByRole('link', { name: 'Request a workspace' })
+    await expect(request).toHaveAttribute('href', '/request-workspace')
+    await expect(section.getByText('AQS reviews every request. Nothing is set up until we have checked it with you.')).toBeVisible()
+    await section.screenshot({ path: 'test-results/wp3-screens/landing-organizations-section-1440.png' })
+    // D41: on navy the primary button is the inverse style, not action blue.
+    await expect(request).not.toHaveCSS('background-color', 'rgb(29, 78, 216)')
+    await request.click()
+    await expect(page).toHaveURL(/\/request-workspace$/)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   })
 
   test('uses the approved blue primary button: default, hover and pressed, with white text', async ({ page }) => {

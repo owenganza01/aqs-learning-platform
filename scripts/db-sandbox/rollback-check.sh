@@ -53,4 +53,5 @@ check 0017 "$R/0017_orphaned_file_cleanup.rollback.sql"        || status=1
 check 0018 "$R/0018_upload_integrity.rollback.sql"             || status=1
 check 0019 "$R/0019_video_review.rollback.sql"                || status=1
 check 0020 "$R/0020_youtube_check_actor.rollback.sql"         || status=1
+check 0021 "$R/0021_organization_data.rollback.sql"          || status=1
 exit $status

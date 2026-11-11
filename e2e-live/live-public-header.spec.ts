@@ -18,11 +18,11 @@ async function signedIn(page: Page, memberships: unknown[] = []) {
 
 const banner = (page: Page) => page.getByRole('banner')
 
-test('signed out: Sign in and Get started, both leading to sign-in', async ({ page }) => {
+test('signed out: Sign in leads to sign-in and Get started to the Get Started page (2-1)', async ({ page }) => {
   await mockSupabase(page, { tables: { courses: () => ({ json: [] }) } })
   await page.goto('/')
   await expect(banner(page).getByRole('link', { name: 'Sign in', exact: true })).toHaveAttribute('href', '/sign-in')
-  await expect(banner(page).getByRole('link', { name: 'Get started' }).first()).toHaveAttribute('href', '/sign-in')
+  await expect(banner(page).getByRole('link', { name: 'Get started' }).first()).toHaveAttribute('href', '/get-started')
   await expect(banner(page).getByRole('link', { name: 'My workspace' })).toHaveCount(0)
 })
 
