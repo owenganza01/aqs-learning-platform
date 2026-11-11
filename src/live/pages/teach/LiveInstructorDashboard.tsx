@@ -69,7 +69,6 @@ export default function LiveInstructorDashboard() {
     <LiveShell shell={instructorShell(org.slug, org.name)}>
       <PageHeader
         title={`Welcome back${firstName ? `, ${firstName}` : ''}`}
-        description="A clear view of your courses, your learners, and their progress."
         actions={<ButtonLink to={`${base}/courses#new`}>Create course</ButtonLink>}
       />
       <Loaded resource={courses} label="Loading your courses">

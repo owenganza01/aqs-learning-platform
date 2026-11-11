@@ -82,7 +82,8 @@ test('1-1 and 1-5: the Platform Admin report has no decision code and uses the f
     },
   })
   await page.goto('/admin/reports')
-  await expect(page.getByText('Current counts only. No learner identities, activity or results.')).toBeVisible()
+  // 1-7/1-8 (copy tightening) removed the page description; the heading is the anchor now.
+  await expect(page.getByRole('heading', { level: 1, name: 'Reports' })).toBeVisible()
   await expect(page.getByText(/\((P|D|L|G|Q|T)\d/)).toHaveCount(0)
   await expect(page.getByRole('cell', { name: '1 Oct 2026' })).toBeVisible()
   await expect(page.getByRole('cell', { name: '2 Oct 2026' })).toBeVisible()
