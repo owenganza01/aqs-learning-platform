@@ -177,13 +177,8 @@ export function LiveOrganizationCreate() {
             </div>
           </form>
         </Card>
-        <aside className={createStyles.aside} aria-label="What happens next">
-          <h2 className={createStyles.asideHeading}>What happens next</h2>
-          <ol>
-            <li>The organization starts as a draft.</li>
-            <li>Invite its Organization Admin. They accept with their Google account.</li>
-            <li>Activate the organization once an Organization Admin has accepted.</li>
-          </ol>
+        <aside className={createStyles.aside}>
+          <p>It starts as a draft. Activate it after its Organization Admin accepts the invitation.</p>
         </aside>
       </div>
     </LiveShell>
@@ -205,7 +200,7 @@ export function LivePlatformReports() {
   ]
   return (
     <LiveShell shell={platformShell()}>
-      <PageHeader title="Reports" description="Current counts only. No learner identities, activity or results." />
+      <PageHeader title="Reports" />
       <Loaded resource={report} label="Loading the report">
         {(rows) => (
           <Card padding="none" as="section" aria-label="Platform report">

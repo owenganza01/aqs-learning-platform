@@ -41,7 +41,6 @@ export default function LiveOrgSettings() {
         </Card>
         <Card as="section" padding="lg" aria-label="Branding and contacts" className={styles.card}>
           <CardHeader title="Branding and contacts" subtitle="Coming later." headingLevel="h2" size="md" />
-          <p className={styles.signInNote}>Logo, colours, website and contact people will be editable in a later release.</p>
         </Card>
       </div>
     </LiveShell>

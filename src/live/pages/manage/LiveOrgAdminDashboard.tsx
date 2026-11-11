@@ -72,7 +72,7 @@ export default function LiveOrgAdminDashboard() {
             <>
               <div className={styles.stats}>
                 <StatCard label="Active members" value={members.length} note={`${count('learner')} learners`} />
-                <StatCard label="Pending invitations" value={pending.length} note="Expire after seven days" />
+                <StatCard label="Pending invitations" value={pending.length} />
                 <StatCard label="Courses awaiting approval" value={awaiting.length} note="Review before they go live" />
               </div>
               <div className={styles.main}>
