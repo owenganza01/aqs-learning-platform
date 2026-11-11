@@ -52,4 +52,5 @@ check 0016 "$R/0016_suspended_org_learner_titles.rollback.sql" || status=1
 check 0017 "$R/0017_orphaned_file_cleanup.rollback.sql"        || status=1
 check 0018 "$R/0018_upload_integrity.rollback.sql"             || status=1
 check 0019 "$R/0019_video_review.rollback.sql"                || status=1
+check 0020 "$R/0020_youtube_check_actor.rollback.sql"         || status=1
 exit $status
