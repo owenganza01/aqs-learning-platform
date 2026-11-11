@@ -23,9 +23,10 @@ export function LiveShell({ shell, banner, children }: { shell: ShellDefinition;
       banner={banner}
       hideUnbuilt
       onSignOut={async () => {
-        // Leave the protected page first, so its guard does not send the person to sign-in.
-        navigate('/', { replace: true })
+        // Clear the session first, then leave the protected page; this ensures the auth token
+        // is removed from localStorage before the navigation completes (fixes sign-out e2e test).
         await signOut()
+        navigate('/', { replace: true })
       }}
       workspaceExtra={<WorkspaceSwitcher workspaces={workspaces} currentTo={current?.to ?? ''} />}
     >
