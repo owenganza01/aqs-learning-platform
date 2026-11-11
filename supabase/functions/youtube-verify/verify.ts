@@ -95,8 +95,6 @@ type Rpc = (fn: string, args: Record<string, unknown>) => Promise<{ data: unknow
 export type Deps = {
   /** An RPC made as the caller; creating it checks the session (401 when there is none). */
   callerRpc: Rpc
-  /** An RPC made with the secret key, used only for record_youtube_check. */
-  serviceRpc: Rpc
   fetch: FetchLike
   /** AQS_YOUTUBE_CHANNEL_URL (hosted configuration, not a secret). */
   channelUrl: string
@@ -142,7 +140,9 @@ export async function verify(body: Record<string, unknown>, deps: Deps): Promise
     reason: found.reason,
     signal_only: true,
   }
-  const recorded = await deps.serviceRpc('record_youtube_check', {
+  // Recorded as the caller (0020, Q-1): the row names the Platform Admin who ran the check, and
+  // the database refuses the write if the caller is not a Platform Admin.
+  const recorded = await deps.callerRpc('record_youtube_check', {
     p_submission: submissionId,
     p_youtube_id: youtubeId,
     p_outcome: found.outcome,

@@ -264,6 +264,7 @@ select set_eq(
             ('public.lesson_caption_status(uuid)'),  -- 0019 (D39)
             ('public.lesson_spoken_language(uuid)'),  -- 0019 (D39)
             ('public.submission_media_access(text, uuid)'),  -- 0019 (D39)
+            ('public.record_youtube_check(uuid, text, text, jsonb)'),  -- 0020 (Q-1), Platform Admin only
             ('authz.can_write_course_object(text, text, boolean)'),
             ('authz.can_read_course_object(text)'),
             ('public.platform_report(uuid, organization_status)'),
@@ -354,7 +355,7 @@ select set_eq(
             ('public.lesson_caption_status(uuid)'),  -- 0019 (D39)
             ('public.lesson_spoken_language(uuid)'),  -- 0019 (D39)
             ('public.submission_media_access(text, uuid)'),  -- 0019 (D39)
-            ('public.record_youtube_check(uuid, text, text, jsonb)'),  -- 0019 (D39), service_role only
+            ('public.record_youtube_check(uuid, text, text, jsonb)'),  -- 0020 (Q-1), signed-in Platform Admin only
             ('authz.can_view_learner_record(uuid, uuid)'),
             ('public.set_quiz_settings(uuid, integer, integer, boolean, quiz_reveal_policy)'),
             ('public.add_quiz_question(uuid, text, quiz_question_type)'),
