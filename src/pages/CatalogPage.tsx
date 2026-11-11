@@ -1,38 +1,41 @@
 import { AppShell } from '../components/layout/AppShell'
-import type { CurrentUser, NavItem } from '../components/layout/types'
+import { PublicLayout } from '../components/layout/PublicLayout'
+import type { NavItem } from '../components/layout/types'
 import { Badge, Banner, Button, ButtonLink, Card } from '../components/ui'
 import { getShellDefinition } from '../lib/navigation'
 import { SAMPLE_COURSE_CATALOG, playableLessons } from '../dev/sample-course'
+import { useAuth } from '../lib/auth-context'
 import styles from './CatalogPage.module.css'
 import { countOf } from '../lib/plural'
 
 /*
- * Course catalog at /catalog — DEVELOPMENT ONLY (decision D27). Design draft: no approved reference
- * exists for this page, so the layout reuses the course-card pattern of the approved learner dashboard.
- * Every course, title and lesson count comes from the sample catalog. Nothing is enrolled, saved or sent.
+ * Course catalog at /catalog (development preview with sample data).
+ * Public visitors see the catalog in PublicLayout without being automatically logged in.
+ * Authenticated learners see the catalog inside their learner shell.
  */
 
-const MOCK_LEARNER: CurrentUser = { name: 'Ganza Owen', roleLabel: 'Learner' }
 const LEARNER_NAV: NavItem[] = getShellDefinition('learner', '/learn').navItems
 
 export default function CatalogPage() {
+  const { session } = useAuth()
   const courses = Object.values(SAMPLE_COURSE_CATALOG)
 
-  return (
-    <AppShell
-      navItems={LEARNER_NAV}
-      user={MOCK_LEARNER}
-      unavailableActions
-      banner={
-        <Banner tone="info" flush>
-          Design draft with sample data. Course content is invented, and enrolment is not available yet.
-        </Banner>
-      }
-    >
+  const content = (
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
       <header className={styles.header}>
         <h1 className={styles.title}>Course catalog</h1>
-        <p className={styles.intro}>Browse the sample courses available in this preview.</p>
+        <p className={styles.intro}>
+          {session
+            ? 'Courses open to you, from your organizations and the public catalog.'
+            : 'Browse the sample courses available in this preview.'}
+        </p>
       </header>
+
+      <div style={{ marginBottom: 'var(--space-24)' }}>
+        <Banner tone="info" flush>
+          Sample course catalog preview. Enrolment requires sign-in with an eligible account.
+        </Banner>
+      </div>
 
       <ul className={styles.grid} aria-label="Sample courses">
         {courses.map((course) => {
@@ -64,6 +67,20 @@ export default function CatalogPage() {
           )
         })}
       </ul>
+    </div>
+  )
+
+  if (!session) {
+    return <PublicLayout>{content}</PublicLayout>
+  }
+
+  return (
+    <AppShell
+      navItems={LEARNER_NAV}
+      user={{ name: session.user.email ?? 'Learner', roleLabel: 'Learner' }}
+      unavailableActions
+    >
+      {content}
     </AppShell>
   )
 }

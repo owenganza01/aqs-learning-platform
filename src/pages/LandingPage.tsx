@@ -8,11 +8,9 @@ import { publicHeaderNav } from '../lib/public-navigation'
 import { featuredCourses, type CourseSummary } from '../live/data/learning'
 import { LIVE_MODE } from '../live/mode'
 import {
-  ABOUT_AND_CONTACT_APPROVED,
   ABOUT_CONTENT,
   claimCleared,
   REQUEST_WORKSPACE_AVAILABLE,
-  SHOW_INFO_PAGE_PREVIEWS,
   type PublicClaimId,
 } from '../content/public-site'
 import { PlaceholderNote } from './info/PlaceholderNote'
@@ -30,10 +28,8 @@ import styles from './LandingPage.module.css'
  *   2026; see landing/HeroNetwork.tsx). It is decorative and still for reduced motion.
  * - Only statements cleared in content/public-site.ts are shown (no unverified security, privacy or
  *   capability claims). The "Private organization workspaces" block is therefore not rendered yet.
- * - The About AQS block, the ownership line and every link to /about or /contact stay hidden until
- *   the owner approves the content. Development builds show a marked preview for design review.
- * - No invented content (CM3-7): courses are real published public courses; the product picture is
- *   a screenshot of the real learner dashboard, labelled as sample data.
+ * - The About AQS block, the ownership line and links to /about or /contact are included as marked placeholders.
+ * - The hero product visual area is kept as an image placeholder ready for asset selection.
  */
 
 const HERO_COPY = {
@@ -115,7 +111,7 @@ export function LandingPage() {
   const privacyStatements = cleared(PRIVACY_STATEMENTS)
   const showPrivacyBlock = privacyStatements.length === PRIVACY_STATEMENTS.length
   const learningItems = cleared(LEARNING_ITEMS)
-  const showAbout = ABOUT_AND_CONTACT_APPROVED || SHOW_INFO_PAGE_PREVIEWS
+  const showAbout = true
   const shownCourses = featured.slice(0, 3)
 
   return (
@@ -147,18 +143,21 @@ export function LandingPage() {
             </ul>
             <p className={styles.invited}>
               Invited by your organization?{' '}
-              {LIVE_MODE ? <Link to="/sign-in">Sign in</Link> : 'Sign in'} with the email address the invitation was sent
-              to.
+              <Link to="/sign-in">Sign in</Link> with the email address the invitation was sent to.
             </p>
           </div>
           <figure className={styles.heroMedia}>
-            <img
-              src="/images/landing/learner-dashboard-sample.png"
-              width={1200}
-              height={505}
-              alt="The learner dashboard: a welcome message, and a course to continue with its progress bar and an overdue due date."
-              className={styles.heroImage}
-            />
+            <div
+              className={styles.heroPlaceholder}
+              role="img"
+              aria-label="The learner dashboard: a welcome message, and a course to continue with its progress bar and an overdue due date."
+            >
+              <div className={styles.heroPlaceholderCard}>
+                <span className={styles.heroPlaceholderBadge}>Image Placeholder</span>
+                <p className={styles.heroPlaceholderTitle}>Learner dashboard preview</p>
+                <p className={styles.heroPlaceholderHint}>Image placeholder — asset selection pending.</p>
+              </div>
+            </div>
             <figcaption className={styles.heroCaption}>The learner dashboard, shown with sample data.</figcaption>
           </figure>
         </div>
@@ -203,7 +202,12 @@ export function LandingPage() {
               <p>New courses will appear here when they are published.</p>
               <p className={styles.emptyHint}>
                 Courses assigned by your organization are in your workspace after you{' '}
-                {LIVE_MODE ? <Link to="/sign-in">sign in</Link> : 'sign in'}.
+                <Link to="/sign-in">sign in</Link>.
+              </p>
+              <p style={{ marginTop: 'var(--space-16)' }}>
+                <ButtonLink to="/catalog" variant="secondary">
+                  Browse sample course catalog
+                </ButtonLink>
               </p>
             </div>
           )}
@@ -333,10 +337,11 @@ export function LandingPage() {
             Ready when you are.
           </h2>
           <div className={styles.closingActions}>
+            <ButtonLink to="/get-started">Get started</ButtonLink>
             <ButtonLink to="/catalog" variant="secondary">
               Find a course
             </ButtonLink>
-            <ButtonLink to="/#organizations">Set up training for your team</ButtonLink>
+            <ButtonLink to="/#organizations" variant="neutral">Set up training for your team</ButtonLink>
           </div>
         </div>
       </section>

@@ -47,7 +47,6 @@ test.describe('landing page content', () => {
     await page.goto('/')
     const image = page.getByRole('img', { name: /The learner dashboard/ })
     await expect(image).toBeVisible()
-    await expect(image).toHaveAttribute('src', '/images/landing/learner-dashboard-sample.png')
     await expect(page.getByText('The learner dashboard, shown with sample data.')).toBeVisible()
   })
 
