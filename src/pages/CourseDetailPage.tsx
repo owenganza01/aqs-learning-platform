@@ -12,6 +12,7 @@ import {
   type SampleLesson as MockLesson,
   type SampleModule as MockModule,
 } from '../dev/sample-course'
+import { samplePublicCourse, type SamplePublicCourse } from '../dev/sample-public-catalog'
 import { NotFound } from './NotFound'
 import styles from './CourseDetailPage.module.css'
 import { countOf } from '../lib/plural'
@@ -83,9 +84,38 @@ function formatMinutes(total: number) {
 const sumMinutes = (lessons: MockLesson[]) => lessons.reduce((sum, lesson) => sum + lesson.minutes, 0)
 
 /** Route element for /courses/:courseId. Only the sample course id renders the page. */
+type CourseDetail = typeof MOCK_COURSE_DETAIL
+
+/** Detail content of another public sample course (the Courses page lists them, 11 November 2026). */
+function detailFor(course: SamplePublicCourse): CourseDetail {
+  return {
+    category: course.category,
+    title: course.title,
+    summary: course.summary,
+    level: course.level,
+    imageCaption: course.imageCaption,
+    outcomes: course.outcomes,
+    modules: course.modules,
+    instructor: course.instructor,
+    requirements: course.requirements,
+    initiallyOpenModuleId: course.modules[0]?.id ?? '',
+  }
+}
+
+/*
+ * Public sample courses open here without signing in; organization-only samples and unknown ids show
+ * Not found, as the database does for a visitor (F1, L8). The approved design's course keeps its own
+ * content and the lesson links into the development player.
+ */
 export default function CourseDetailPage() {
   const { courseId } = useParams()
-  return courseId === SAMPLE_COURSE_ID ? <CourseDetailContent /> : <NotFound />
+  const sample = samplePublicCourse(courseId)
+  if (!sample) return <NotFound />
+  return sample.id === SAMPLE_COURSE_ID ? (
+    <CourseDetailContent course={MOCK_COURSE_DETAIL} linkLessons />
+  ) : (
+    <CourseDetailContent key={sample.id} course={detailFor(sample)} linkLessons={false} />
+  )
 }
 
 /*
@@ -101,6 +131,18 @@ function readAccess(value: string | null): AccessState {
 }
 
 function EnrolControl({ access }: { access: AccessState }) {
+  // Visitors who are not signed in: enrolling needs an account (F1). Sign-in is not connected in
+  // this preview, so the control stays disabled with the D24 hidden label.
+  const signInToEnrol = (
+    <div className={styles.accessBlock}>
+      <p className={styles.accessNote}>Sign in with Google to enroll. It's free.</p>
+      <Button disabled className={styles.enroll}>
+        Sign in to enroll
+        <span className="visually-hidden"> (not available yet)</span>
+      </Button>
+    </div>
+  )
+
   const disabledEnrol = (
     // Enrolment is not built (D8, D11, D15): shown, but disabled. D24 requires the hidden label.
     <Button disabled className={styles.enroll}>
@@ -153,13 +195,12 @@ function EnrolControl({ access }: { access: AccessState }) {
       </div>
     )
   }
-  return disabledEnrol
+  return signInToEnrol
 }
 
-function CourseDetailContent() {
+function CourseDetailContent({ course, linkLessons }: { course: CourseDetail; linkLessons: boolean }) {
   const [searchParams] = useSearchParams()
   const access = readAccess(searchParams.get('access'))
-  const course = MOCK_COURSE_DETAIL
   const lessonCount = course.modules.reduce((sum, module) => sum + module.lessons.length, 0)
   const totalDuration = formatMinutes(course.modules.reduce((sum, module) => sum + sumMinutes(module.lessons), 0))
   const courseStructure = `${countOf(course.modules.length, 'module')} · ${countOf(lessonCount, 'lesson')} · ${totalDuration}`
@@ -235,10 +276,12 @@ function CourseDetailContent() {
               Course content
             </h2>
             <p className={styles.contentMeta}>{courseStructure}</p>
-            <p className={styles.quizNote}>
-              Quiz rows open the development quiz sample. Enrolment is not enforced in this development preview.
-            </p>
-            <ModuleList modules={course.modules} initiallyOpenId={course.initiallyOpenModuleId} />
+            {linkLessons ? (
+              <p className={styles.quizNote}>
+                Quiz rows open the development quiz sample. Enrolment is not enforced in this development preview.
+              </p>
+            ) : null}
+            <ModuleList modules={course.modules} initiallyOpenId={course.initiallyOpenModuleId} linkLessons={linkLessons} />
           </section>
 
           <aside className={styles.sidebar} aria-label="About this course">
@@ -277,7 +320,16 @@ function CourseDetailContent() {
 }
 
 /** Page-local accordion: each module heading is a button that shows or hides its lessons. */
-function ModuleList({ modules, initiallyOpenId }: { modules: MockModule[]; initiallyOpenId: string }) {
+function ModuleList({
+  modules,
+  initiallyOpenId,
+  linkLessons,
+}: {
+  modules: MockModule[]
+  initiallyOpenId: string
+  /** Only the approved design's course has lessons in the development player; others list titles only. */
+  linkLessons: boolean
+}) {
   const baseId = useId()
   const [openIds, setOpenIds] = useState<string[]>([initiallyOpenId])
 
@@ -319,7 +371,9 @@ function ModuleList({ modules, initiallyOpenId }: { modules: MockModule[]; initi
               {module.lessons.map((lesson) => (
                 <li key={lesson.title} className={styles.lesson}>
                   <span className={styles.lessonTitle}>
-                    {lesson.type === 'Quiz' ? (
+                    {!linkLessons ? (
+                      lesson.title
+                    ) : lesson.type === 'Quiz' ? (
                       <Link to={SAMPLE_QUIZ_PATH} className={styles.lessonLink}>
                         {lesson.title}
                       </Link>

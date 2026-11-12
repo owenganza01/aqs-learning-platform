@@ -1,0 +1,95 @@
+.section {
+  margin-bottom: var(--space-48);
+}
+
+.heading {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: var(--weight-semibold);
+}
+
+.intro {
+  margin: var(--space-8) 0 var(--space-16);
+  color: var(--color-text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  height: 100%;
+}
+
+.frame,
+.unavailable {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.frame {
+  background: var(--color-text);
+}
+
+.iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* No video yet: a quiet, clearly inactive frame (no play icon, nothing to click). */
+.unavailable {
+  display: grid;
+  place-items: center;
+  background: var(--color-surface-muted);
+  border: 1px dashed var(--color-border-strong);
+  color: var(--color-text-subtle);
+  font-size: var(--text-body-sm);
+}
+
+.body {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-card-sm);
+  line-height: var(--leading-card-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+}

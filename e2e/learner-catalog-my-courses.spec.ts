@@ -17,33 +17,56 @@ function sidebarLink(page: Page, name: string) {
   return page.getByRole('navigation', { name: 'Workspace' }).getByRole('link', { name })
 }
 
-test.describe('course catalog (development draft)', () => {
-  test('lists the two sample courses, with a draft notice and no enrolment control', async ({ page }) => {
+// Public Courses page (development preview; client request, 11 November 2026): public layout, the
+// platform tutorials apart from the courses, public sample courses only, details open without sign-in.
+test.describe('public Courses page (development preview)', () => {
+  test('uses the public layout with the platform tutorials and the public sample courses', async ({ page }) => {
     await page.goto(CATALOG)
-    await expect(page.getByRole('heading', { level: 1, name: 'Course catalog' })).toBeVisible()
-    await expect(page.getByText('Design draft with sample data', { exact: false })).toBeVisible()
-    const list = page.getByRole('list', { name: 'Sample courses' })
-    await expect(list.getByRole('article')).toHaveCount(2)
-    await expect(page.getByRole('button', { name: /enrol|enroll/i })).toHaveCount(0)
+    await expect(page.getByRole('heading', { level: 1, name: 'Courses', exact: true })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Workspace' })).toHaveCount(0)
+    await expect(page.getByText('Preview with sample courses', { exact: false })).toBeVisible()
+    await expect(page.getByRole('main').getByRole('heading', { level: 2 })).toHaveText(['Platform tutorials', 'Public courses'])
+    await expect(page.getByRole('list', { name: 'Public courses' }).getByRole('article')).toHaveCount(5)
+    await expect(page.getByRole('button', { name: /^enrol|^enroll/i })).toHaveCount(0)
   })
 
-  test('the regression course links to its detail page; the other course is shown as not available', async ({ page }) => {
+  test('the two tutorials are listed apart from the courses and say the video is coming later', async ({ page }) => {
+    await page.goto(CATALOG)
+    const tutorials = page.getByRole('list', { name: 'Platform tutorials' }).getByRole('article')
+    await expect(tutorials.getByRole('heading', { level: 3 })).toHaveText([
+      'Getting around AQS as a learner',
+      'Getting around AQS as an Organization Admin',
+    ])
+    await expect(tutorials.getByText('Coming later', { exact: true })).toHaveCount(2)
+    // No approved video yet: nothing plays and nothing pretends to
+    await expect(page.locator('iframe')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /play/i })).toHaveCount(0)
+  })
+
+  test('organization-only sample courses are not listed', async ({ page }) => {
+    await page.goto(CATALOG)
+    await expect(page.getByText(/Sample organization:/)).toHaveCount(0)
+  })
+
+  test('every public course opens its detail page', async ({ page }) => {
     await page.goto(CATALOG)
     const regression = page.getByRole('article').filter({ hasText: 'Introduction to Regression' })
-    await expect(regression.getByRole('link', { name: 'View course' })).toHaveAttribute('href', '/courses/sample-regression')
-
-    const analytics = page.getByRole('article').filter({ hasText: 'Data analytics fundamentals' })
-    await expect(analytics.getByRole('button', { name: 'View course (not available yet)' })).toBeDisabled()
+    await expect(regression.getByRole('link', { name: /View course/ })).toHaveAttribute('href', '/courses/sample-regression')
+    await page.getByRole('article').filter({ hasText: 'Customer service essentials' }).getByRole('link', { name: /View course/ }).click()
+    await expect(page).toHaveURL(/\/courses\/sample-customer-service$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Customer service essentials' })).toBeVisible()
   })
 
-  test('the sidebar Catalog link opens the catalog', async ({ page }) => {
-    await page.goto('/learn')
-    await sidebarLink(page, 'Catalog').click()
+  test('the header Courses link opens this page, not a workspace', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Courses', exact: true }).click()
     await expect(page).toHaveURL(/\/catalog$/)
-    await expect(page.getByRole('heading', { level: 1, name: 'Course catalog' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'Courses', exact: true })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Workspace' })).toHaveCount(0)
   })
 
-  test('the catalog makes no non-GET request', async ({ page }) => {
+  test('the page makes no non-GET request', async ({ page }) => {
     await page.goto(CATALOG)
     // Only non-GET requests can change state. Reads (including the Google Fonts stylesheet) are not writes.
     const writes: string[] = []
@@ -51,12 +74,12 @@ test.describe('course catalog (development draft)', () => {
       if (request.method() !== 'GET') writes.push(`${request.method()} ${request.url()}`)
     })
     await page.reload()
-    await expect(page.getByRole('heading', { level: 1, name: 'Course catalog' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'Courses', exact: true })).toBeVisible()
     expect(writes).toEqual([])
   })
 
   for (const width of [390, 768, 1440]) {
-    test(`the catalog has no horizontal overflow at ${width}px`, async ({ page }) => {
+    test(`the page has no horizontal overflow at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 })
       await page.goto(CATALOG)
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

@@ -1,9 +1,9 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 /*
- * Supabase client for Google-only sign-in (decision D15, clarified 23 October 2026).
- * Only the public project URL and the publishable key are read here. The Google client
- * secret stays in the Auth service and must never appear in frontend code.
+ * Supabase client (decision D15, clarified 23 October 2026; D42: Google, Apple, Facebook and email).
+ * Only the public project URL and the publishable key are read here. Provider client secrets stay
+ * in the Auth service and must never appear in frontend code.
  *
  * The client is null when either variable is missing, so public pages still load without
  * .env.local. Authentication then reports itself as unavailable (see lib/auth.tsx).

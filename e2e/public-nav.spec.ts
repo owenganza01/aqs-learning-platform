@@ -67,15 +67,22 @@ test.describe('public navigation at mobile width', () => {
   })
 })
 
-// Landing page Concept C (owner, 10 November 2026): only working destinations appear. About AQS and
-// Contact are implemented, but their links stay hidden until the owner approves their content; in
-// development builds the pages are reachable by URL, with marked placeholders, for design review.
+// Landing page Concept C (owner, 10 November 2026): only working destinations appear. About and
+// Contact link to the About AQS and Contact pages wherever those exist: in development builds
+// (marked placeholders, for design review) and in production once the owner approves them.
 test.describe('header and footer destinations', () => {
   test.use({ viewport: DESKTOP })
 
-  test('the header shows public navigation links', async ({ page }) => {
+  test('the header shows Home, Courses, About, Contact, then Sign in and Get started', async ({ page }) => {
     await page.goto('/')
-    await expect(mainNav(page).getByRole('link')).toHaveText(['Courses', 'For organizations', 'About AQS', 'Contact'])
+    await expect(mainNav(page).getByRole('link')).toHaveText(['Home', 'Courses', 'About', 'Contact'])
+    await expect(mainNav(page).getByRole('link', { name: 'For organizations' })).toHaveCount(0)
+    // Sign in and Get started follow the navigation in the header
+    const header = page.getByRole('banner')
+    const order = await header.locator('a, [aria-disabled="true"], button').allTextContents()
+    const known = ['Home', 'Courses', 'About', 'Contact', 'Sign in', 'Get started']
+    expect(order.map((text) => text.replace(' (not available yet)', '').trim()).filter((text) => known.includes(text))).toEqual(known)
+    await expect(page.locator('[aria-disabled="true"]', { hasText: /About|Contact/ })).toHaveCount(0)
   })
 
   test('the footer lists working links only, with nothing greyed out', async ({ page }) => {
@@ -91,9 +98,20 @@ test.describe('header and footer destinations', () => {
     await expect(footer.locator('[aria-disabled="true"]')).toHaveCount(0)
   })
 
-  test('For organizations opens the organizations section from another page', async ({ page }) => {
+  test('About and Contact open the About AQS and Contact pages', async ({ page }) => {
+    await page.goto('/')
+    await mainNav(page).getByRole('link', { name: 'About', exact: true }).click()
+    await expect(page).toHaveURL(/\/about$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'About AQS' })).toBeVisible()
+
+    await mainNav(page).getByRole('link', { name: 'Contact', exact: true }).click()
+    await expect(page).toHaveURL(/\/contact$/)
+    await expect(page.getByRole('heading', { level: 1, name: 'Contact AQS' })).toBeVisible()
+  })
+
+  test('the footer For organizations link opens the organizations section from another page', async ({ page }) => {
     await page.goto('/about')
-    await mainNav(page).getByRole('link', { name: 'For organizations', exact: true }).click()
+    await page.getByRole('contentinfo').getByRole('link', { name: 'For organizations', exact: true }).click()
     await expect(page).toHaveURL(/\/#organizations$/)
     await expect(page.locator('#organizations')).toBeFocused()
   })
@@ -164,5 +182,79 @@ test.describe('public navigation across the 1024px breakpoint', () => {
     await expect(mainNav(page)).toBeHidden()
     await expect(toggle(page)).toHaveAttribute('aria-expanded', 'false')
     await expect(toggle(page)).toBeFocused()
+  })
+})
+
+// Client requirement (11 November 2026): Home is first and always opens the landing page at its top.
+test.describe('Home link', () => {
+  test.use({ viewport: DESKTOP })
+
+  test('on the landing page it scrolls smoothly back to the top and moves focus to the content', async ({ page }) => {
+    await page.goto('/')
+    await expect(mainNav(page).getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page')
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(400)
+
+    // Record the scroll positions while it moves: a smooth scroll passes through positions in between.
+    await page.evaluate(() => {
+      const w = window as unknown as { seen: number[] }
+      w.seen = []
+      window.addEventListener('scroll', () => w.seen.push(window.scrollY))
+    })
+    const historyLength = await page.evaluate(() => history.length)
+    await mainNav(page).getByRole('link', { name: 'Home' }).click()
+
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
+    const seen = await page.evaluate(() => (window as unknown as { seen: number[] }).seen)
+    expect(seen.some((y) => y > 0)).toBe(true)
+    await expect(page).toHaveURL(/\/$/)
+    await expect(page.locator('#main-content')).toBeFocused()
+    expect(await page.evaluate(() => history.length)).toBe(historyLength)
+  })
+
+  test('from a section anchor it returns to the top and drops the anchor', async ({ page }) => {
+    await page.goto('/#organizations')
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+    await mainNav(page).getByRole('link', { name: 'Home' }).click()
+    await expect(page).toHaveURL(/\/$/)
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
+  })
+
+  test('from another page it opens the landing page at the top, not at the old scroll position', async ({ page }) => {
+    await page.goto('/about')
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    await mainNav(page).getByRole('link', { name: 'Home' }).click()
+    await expect(page).toHaveURL(/\/$/)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
+  })
+
+  test('with reduced motion it jumps to the top without animating', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('/')
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    const start = await page.evaluate(() => window.scrollY)
+    await page.evaluate(() => {
+      const w = window as unknown as { seen: number[] }
+      w.seen = []
+      window.addEventListener('scroll', () => w.seen.push(window.scrollY))
+    })
+    await mainNav(page).getByRole('link', { name: 'Home' }).click()
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
+    const seen = await page.evaluate(() => (window as unknown as { seen: number[] }).seen)
+    // Only the starting position (a late event from the setup scroll) or the top: nothing in between
+    expect(seen.every((y) => y === 0 || y === start)).toBe(true)
+  })
+
+  test('works from the mobile menu with the keyboard', async ({ page }) => {
+    await page.setViewportSize(MOBILE)
+    await page.goto('/')
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    await toggle(page).focus()
+    await page.keyboard.press('Enter')
+    await mainNav(page).getByRole('link', { name: 'Home' }).focus()
+    await page.keyboard.press('Enter')
+    await expect(mainNav(page)).toBeHidden()
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
   })
 })

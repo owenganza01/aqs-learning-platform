@@ -17,6 +17,12 @@ export default defineConfig({
     command: `npm run dev -- --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: false,
-    env: { VITE_SUPABASE_URL: MOCK_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key', VITE_DATA_MODE: 'live' },
+    env: {
+      VITE_SUPABASE_URL: MOCK_SUPABASE_URL,
+      VITE_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key',
+      VITE_DATA_MODE: 'live',
+      // D42: every sign-in method on, so the tests cover each flow against the mocked Auth API.
+      VITE_AUTH_PROVIDERS: 'google,apple,facebook,email',
+    },
   },
 })

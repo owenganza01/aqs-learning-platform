@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react'
 import { Wordmark } from './Wordmark'
+import type { AuthPhoto } from './auth-photos'
 import styles from './AuthLayout.module.css'
+
+/** The photo on the navy side. Shown at 480 × 320 at most; the file is 960 × 640 for sharp screens. */
+export function AuthPhotoImage({ photo }: { photo: AuthPhoto }) {
+  return <img className={styles.photo} src={photo.src} alt={photo.alt} width={960} height={640} decoding="async" />
+}
 
 type AuthLayoutProps = {
   /** Card content: heading, sign-in button, small print. */

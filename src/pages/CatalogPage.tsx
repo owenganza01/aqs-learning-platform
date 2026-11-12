@@ -1,73 +1,79 @@
 import { AppShell } from '../components/layout/AppShell'
 import { PublicLayout } from '../components/layout/PublicLayout'
 import type { NavItem } from '../components/layout/types'
-import { Badge, Banner, Button, ButtonLink, Card } from '../components/ui'
-import { getShellDefinition } from '../lib/navigation'
-import { SAMPLE_COURSE_CATALOG, playableLessons } from '../dev/sample-course'
-import { useAuth } from '../lib/auth-context'
-import styles from './CatalogPage.module.css'
+import { Badge, Banner, ButtonLink, Card } from '../components/ui'
+import { samplePublicCourses } from '../dev/sample-public-catalog'
+import { playableLessons } from '../dev/sample-course'
 import { countOf } from '../lib/plural'
+import { getShellDefinition } from '../lib/navigation'
+import { useAuth } from '../lib/auth-context'
+import { PlatformTutorials } from './catalog/PlatformTutorials'
+import styles from './CatalogPage.module.css'
 
 /*
- * Course catalog at /catalog (development preview with sample data).
- * Public visitors see the catalog in PublicLayout without being automatically logged in.
- * Authenticated learners see the catalog inside their learner shell.
+ * Public Courses page at /catalog — DEVELOPMENT ONLY (decision D27). The header's Courses link opens
+ * it, in the public layout rather than the learner workspace (client request, 11 November 2026).
+ * Two parts, kept apart: the platform tutorials (public videos) and the public courses. The courses
+ * are samples (src/dev/sample-public-catalog.ts): only public ones are listed, and each opens its
+ * detail page without signing in; enrolling needs sign-in. Nothing is enrolled, saved or sent.
  */
 
 const LEARNER_NAV: NavItem[] = getShellDefinition('learner', '/learn').navItems
 
 export default function CatalogPage() {
   const { session } = useAuth()
-  const courses = Object.values(SAMPLE_COURSE_CATALOG)
+  const courses = samplePublicCourses()
 
   const content = (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Course catalog</h1>
-        <p className={styles.intro}>
-          {session
-            ? 'Courses open to you, from your organizations and the public catalog.'
-            : 'Browse the sample courses available in this preview.'}
-        </p>
-      </header>
+    <>
+      <Banner tone="info" flush>
+        Preview with sample courses. The courses are invented for this preview, and enrolment is not connected.
+      </Banner>
+      <div className={styles.page}>
+        <header className={styles.header}>
+          <h1 className={styles.title}>Courses</h1>
+          <p className={styles.intro}>Watch a short tutorial or browse the public courses. You only need to sign in to enroll.</p>
+        </header>
 
-      <div style={{ marginBottom: 'var(--space-24)' }}>
-        <Banner tone="info" flush>
-          Sample course catalog preview. Enrolment requires sign-in with an eligible account.
-        </Banner>
+        <PlatformTutorials />
+
+        <section aria-labelledby="public-courses-heading">
+          <h2 className={styles.sectionTitle} id="public-courses-heading">
+            Public courses
+          </h2>
+          <p className={styles.sectionIntro}>
+            Open to everyone. Courses an organization keeps private are not listed here: its members find them in their
+            workspace after signing in.
+          </p>
+          <ul className={styles.grid} aria-label="Public courses">
+            {courses.map((course) => {
+              const lessons = playableLessons(course.modules)
+              const minutes = lessons.reduce((total, lesson) => total + lesson.minutes, 0)
+              return (
+                <li key={course.id}>
+                  <Card as="article" className={styles.card}>
+                    <p className={styles.category}>{course.category}</p>
+                    <h3 className={styles.courseTitle}>{course.title}</h3>
+                    <p className={styles.summary}>{course.summary}</p>
+                    <p className={styles.meta}>
+                      {countOf(course.modules.length, 'module')} · {countOf(lessons.length, 'lesson')} · {minutes} min
+                    </p>
+                    <div className={styles.badges}>
+                      <Badge tone="info">Public</Badge>
+                      <Badge tone="neutral">{course.level}</Badge>
+                      <Badge tone="neutral">Sample</Badge>
+                    </div>
+                    <ButtonLink variant="secondary" to={`/courses/${course.id}`} className={styles.action}>
+                      View course<span className="visually-hidden"> {course.title}</span>
+                    </ButtonLink>
+                  </Card>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
       </div>
-
-      <ul className={styles.grid} aria-label="Sample courses">
-        {courses.map((course) => {
-          const lessons = playableLessons(course.modules)
-          const minutes = lessons.reduce((total, lesson) => total + lesson.minutes, 0)
-          return (
-            <li key={course.id}>
-              <Card as="article" className={styles.card}>
-                <p className={styles.category}>{course.category}</p>
-                <h2 className={styles.courseTitle}>{course.title}</h2>
-                <p className={styles.meta}>
-                  {countOf(course.modules.length, 'module')} · {countOf(lessons.length, 'lesson')} · {minutes} min
-                </p>
-                <div className={styles.badges}>
-                  <Badge tone="neutral">Sample</Badge>
-                </div>
-                {course.hasDetailPage ? (
-                  <ButtonLink variant="secondary" to={`/courses/${course.id}`} className={styles.action}>
-                    View course
-                  </ButtonLink>
-                ) : (
-                  <Button variant="secondary" disabled className={styles.action}>
-                    View course
-                    <span className="visually-hidden"> (not available yet)</span>
-                  </Button>
-                )}
-              </Card>
-            </li>
-          )
-        })}
-      </ul>
-    </div>
+    </>
   )
 
   if (!session) {

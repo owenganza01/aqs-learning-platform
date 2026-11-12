@@ -116,8 +116,14 @@
   display: block;
   width: 100%;
   height: auto;
+  /* The hero frame keeps its 1200 : 505 proportions; the 3:2 photo is cropped to fill it, keeping
+     the four people and the desk in view. */
+  aspect-ratio: 1200 / 505;
+  object-fit: cover;
+  object-position: 50% 60%;
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  /* Sharp corners (client request, 12 November 2026). */
+  border-radius: 0;
   background: var(--color-white);
   box-shadow: 0 12px 32px -4px rgb(30 58 95 / 15%);
 }
@@ -311,18 +317,13 @@
 
 /* ------------------------------------------------------ For organizations */
 
+/* Client request (11 November 2026): the band uses the page's light palette (the hero's blue-50
+   tint, dark text, the orange accent line) instead of a navy block. Text contrast: --color-text
+   17.2:1, --color-text-subtle 7.0:1 and the eyebrow's --color-accent-text 4.9:1 on blue-50. */
 .organizations {
-  background: var(--color-navy);
-  color: var(--color-white);
-}
-
-/* White on navy is 11.5:1; the orange eyebrow colour would fail contrast here */
-.organizations .eyebrowOnDark {
-  color: var(--color-blue-100);
-}
-
-.headingOnDark {
-  color: var(--color-white);
+  background: var(--color-blue-50);
+  border-top: 1px solid var(--color-blue-100);
+  border-bottom: 1px solid var(--color-blue-100);
 }
 
 .facts {
@@ -341,7 +342,7 @@
 
 .factTitle {
   margin: 0 0 var(--space-8);
-  color: var(--color-white);
+  color: var(--color-text);
   font-size: var(--text-card-sm);
   line-height: var(--leading-card-sm);
   font-weight: var(--weight-semibold);
@@ -350,14 +351,14 @@
 .fact p,
 .step p {
   margin: 0;
-  color: var(--color-blue-100);
+  color: var(--color-text-subtle);
   font-size: var(--text-body-sm);
   line-height: var(--leading-body-sm);
 }
 
 .stepsHeading {
   margin: 56px 0 0;
-  color: var(--color-white);
+  color: var(--color-text);
   font-size: 22px;
   line-height: 30px;
   font-weight: var(--weight-semibold);
@@ -378,13 +379,13 @@
 }
 
 .step p {
-  color: var(--color-white);
+  color: var(--color-text);
   font-size: var(--text-body);
   line-height: var(--leading-body);
 }
 
 .stepNumber {
-  color: var(--color-blue-100);
+  color: var(--color-action);
   font-size: var(--text-caption);
   font-weight: var(--weight-bold);
 }
@@ -426,8 +427,7 @@
 }
 
 .statement p,
-.learning p,
-.aboutBody p {
+.learning p {
   margin: 0;
   color: var(--color-text-subtle);
   font-size: var(--text-body-sm);
@@ -441,17 +441,6 @@
   margin: var(--space-40) 0 0;
   padding: 0;
   list-style: none;
-}
-
-.aboutBody {
-  display: grid;
-  gap: var(--space-16);
-}
-
-.aboutLinks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-24);
 }
 
 /* --------------------------------------------------------------- Closing */

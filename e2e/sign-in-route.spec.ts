@@ -1,10 +1,11 @@
 import { expect, test, type Page } from '@playwright/test'
 
-// D27 / D15: /sign-in is a development-only mock. Its Google button is inert, and the page
-// makes no sign-in, provider, API, session or storage call. The screen is presentation only.
+// D27 / D42: /sign-in is a development-only mock. It shows every sign-in method (Google, Apple,
+// Facebook, email), all inert: the page makes no sign-in, provider, API, session or storage call.
 
 const DEMO_NOTICE = 'Demo only. Sign-in is not available yet. This page makes no sign-in or provider calls.'
 const PLACEHOLDER = 'Hero photo placeholder (pending approved asset)'
+const PHOTO_ALT = 'A learner at home takes notes during a video lesson with an instructor on a laptop.'
 const FOOTER_ITEMS = ['Privacy Policy', 'Terms', 'Learn about teaching.']
 
 const googleButton = (page: Page) => page.getByRole('button', { name: 'Continue with Google' })
@@ -20,12 +21,47 @@ async function tabThrough(page: Page, count: number) {
 }
 
 test.describe('sign-in demo route (development only)', () => {
-  test('renders the heading, Google button, demo notice and hero placeholder', async ({ page }) => {
+  test('renders the heading, every sign-in option, the demo notice and the photo', async ({ page }) => {
     await page.goto('/sign-in')
     await expect(page.getByRole('heading', { level: 1, name: 'Welcome' })).toBeVisible()
-    await expect(googleButton(page)).toBeVisible()
+    await expect(page.getByRole('list', { name: 'Sign-in options' }).getByRole('button')).toHaveText([
+      'Continue with Google',
+      'Continue with Apple',
+      'Continue with Facebook',
+    ])
+    await expect(page.getByRole('button', { name: 'Sign in with Email' })).toBeVisible()
     await expect(page.getByText(DEMO_NOTICE, { exact: true })).toBeVisible()
-    await expect(page.getByText(PLACEHOLDER, { exact: true })).toBeVisible()
+    await expect(page.getByText(PLACEHOLDER, { exact: true })).toHaveCount(0)
+  })
+
+  test('the photo is the learner on a video call, 3:2, cropped to fill the panel', async ({ page }) => {
+    await page.goto('/sign-in')
+    const photo = page.getByRole('img', { name: PHOTO_ALT })
+    await expect(photo).toBeVisible()
+    await expect(photo).toHaveAttribute('src', '/images/auth/learner-video-call.jpg')
+    await expect(photo).toHaveCSS('object-fit', 'cover')
+    expect(await photo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth)).toBe(960)
+    const box = await photo.boundingBox()
+    expect(box && Math.round((box.width / box.height) * 100) / 100).toBe(1.5)
+  })
+
+  test('every option is inert, including the email form', async ({ page }) => {
+    await page.goto('/sign-in')
+    // Let the page finish loading its code and photo first: only requests caused by the controls count.
+    await expect(page.getByRole('button', { name: 'Continue with Apple' })).toBeVisible()
+    await page.waitForLoadState('networkidle')
+    const requests: string[] = []
+    page.on('request', (request) => requests.push(request.url()))
+    for (const name of ['Continue with Apple', 'Continue with Facebook']) await page.getByRole('button', { name }).click()
+    await page.getByRole('button', { name: 'Sign in with Email' }).click()
+    await expect(page.getByRole('button', { name: 'Sign in with Email' })).toHaveAttribute('aria-expanded', 'true')
+    const form = page.getByRole('form', { name: 'Sign in with email' })
+    await expect(form.getByLabel('Email address')).toBeDisabled()
+    await expect(form.getByLabel('Password')).toBeDisabled()
+    await expect(form.getByRole('button', { name: 'Sign in (not available yet)' })).toBeDisabled()
+    await page.waitForLoadState('networkidle')
+    expect(page.url()).toMatch(/\/sign-in$/)
+    expect(requests).toEqual([])
   })
 
   test('the Google button is inert: no navigation, request, session or storage write', async ({ page }) => {

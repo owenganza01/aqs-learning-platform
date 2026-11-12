@@ -28,7 +28,7 @@ async function openCatalog(page: Page) {
   await signIn(page)
   const mock = await mockSupabase(page, { tables: { ...sessionTables(), courses }, rpc: { my_enrolled_course_titles: () => ({ json: [] }) } })
   await page.goto('/catalog')
-  await expect(page.getByRole('heading', { level: 1, name: 'Course catalog' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Courses', exact: true })).toBeVisible()
   return mock
 }
 
@@ -37,7 +37,7 @@ const courseRequests = (mock: Awaited<ReturnType<typeof openCatalog>>) =>
 
 test('the catalog fetches one page of 12, counted by the database, and pages through the rest', async ({ page }) => {
   const mock = await openCatalog(page)
-  const cards = page.getByRole('list', { name: 'Courses' }).getByRole('listitem')
+  const cards = page.getByRole('list', { name: 'Courses open to you', exact: true }).getByRole('listitem')
   await expect(cards).toHaveCount(12)
   await expect(page.getByText('Showing 1–12 of 30 courses')).toBeVisible()
   const first = courseRequests(mock).at(-1)

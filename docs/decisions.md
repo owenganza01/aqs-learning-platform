@@ -970,6 +970,21 @@ No approval decision has changed. D1 colours, D24 unavailable navigation and the
 
 **Why:** the owner approved the blue proposed in the landing page proposal (Revision 2, section 12), with its rules for secondary buttons and navy surfaces, and asked for the network animation to work. A blue fill is only 1.72:1 against navy, hence the inverse style there. The earlier animation moved the whole drawing as one block by 32px over 28 seconds, so no movement was visible.
 
+## D42 — Sign-in and sign-up with Google, Apple, Facebook and email (reported owner approval, 12 November 2026)
+
+*Recorded 12 November 2026 on the developer's report that the owner approved the client requirement "Authentication & Onboarding" (support for email and password, Apple and Facebook besides Google). The owner's written confirmation is still to be added here. This entry authorises frontend work only; it changes no hosted setting.*
+
+**Decision (as reported)**
+- People may sign up and sign in with Google, Apple, Facebook, or an email address and password, through Supabase Auth. This amends D26 (Google-only for the first release) and D15's 23 October limits (email and password sign-in and password sign-up disabled) for these four methods only. Magic links, email OTP, phone and anonymous sign-in stay disabled.
+- Every new account is a learner account with no organization membership and no privileged role (F1). A sign-in alone never grants an administrator or organization role.
+- **Staff access stays Google-only.** Invitations and domain admission accept only a verified Google identity (D33, D40; migrations 0006 and 0015 are unchanged), so an Apple, Facebook or email account can learn public courses but cannot accept an invitation or be admitted by domain. Onboarding explains this to organizations.
+- Passwords are handled by Supabase Auth only: the application never stores, logs or sends them anywhere else. New passwords need at least 8 characters in the form; the project's Supabase Auth password rules still apply. Email accounts confirm their address through the link Supabase sends before they get a session, where the project requires confirmation.
+- A method is offered only when it is switched on for the deployment (`VITE_AUTH_PROVIDERS`) after its provider is enabled and configured in Supabase Auth, so no button appears that cannot complete its flow. Setup per provider: `docs/auth-providers.md`.
+
+**Not authorised by this entry:** enabling or configuring any provider on a hosted project (Apple and Facebook developer apps, secrets, Supabase Auth settings, redirect allow-lists, email templates or SMTP), migrations, and deployments. Each needs its own owner authorisation. Until a provider is configured and verified on the test website, it is reported as not verified.
+
+**Open:** the owner's written confirmation; Apple and Facebook developer accounts (owner); whether email confirmation is required (recommended: yes); the password policy in Supabase Auth; password reset (not built; needs its own design and approval); the sign-in and sign-up designs for the new options (built in the existing layout and components).
+
 ## Amendment index
 
 The older entries listed here keep their original text. This index records how later entries relate to them.
@@ -1018,6 +1033,7 @@ The older entries listed here keep their original text. This index records how l
 | D19, D20, D32, D34, D37 | D38 | D38 confirms the working defaults built into migrations 0006–0011 and their review answers (Q-06…Q-10, Q-P4, Q-P12-1), with two changes (Q-07-12, Q-08-1) to be implemented in M2 and M3. Earlier entries' text is unchanged. |
 | D5, D20, D34 (P5, P16, L11 P3), D38 (Q-07-2, Q-07-5, #6) | D39 | Public-course video through the AQS-owned YouTube channel after two-gate AQS review; organisation-only video stays in private Storage with required, confirmed timed captions; narrow audited exceptions to L11 P3 (review of public-course submissions) and P5 (re-attaching the same reviewed master); retention periods deferred to R4. P16's boundary and D20 stand. Earlier entries' text is unchanged. |
 | D34 (P14) | D40 | Superseded 8 November 2026: domain verification and automatic domain admission are in the first release under D4 and D31's rules. Organisation Admins view, pause and resume admission for their own verified domains; Platform Admins add, verify and remove domains. P14's text is unchanged as the historical record. |
+| D15, D26 | D42 | Reported owner approval, 12 November 2026: Google, Apple, Facebook and email with a password for sign-up and sign-in; staff access (invitations, domain admission) stays Google-only through D33; no hosted setting changed. Owner's written confirmation pending. D15's and D26's text is unchanged. |
 
 ### Owner confirmations — 22 October 2026
 

@@ -1,5 +1,6 @@
 export { PublicLayout } from './PublicLayout'
-export { AuthLayout } from './AuthLayout'
+export { AuthLayout, AuthPhotoImage } from './AuthLayout'
+export { AUTH_PHOTOS, type AuthPhoto } from './auth-photos'
 export { AppShell } from './AppShell'
 export { FocusLayout } from './FocusLayout'
 export { Wordmark } from './Wordmark'

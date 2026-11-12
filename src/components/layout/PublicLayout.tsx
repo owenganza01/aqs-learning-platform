@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router'
 import { ButtonLink, Icon } from '../ui'
 import type { NavItem } from './types'
 import { Wordmark } from './Wordmark'
-import { GET_STARTED_PATH, publicFooterColumns, publicHeaderNav } from '../../lib/public-navigation'
+import { GET_STARTED_PATH, HOME_PATH, publicFooterColumns, publicHeaderNav } from '../../lib/public-navigation'
 import styles from './PublicLayout.module.css'
 import { useAuth } from '../../lib/auth-context'
 import { useOptionalSession, workspacesFor } from '../../live/session-context'
@@ -57,7 +57,7 @@ export function PublicLayout({
   mainId = 'main-content',
 }: PublicLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const { pathname } = useLocation()
+  const { pathname, hash } = useLocation()
   const account = useHeaderAccount()
   const { signOut } = useAuth()
   const menuId = useId()
@@ -156,6 +156,11 @@ export function PublicLayout({
                       className={styles.navLink}
                       onClick={closeMenu}
                       aria-current={(item.active ?? pathname === item.to) ? 'page' : undefined}
+                      // Home always opens the landing page at its top: smoothly when already on it
+                      // (LandingPage reads this state). Re-choosing Home there adds no history entry.
+                      {...(item.to === HOME_PATH
+                        ? { state: { homeTop: pathname === HOME_PATH }, replace: pathname === HOME_PATH && !hash }
+                        : {})}
                     >
                       {item.label}
                     </Link>

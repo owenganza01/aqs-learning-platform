@@ -82,3 +82,35 @@ export const CONTACT_CONTENT: {
   address: null,
   replyTimes: null,
 }
+
+/*
+ * Platform navigation tutorials on the Courses page (client request, 11 November 2026). Public: no
+ * sign-in is needed to watch them. `youtubeId` stays null until AQS supplies the approved video,
+ * published on the AQS YouTube channel after AQS review (D39). Never put a sample or unrelated video
+ * id here: whatever is set here is published. Until then the tutorial shows as "Coming later".
+ */
+export type PlatformTutorial = {
+  id: 'learner' | 'org-admin'
+  title: string
+  description: string
+  /** Spoken language of the video, for the caption preference (D39: every video has captions). */
+  spokenLanguage: string
+  youtubeId: string | null
+}
+
+export const PLATFORM_TUTORIALS: PlatformTutorial[] = [
+  {
+    id: 'learner',
+    title: 'Getting around AQS as a learner',
+    description: 'Find a course, enroll, and work through its lessons and quizzes.',
+    spokenLanguage: 'en',
+    youtubeId: null,
+  },
+  {
+    id: 'org-admin',
+    title: 'Getting around AQS as an Organization Admin',
+    description: "Manage your organization's workspace: members, invitations and course assignments.",
+    spokenLanguage: 'en',
+    youtubeId: null,
+  },
+]

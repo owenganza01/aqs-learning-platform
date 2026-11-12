@@ -14,6 +14,7 @@ import { LiveAccessDenied, LiveSignInRequired } from './pages/LiveNotices'
  */
 
 const LiveSignInPage = lazy(() => import('./pages/LiveSignInPage'))
+const LiveSignUpPage = lazy(() => import('./pages/LiveSignUpPage'))
 const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage'))
 const LiveInvitePage = lazy(() => import('./pages/LiveInvitePage'))
 const LiveLearnerDashboard = lazy(() => import('./pages/learner/LiveLearnerDashboard'))
@@ -76,6 +77,7 @@ export function LiveApp({ extraRoutes }: { extraRoutes?: ReactNode }) {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/sign-in" element={<Page><LiveSignInPage /></Page>} />
+        <Route path="/sign-up" element={<Page><LiveSignUpPage /></Page>} />
         <Route path="/auth/callback" element={<Page><AuthCallbackPage /></Page>} />
         <Route path="/invite" element={<Page><LiveInvitePage /></Page>} />
         <Route path="/invite/:token" element={<Page><LiveInvitePage /></Page>} />

@@ -15,14 +15,13 @@ test.describe('landing page content', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
     const headings = await page.getByRole('main').getByRole('heading', { level: 2 }).allTextContents()
     // The two door titles, then the sections. "Private organization workspaces" waits for its checks
-    // (statements C1 and C3); the About AQS block is a marked development preview (see below).
+    // (statements C1 and C3). The About AQS block was removed at the client's request (11 November 2026).
     expect(headings).toEqual([
       'I want to learn',
       "I'm training a team",
       'Build the skills that move your career forward.',
       "Train your staff in your organization's own workspace.",
       'What a course on AQS includes.',
-      'About AQS',
       'Ready when you are.',
     ])
   })
@@ -114,11 +113,20 @@ test.describe('landing page content', () => {
     await page.mouse.up()
   })
 
-  test('the About AQS block is a marked development preview, with no ownership statement', async ({ page }) => {
+  test('has no About AQS block (client request, 11 November 2026)', async ({ page }) => {
     await page.goto('/')
-    const about = page.locator('#about')
-    await expect(about.getByText('Placeholder · Introduction · AQS to supply')).toBeVisible()
+    await expect(page.locator('#about')).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: 'About AQS' })).toHaveCount(0)
+    await expect(page.getByText('Placeholder · Introduction · AQS to supply')).toHaveCount(0)
     await expect(page.getByText(/owned and operated/i)).toHaveCount(0)
+  })
+
+  test('the For organizations band uses the light page palette, not a navy block', async ({ page }) => {
+    await page.goto('/')
+    const band = page.locator('#organizations')
+    await expect(band).toHaveCSS('background-color', 'rgb(239, 246, 255)') // --color-blue-50, as in the hero
+    await expect(band.getByRole('heading', { level: 2 })).toHaveCSS('color', 'rgb(15, 23, 42)') // --color-text
+    await expect(band.getByText('For organizations', { exact: true })).toHaveCSS('color', 'rgb(194, 65, 12)') // eyebrow
   })
 })
 
