@@ -1,17 +1,19 @@
-import { useId, type ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { AuthLayout } from '../components/layout/AuthLayout'
 import { Banner, Button } from '../components/ui'
 import { cx } from '../lib/cx'
+import { useAuth } from '../lib/auth-context'
 import styles from './SignInPage.module.css'
 
 /*
- * Mock sign-in screen (desktop) — DEVELOPMENT ONLY, registered at /sign-in under
- * import.meta.env.DEV (decision D27). It is presentation only: the Google button is
- * inert and the page makes no sign-in, provider, API, session, token or storage call
- * (decision D15). Real authentication is not approved.
+ * Sign-in screen (Google-only authentication).
+ * In local preview mode without Supabase credentials, clicking "Continue with Google"
+ * displays a clear notice rather than silently failing.
  */
 
-const DEMO_NOTICE = 'Demo only. Sign-in is not available yet. This page makes no sign-in or provider calls.'
+const DEMO_NOTICE = 'Preview mode: Sign-in requires Supabase authentication with Google OAuth.'
+const NOT_CONFIGURED_NOTICE =
+  'Google sign-in is not available in local preview mode because Supabase authentication is not configured. Add your Supabase credentials to .env.local to enable live authentication.'
 
 /** A footer item without an approved destination (D24): dimmed, not a link, not focusable. */
 function UnavailableItem({ children }: { children: ReactNode }) {
@@ -94,13 +96,38 @@ export function SignInView({ notice, onContinue, busy = false, footer, photoCapt
 }
 
 export default function SignInPage() {
+  const { authAvailable, signInWithGoogle } = useAuth()
+  const [busy, setBusy] = useState(false)
+  const [notice, setNotice] = useState<string | null>(null)
+
+  const handleContinue = async () => {
+    if (!authAvailable) {
+      setNotice(NOT_CONFIGURED_NOTICE)
+      return
+    }
+    setBusy(true)
+    setNotice(null)
+    const redirectTo = `${window.location.origin}/auth/callback`
+    const result = await signInWithGoogle({ redirectTo })
+    if (result.error) {
+      setNotice('We couldn’t open Google sign-in. Please try again.')
+      setBusy(false)
+    }
+  }
+
   return (
     <SignInView
+      busy={busy}
       notice={
-        <Banner tone="info">
-          <span>{DEMO_NOTICE}</span>
-        </Banner>
+        notice ? (
+          <Banner tone="info">{notice}</Banner>
+        ) : (
+          <Banner tone="info">
+            <span>{DEMO_NOTICE}</span>
+          </Banner>
+        )
       }
+      onContinue={handleContinue}
     />
   )
 }

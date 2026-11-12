@@ -82,3 +82,50 @@
   font-size: 0.875rem;
   color: var(--color-text-muted);
 }
+
+/* WP3 (0021): proposed administrators from the request, and the organisation profile. */
+.proposed {
+  display: grid;
+  gap: var(--space-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.proposed li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  overflow-wrap: anywhere;
+}
+
+.profile {
+  display: grid;
+  gap: var(--space-12);
+  margin: 0 0 var(--space-16);
+}
+
+.profile > div {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: var(--space-16);
+}
+
+.profile dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.profile dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+  .profile > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+}

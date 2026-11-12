@@ -113,6 +113,11 @@ const LessonPage = import.meta.env.DEV ? lazy(() => import('./pages/LessonPage')
    * ABOUT_AND_CONTACT_APPROVED in content/public-site.ts and change `import.meta.env.DEV` here to `true`. */
   const AboutPage = import.meta.env.DEV ? lazy(() => import('./pages/AboutPage')) : null
   const ContactPage = import.meta.env.DEV ? lazy(() => import('./pages/ContactPage')) : null
+  /* Get Started and "Request a workspace" (WP2 2-1, WP3 3-3, 10 November 2026). Get Started is a real public
+   * page. Without Supabase the request form cannot send anything, so its preview (which says so) exists in
+   * development builds only; the live app (LiveApp.tsx) has the working form. */
+  const GetStartedPage = lazy(() => import('./pages/GetStartedPage'))
+  const RequestWorkspacePreview = import.meta.env.DEV ? lazy(() => import('./pages/RequestWorkspacePreview')) : null
 
 export default function App() {
   if (LIVE_MODE) {
@@ -126,6 +131,10 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/get-started" element={<Suspense fallback={null}><GetStartedPage /></Suspense>} />
+        {RequestWorkspacePreview ? (
+          <Route path="/request-workspace" element={<Suspense fallback={null}><RequestWorkspacePreview /></Suspense>} />
+        ) : null}
         {DesignSystemPage ? (
           <Route
             path="/design-system"

@@ -55,6 +55,25 @@ test.describe('live mode, signed-in learner', () => {
     await expect(page.getByText('Ada Learner', { exact: true })).toBeVisible()
   })
 
+  // WP1 1-7 and 1-8: the removed filler copy stays gone, and certificates have one signal only
+  // (the dimmed sidebar item). See docs/review-artifacts/wp1/.
+  test('the dashboard shows no filler copy and no certificate stat card', async ({ page }) => {
+    await signIn(page)
+    await mockSupabase(page, { tables: learnerTables({ enrolled: true, done: [] }) })
+    await page.goto('/learn')
+    await expect(page.getByRole('heading', { name: 'Welcome back, Ada' })).toBeVisible()
+    for (const gone of [
+      'A little progress, every day.',
+      'Keep your momentum going',
+      'Every lesson is a step forward',
+      'Your learning, all in one place.',
+      'Certificates earned',
+      'Certificates are coming later',
+    ]) {
+      await expect(page.getByText(gone)).toHaveCount(0)
+    }
+  })
+
   test('enrolling calls enrol_in_course and then offers to start', async ({ page }) => {
     const state = { enrolled: false, done: [] as string[] }
     await signIn(page)

@@ -30,6 +30,8 @@ const FORBIDDEN = [
   { name: 'thumbnail placeholder text', pattern: /Thumbnail placeholder/ },
   // Landing page Concept C (owner, 10 November 2026): placeholder and dummy company content never ships.
   { name: 'About/Contact placeholder', pattern: /AQS to supply|Placeholder · |\[AQS (?:email address|phone number|physical or postal address)/ },
+  // WP3 (10 November 2026): the request form's preview sends nothing, so it never ships.
+  { name: 'request form preview', pattern: /requests are not sent or saved here|REQ-SAMPLE/ },
   // Secrets (T6). The publishable key (sb_publishable_…) is public by design and allowed.
   { name: 'Supabase secret key', pattern: /sb_secret_[A-Za-z0-9_-]{10,}/ },
   { name: 'service-role key name', pattern: /SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEYS/ },

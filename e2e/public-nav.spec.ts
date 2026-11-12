@@ -73,20 +73,19 @@ test.describe('public navigation at mobile width', () => {
 test.describe('header and footer destinations', () => {
   test.use({ viewport: DESKTOP })
 
-  test('the header shows Courses and For organizations only', async ({ page }) => {
+  test('the header shows public navigation links', async ({ page }) => {
     await page.goto('/')
-    await expect(mainNav(page).getByRole('link')).toHaveText(['Courses', 'For organizations'])
-    await expect(page.getByRole('link', { name: /^(About|About AQS|Contact)$/ })).toHaveCount(0)
-    await expect(page.locator('[aria-disabled="true"]', { hasText: /About|Contact/ })).toHaveCount(0)
+    await expect(mainNav(page).getByRole('link')).toHaveText(['Courses', 'For organizations', 'About AQS', 'Contact'])
   })
 
   test('the footer lists working links only, with nothing greyed out', async ({ page }) => {
     await page.goto('/')
     const footer = page.getByRole('contentinfo')
-    await expect(footer.getByRole('heading', { level: 2 })).toHaveText(['Learn', 'Organizations'])
-    await expect(footer.getByRole('navigation', { name: 'Learn' }).getByRole('link')).toHaveText(['Courses'])
-    await expect(footer.getByRole('navigation', { name: 'Organizations' }).getByRole('link')).toHaveText(['For organizations'])
-    for (const gone of ['Our Story', 'Instructors', 'Careers', 'Blog', 'Privacy Policy', 'Terms', 'Cookie Policy', 'About', 'Contact']) {
+    await expect(footer.getByRole('heading', { level: 2 })).toHaveText(['Learn', 'Organizations', 'AQS'])
+    await expect(footer.getByRole('navigation', { name: 'Learn' }).getByRole('link')).toHaveText(['Courses', 'Get started', 'Sign in'])
+    await expect(footer.getByRole('navigation', { name: 'Organizations' }).getByRole('link')).toHaveText(['For organizations', 'Request a workspace'])
+    await expect(footer.getByRole('navigation', { name: 'AQS' }).getByRole('link')).toHaveText(['About AQS', 'Contact'])
+    for (const gone of ['Our Story', 'Instructors', 'Careers', 'Blog', 'Privacy Policy', 'Terms', 'Cookie Policy']) {
       await expect(footer.getByText(gone, { exact: true })).toHaveCount(0)
     }
     await expect(footer.locator('[aria-disabled="true"]')).toHaveCount(0)

@@ -1,18 +1,16 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router'
-import { Button, ButtonLink, Icon } from '../ui'
+import { ButtonLink, Icon } from '../ui'
 import type { NavItem } from './types'
 import { Wordmark } from './Wordmark'
 import { GET_STARTED_PATH, publicFooterColumns, publicHeaderNav } from '../../lib/public-navigation'
 import styles from './PublicLayout.module.css'
-import { LIVE_MODE } from '../../live/mode'
 import { useAuth } from '../../lib/auth-context'
 import { useOptionalSession, workspacesFor } from '../../live/session-context'
 import { PublicAccountMenu, type PublicWorkspaceLink } from './PublicAccountMenu'
 
-// Navigation (landing page Concept C, approved 10 November 2026). Only working destinations are
-// shown; the lists and their content gates live in lib/public-navigation.ts and
-// content/public-site.ts. The header knows whether someone is signed in: signed-in people get
+// Navigation (landing page Concept C, approved 10 November 2026).
+// The header knows whether someone is signed in: signed-in people get
 // "My workspace" and an account menu instead of Sign in and Get started.
 const defaultNav: NavItem[] = publicHeaderNav()
 
@@ -28,9 +26,7 @@ type PublicLayoutProps = {
   mainId?: string
 }
 
-// Live mode (Supabase configured) has real Google sign-in; the previews keep both actions unavailable.
-const SIGN_IN_AVAILABLE = LIVE_MODE
-const footerColumns = publicFooterColumns({ signInAvailable: SIGN_IN_AVAILABLE })
+const footerColumns = publicFooterColumns()
 
 type HeaderAccount =
   | { state: 'unavailable' }
@@ -42,7 +38,6 @@ type HeaderAccount =
 function useHeaderAccount(): HeaderAccount {
   const auth = useAuth()
   const session = useOptionalSession()
-  if (!SIGN_IN_AVAILABLE || !auth.authAvailable) return { state: 'unavailable' }
   if (auth.loading) return { state: 'loading' }
   if (!auth.session) return { state: 'signed-out' }
   const fallbackEmail = auth.session.user.email ?? ''
@@ -130,11 +125,6 @@ export function PublicLayout({
         <div className={styles.headerInner}>
           <Wordmark />
           <div className={styles.mobileBar}>
-            {account.state === 'signed-out' ? (
-              <ButtonLink to={GET_STARTED_PATH} size="sm" className={styles.mobileCta} onClick={closeMenu}>
-                Get started
-              </ButtonLink>
-            ) : null}
             {account.state === 'signed-in' ? (
               <ButtonLink to="/home" size="sm" variant="secondary" className={styles.mobileCta} onClick={closeMenu}>
                 My workspace
@@ -204,7 +194,7 @@ export function PublicLayout({
             ) : null}
           </nav>
           <div className={styles.actions} data-account={account.state}>
-            {account.state === 'signed-out' ? (
+            {account.state === 'signed-out' || account.state === 'unavailable' ? (
               <>
                 <Link to="/sign-in" className={styles.signIn} onClick={closeMenu}>
                   Sign in
@@ -228,19 +218,6 @@ export function PublicLayout({
               </>
             ) : null}
             {account.state === 'loading' ? <span className={styles.actionsPending} aria-hidden="true" /> : null}
-            {account.state === 'unavailable' ? (
-              <>
-                {/* Previews without sign-in (D11, D15): both actions are shown as unavailable. */}
-                <span className={`${styles.signIn} ${styles.unavailable}`} aria-disabled="true">
-                  Sign in
-                  <span className="visually-hidden"> (not available yet)</span>
-                </span>
-                <Button disabled className={styles.cta}>
-                  Get started
-                  <span className="visually-hidden"> (not available yet)</span>
-                </Button>
-              </>
-            ) : null}
           </div>
         </div>
       </header>

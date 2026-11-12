@@ -39,11 +39,10 @@ test.describe('course detail page (development only)', () => {
     await expect(module1).toHaveAttribute('aria-expanded', 'true')
   })
 
-  test('the header Sign in and Get started are not links', async ({ page }) => {
+  test('the header provides working Sign in and Get started links', async ({ page }) => {
     await page.goto(COURSE)
-    await expect(page.getByRole('link', { name: 'Sign in' })).toHaveCount(0)
-    await expect(page.getByRole('link', { name: 'Get started' })).toHaveCount(0)
-    await expect(page.getByRole('banner').locator('[aria-disabled="true"]', { hasText: 'Sign in' })).toBeVisible()
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/sign-in')
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Get started' })).toHaveAttribute('href', '/get-started')
   })
 })
 
