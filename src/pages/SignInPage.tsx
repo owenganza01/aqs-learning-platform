@@ -43,6 +43,8 @@ type SignInViewProps = {
   signUpTo?: string
   /** Footer: legal links (live) or unavailable placeholders (demo). */
   footer?: ReactNode
+  /** Starts with the email form expanded. */
+  defaultEmailOpen?: boolean
 }
 
 /** The approved sign-in layout, shared by the demo page and the live page. */
@@ -55,10 +57,11 @@ export function SignInView({
   inert = false,
   signUpTo = '/sign-up',
   footer,
+  defaultEmailOpen = false,
 }: SignInViewProps) {
   const noticeId = useId()
   const emailFormId = useId()
-  const [emailOpen, setEmailOpen] = useState(false)
+  const [emailOpen, setEmailOpen] = useState(defaultEmailOpen)
   const offersEmail = methods.includes('email')
 
   return (
@@ -78,17 +81,8 @@ export function SignInView({
         Sign in to continue your courses and pick up right where you left off.
       </p>
 
-      <ProviderButtons
-        methods={methods}
-        onProvider={inert ? undefined : onProvider}
-        busyProvider={busy && busy !== 'email' ? busy : null}
-        disabled={busy !== null}
-        describedBy={notice ? noticeId : undefined}
-      />
-
       {offersEmail ? (
         <>
-          <OrDivider />
           <EmailToggle
             label="Sign in with Email"
             open={emailOpen}
@@ -99,8 +93,17 @@ export function SignInView({
           {emailOpen ? (
             <EmailSignInForm id={emailFormId} inert={inert} busy={busy === 'email'} autoFocus onSubmit={onEmailSignIn} />
           ) : null}
+          <OrDivider />
         </>
       ) : null}
+
+      <ProviderButtons
+        methods={methods}
+        onProvider={inert ? undefined : onProvider}
+        busyProvider={busy && busy !== 'email' ? busy : null}
+        disabled={busy !== null}
+        describedBy={notice ? noticeId : undefined}
+      />
 
       <p className={cx('text-caption', styles.note)}>
         New here?{' '}

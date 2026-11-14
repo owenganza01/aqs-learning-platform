@@ -36,6 +36,8 @@ type SignUpViewProps = {
   footer?: ReactNode
   /** The navy side's content: a photo, or the placeholder until its photo is placed. */
   illustration?: ReactNode
+  /** Starts with the email form expanded. */
+  defaultEmailOpen?: boolean
 }
 
 export function SignUpView({
@@ -49,10 +51,11 @@ export function SignUpView({
   signInTo = '/sign-in',
   footer,
   illustration,
+  defaultEmailOpen = false,
 }: SignUpViewProps) {
   const noticeId = useId()
   const emailFormId = useId()
-  const [emailOpen, setEmailOpen] = useState(false)
+  const [emailOpen, setEmailOpen] = useState(defaultEmailOpen)
   const confirmationRef = useRef<HTMLHeadingElement>(null)
 
   // After sign-up, focus the confirmation message so screen readers announce it.
@@ -90,17 +93,8 @@ export function SignUpView({
           <h1 className={cx('text-h2', styles.heading)}>Create your learner account</h1>
           <p className={cx('text-body', styles.lead)}>Choose how you want to sign in to AQS. It's free.</p>
 
-          <ProviderButtons
-            methods={methods}
-            onProvider={inert ? undefined : onProvider}
-            busyProvider={busy && busy !== 'email' ? busy : null}
-            disabled={busy !== null}
-            describedBy={notice ? noticeId : undefined}
-          />
-
           {methods.includes('email') ? (
             <>
-              <OrDivider />
               <EmailToggle
                 label="Sign up with Email"
                 open={emailOpen}
@@ -111,8 +105,17 @@ export function SignUpView({
               {emailOpen ? (
                 <EmailSignUpForm id={emailFormId} inert={inert} busy={busy === 'email'} autoFocus onSubmit={onEmailSignUp} />
               ) : null}
+              <OrDivider />
             </>
           ) : null}
+
+          <ProviderButtons
+            methods={methods}
+            onProvider={inert ? undefined : onProvider}
+            busyProvider={busy && busy !== 'email' ? busy : null}
+            disabled={busy !== null}
+            describedBy={notice ? noticeId : undefined}
+          />
 
           <p className={cx('text-caption', styles.note)}>
             Already have an account?{' '}
