@@ -290,3 +290,41 @@ This checks the database rules only. It does not replace the script run over the
 
 - **0019 (A2), the `media-url` redeploy and the `youtube-verify` deploy (A3), and 0014:** held by Owen's 07:25 instruction until the export decision (PRES-9). The migration-history check (section 9.3) is now resolved.
 - **Run files and undo scripts:** unchanged and ready (section 8). Before 0019 runs, its run file refuses to run if 0019 is already recorded.
+
+### 9.6 Staging export (PRES-9), 10 November, 00:20
+
+Owen took the export with the Supabase command-line tool (v2.122.0). The files are in `handoff.local/staging-export/`, which Git ignores. The tool saved them in the project root first; they were moved into that folder before anything was committed.
+
+| File | Size | SHA-256 |
+|---|---|---|
+| `roles.sql` | 370 bytes | `168a95a9c745af5ed4679751f90419ac9dc434240a213b03e32a06d5664c2308` |
+| `schema.sql` | 257,410 bytes | `694c5e4da0b930ddc339704fe76f4ff1a881e940f034381674d4e2926e50e1d4` |
+| `data.sql` | 87,063 bytes | `1a64467b1fe6b8aac44895a758d8ed3bdbfa93877fde828a127fab86e1a2d584` |
+
+**Restore check (throwaway PostgreSQL 16 database with the Supabase stand-in):**
+- The schema loaded. There were 4 errors, all expected: two for a PostgreSQL 17-only permission keyword, one for the Supabase vault extension, and one for the realtime publication. All three exist only on hosted Supabase.
+- The result has 133 functions and 26 access rules.
+- The app data (public and private schemas) loaded, with foreign-key triggers off during the load, because `course_corrections` has circular references.
+- **All 26 tables' row counts match staging exactly** (read-only count on staging).
+
+**Not covered by the export:**
+- the contents of the 6 Storage files;
+- the 3 Storage access rules, which migration 0010 recreates;
+- a restore of the sign-in records (auth schema), which was not tested because the stand-in does not model them. Their row counts in the file match staging: 4 users and 6 Storage object records.
+
+**Keep `data.sql` private:** it contains the test accounts' sign-in sessions. Delete the export once 0019 and 0014 are applied and checked.
+
+**Decision:** the export condition for further staging changes is met. 0019, the two Edge Functions and 0014 still need Owen's separate go.
+
+### 9.7 Steps A2, A3 and 0014: done, 10 November, 00:30–00:45 (Owen's go at 00:24)
+
+| Step | Result | Check |
+|---|---|---|
+| A2: migration 0019 | Applied in one transaction. The run file refused nothing: its 69 statements matched the repository file exactly | History shows `20261104120000 0019_video_review` (69 statements). The 6 new tables have no client access (0 grants to anon, authenticated or service_role); the two public ones have row security on. Video bucket file types are now mp4, webm and vtt (undo restores mp4 and webm). Lookup mode is `blocking`. Course staff can no longer attach YouTube IDs themselves. The service role can run only `record_youtube_check`. Existing data unchanged (8 courses, 11 lesson contents) |
+| Security advisor after 0019 | No new error | The only new notices are expected: 2 notes that the new tables have row security but no policies (by design: they are reached only through checked functions), and 16 more "signed-in users can run" warnings for the new checked functions (71 to 87, after one function was revoked) |
+| A3: `media-url` | Redeployed as version 5 from the repository code (verify_jwt off, as before) | Without a session: 401; with the publishable key as a session: 401; unknown file kind: 400. The 0019 file kinds are now handled |
+| A3: `youtube-verify` | Deployed as version 1 (verify_jwt off) | Wrong video ID: 400. Any other call: 503 "not configured", because `AQS_YOUTUBE_CHANNEL_URL` is not set yet (CM2 check, task Q-4). It records nothing until then |
+| 0014 | Applied in one transaction; the statements matched the repository file | History shows `20261102120000 0014_course_staff_ids_restricted`; staging now has all 21 migrations. Signed-in users can no longer read who created, proposed, published or archived a course (`created_by` refused); course staff read them through `course_people` (7 of 7 courses for the test admin) |
+| Signed-out checks after all steps (live site) | Pass | The new tables, `created_by`, `video_review_queue` and `course_people` all refuse a signed-out visitor (401, 42501); public course list still answers (empty, no published public course yet) |
+
+Staging now runs the integration code with every migration applied. Undo scripts remain available (0014 first, then 0019) and the export from 9.6 holds the state before these steps.
