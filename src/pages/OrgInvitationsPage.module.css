@@ -54,3 +54,38 @@
   align-items: center;
   gap: var(--space-8);
 }
+
+/* Assignment 2.6 (live page): the one-time link as the result of sending an invitation. */
+.linkResult {
+  display: grid;
+  gap: var(--space-8);
+  padding: var(--space-16);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-action);
+  border-radius: var(--radius);
+  background: var(--color-canvas);
+}
+
+.linkResult p {
+  margin: 0;
+}
+
+.linkTitle {
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.linkRow {
+  display: grid;
+  gap: var(--space-8);
+  align-items: end;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .linkRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}

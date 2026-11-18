@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useId, useState, type ComponentType, type FormEvent, type ReactNode } from 'react'
 import { Button, TextField } from '../../components/ui'
 import { OAUTH_PROVIDER_LABELS, isOAuthProvider, type AuthMethodId, type OAuthProviderId } from '../../lib/auth-methods'
 import {
@@ -9,11 +9,16 @@ import {
   fullNameError,
   newPasswordError,
 } from '../../lib/auth-validation'
+import { AppleMark } from './AppleMark'
+import { FacebookMark } from './FacebookMark'
+import { GoogleMark } from './GoogleMark'
 import styles from './AuthOptions.module.css'
 
 /*
  * Sign-in and sign-up options shared by the sign-in and sign-up pages (D42, 12 November 2026):
- * "Continue with" buttons for the OAuth providers, then the email option, which opens its form.
+ * the email form first (commit 275f12a), then the OAuth providers' "Continue with" buttons in one group
+ * under "Or continue with" (Revision 2 Phase 7, A.1: one email entry point, no second email control).
+ * Presentation only (amendment 4): which methods appear still comes from the page (VITE_AUTH_PROVIDERS).
  * The pages decide what each action does; in the development previews (D27) nothing is wired and
  * every control is inert.
  */
@@ -43,6 +48,8 @@ export function ProviderButtons({ methods, onProvider, busyProvider = null, disa
             disabled={disabled}
             loading={busyProvider === provider}
           >
+            {/* Task 2-2: each provider's own logo on its button (the spinner takes its place while opening). */}
+            {busyProvider !== provider ? <ProviderMark provider={provider} /> : null}
             {busyProvider === provider ? `Opening ${OAUTH_PROVIDER_LABELS[provider]}…` : `Continue with ${OAUTH_PROVIDER_LABELS[provider]}`}
           </Button>
         </li>
@@ -51,29 +58,30 @@ export function ProviderButtons({ methods, onProvider, busyProvider = null, disa
   )
 }
 
-/** "or" between the provider buttons and the email option. Decorative for assistive technology. */
-export function OrDivider() {
-  return (
-    <p className={styles.divider} aria-hidden="true">
-      <span>or</span>
-    </p>
-  )
+const PROVIDER_MARKS: Record<OAuthProviderId, ComponentType> = {
+  google: GoogleMark,
+  apple: AppleMark,
+  facebook: FacebookMark,
 }
 
-type EmailToggleProps = {
-  label: string
-  open: boolean
-  onToggle: () => void
-  controls: string
-  disabled?: boolean
+function ProviderMark({ provider }: { provider: OAuthProviderId }) {
+  const Mark = PROVIDER_MARKS[provider]
+  return <Mark />
 }
 
-/** The "Sign up with Email" / "Sign in with Email" option: shows or hides its form. */
-export function EmailToggle({ label, open, onToggle, controls, disabled }: EmailToggleProps) {
+/**
+ * The provider buttons under a visible "Or continue with" label, as one named group. Used when the email
+ * form is offered above them; with Google alone the page shows the buttons without the label.
+ */
+export function ProviderGroup({ children }: { children: ReactNode }) {
+  const labelId = useId()
   return (
-    <Button variant="neutral" fullWidth aria-expanded={open} aria-controls={controls} onClick={onToggle} disabled={disabled}>
-      {label}
-    </Button>
+    <div role="group" aria-labelledby={labelId} className={styles.group}>
+      <p className={styles.divider} id={labelId}>
+        <span>Or continue with</span>
+      </p>
+      {children}
+    </div>
   )
 }
 

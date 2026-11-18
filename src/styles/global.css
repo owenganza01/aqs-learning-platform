@@ -159,22 +159,22 @@ h6 {
  * values are proportional estimates. */
 @media (max-width: 767px) {
   .text-h1 {
-    font-size: 40px;
+    font-size: var(--text-h2);
     line-height: 46px;
   }
 
   .text-h2 {
-    font-size: 36px;
+    font-size: var(--text-h1-mobile);
     line-height: 42px;
   }
 
   .text-title {
-    font-size: 28px;
+    font-size: var(--text-section);
     line-height: 36px;
   }
 
   .text-section {
-    font-size: 24px;
+    font-size: var(--text-h3);
     line-height: 31px;
   }
 }
@@ -244,6 +244,10 @@ a {
   top: var(--space-16);
 }
 
+/* Task 8-3: content that appears after a state change (a message, an empty state, a dialog, a form
+   that opens) has one short entrance, defined in each component's CSS module (state-in). It ends
+   fully visible, so with reduced motion (below) the content simply appears. */
+
 /* Respect people who ask their device for less motion */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -254,4 +258,11 @@ a {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Task 6-4: the offline notice stays at the top of the window while offline. */
+.offline-notice {
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }

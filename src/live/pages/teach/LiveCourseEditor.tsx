@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useParams, useSearchParams } from 'react-router'
 import { PageHeader } from '../../../components/layout/PageHeader'
-import { Badge, ButtonLink } from '../../../components/ui'
+import { Badge, ButtonLink, Tabs } from '../../../components/ui'
 import base from '../../../pages/InstructorCoursePage.module.css'
 import { NotFound } from '../../../pages/NotFound'
 import { ErrorBanner, LoadingBlock } from '../../components/States'
@@ -13,7 +13,7 @@ import { useSession } from '../../session-context'
 import { useResource } from '../../useResource'
 import { CorrectionsPanel } from './CorrectionsPanel'
 import { CaptionConfirmationPanel } from './CaptionConfirmationPanel'
-import { AssignPanel, DetailsPanel, PublicationPanel, StaffPanel } from './CoursePanels'
+import { ArchivePanel, AssignPanel, DetailsPanel, PublicationPanel, StaffPanel } from './CoursePanels'
 import styles from './CourseEditor.module.css'
 import { LessonPanel } from './LessonPanel'
 import { OutlinePanel } from './OutlinePanel'
@@ -26,7 +26,13 @@ import { courseStatus } from './teach-data'
  *   - course staff edit a draft that is not waiting for approval (P3, Q-07-3);
  *   - approvers (L2, P1, P22) decide publication and previews, never their own proposal;
  *   - published courses take corrections (P4) or are cloned (P5).
+ * B.3 (Revision 2 Phase 4): the builder is in three tabs, so each set of controls stands alone:
+ * Content (outline, lesson editor with video, captions), Details (details, staff, assignment) and
+ * Publish (publication, corrections, clone, then archive set apart). The selected tab is in ?tab=.
+ * The same panels, props and calls as before; the same tabs for Platform Admins on platform courses.
  */
+const TAB_IDS = ['content', 'details', 'publish'] as const
+type TabId = (typeof TAB_IDS)[number]
 export default function LiveCourseEditor() {
   const { courseId = '' } = useParams()
   const org = useCurrentOrgOptional()
@@ -37,7 +43,7 @@ export default function LiveCourseEditor() {
 
   return (
     <LiveShell shell={shell}>
-      {data.state === 'loading' ? <LoadingBlock label="Loading course" rows={4} /> : null}
+      {data.state === 'loading' ? <LoadingBlock label="Loading course" shape="editor" /> : null}
       {data.state === 'error' ? <ErrorBanner error={data.error} onRetry={data.reload} /> : null}
       {data.state === 'ready' && !data.data ? <NotFound /> : null}
       {data.state === 'ready' && data.data && person ? (
@@ -89,6 +95,9 @@ function Editor({
   const canArchive = platform ? isPlatformAdmin : isOrgAdmin && orgId !== null && orgId === course.orgId
   const status = courseStatus(course)
   const coursesPath = platform ? '/admin/courses' : `${teachBase}/courses`
+  const [params, setParams] = useSearchParams()
+  const requested = params.get('tab')
+  const tab: TabId = TAB_IDS.includes(requested as TabId) ? (requested as TabId) : 'content'
 
   return (
     <>
@@ -121,44 +130,75 @@ function Editor({
         }
       />
 
-      {course.modules.length > 0 || editable ? (
-        <div className={base.layout}>
-          <OutlinePanel course={course} editable={editable} selectedId={selected?.id ?? null} onSelect={setSelectedId} onChanged={onChanged} />
-          {selected ? (
-            <LessonPanel
-              key={`${selected.id}:${selected.title}:${selected.body.length}`}
-              course={course}
-              lesson={selected}
-              editable={editable}
-              quizPath={`${platform ? '/admin/courses' : `${teachBase}/courses`}/${course.id}/quizzes/${selected.id}`}
-              onDeleted={() => setSelectedId(null)}
-              onChanged={onChanged}
-            />
-          ) : (
-            <p className={styles.muted}>Add a module, then a lesson, to start building.</p>
-          )}
-        </div>
-      ) : null}
-
-      <div className={styles.panelGrid}>
-        <PublicationPanel course={course} userId={userId} isStaff={isStaff} canApprove={canApprove} canArchive={canArchive} teachBase={teachBase} onChanged={onChanged} />
-        {/* D39 #7: the owning organisation's admins confirm the captions of organisation-only videos. */}
-        {!platform && isOrgAdmin && orgId === course.orgId && course.visibility === 'organization' && course.status === 'draft' ? (
-          <CaptionConfirmationPanel course={course} />
-        ) : null}
-        <DetailsPanel key={`${course.title}:${course.summary}:${course.visibility}:${course.enrollmentPolicy}`} course={course} editable={editable} onChanged={onChanged} />
-        {!platform ? <StaffPanel course={course} isOrgAdmin={isOrgAdmin} editable={course.status === 'draft'} onChanged={onChanged} /> : null}
-        {course.status === 'published' && !platform && isOrgAdmin ? <AssignPanel course={course} /> : null}
-        {course.status === 'published' && (isStaff || canDecideCorrections) ? (
-          <CorrectionsPanel
-            key={selected?.id ?? 'course'}
-            course={course}
-            lesson={selected}
-            canDecide={canDecideCorrections}
-            canPropose={isStaff || canDecideCorrections}
-          />
-        ) : null}
-      </div>
+      <Tabs
+        label="Course builder sections"
+        value={tab}
+        onChange={(id) => setParams((p) => { p.set('tab', id); return p }, { replace: true })}
+        items={[
+          {
+            id: 'content',
+            label: 'Content',
+            content: (
+              <div className={styles.tabBody}>
+                {course.modules.length > 0 || editable ? (
+                  <div className={base.layout}>
+                    <OutlinePanel course={course} editable={editable} selectedId={selected?.id ?? null} onSelect={setSelectedId} onChanged={onChanged} />
+                    {selected ? (
+                      <LessonPanel
+                        key={`${selected.id}:${selected.title}:${selected.body.length}`}
+                        course={course}
+                        lesson={selected}
+                        editable={editable}
+                        quizPath={`${platform ? '/admin/courses' : `${teachBase}/courses`}/${course.id}/quizzes/${selected.id}`}
+                        onDeleted={() => setSelectedId(null)}
+                        onChanged={onChanged}
+                      />
+                    ) : (
+                      <p className={styles.muted}>Add a module, then a lesson, to start building.</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className={styles.muted}>This course has no lessons.</p>
+                )}
+                {/* D39 #7: the owning organisation's admins confirm the captions of organisation-only videos. */}
+                {!platform && isOrgAdmin && orgId === course.orgId && course.visibility === 'organization' && course.status === 'draft' ? (
+                  <CaptionConfirmationPanel course={course} />
+                ) : null}
+              </div>
+            ),
+          },
+          {
+            id: 'details',
+            label: 'Details',
+            content: (
+              <div className={styles.panelGrid}>
+                <DetailsPanel key={`${course.title}:${course.summary}:${course.visibility}:${course.enrollmentPolicy}`} course={course} editable={editable} onChanged={onChanged} />
+                {!platform ? <StaffPanel course={course} isOrgAdmin={isOrgAdmin} editable={course.status === 'draft'} onChanged={onChanged} /> : null}
+                {course.status === 'published' && !platform && isOrgAdmin ? <AssignPanel course={course} /> : null}
+              </div>
+            ),
+          },
+          {
+            id: 'publish',
+            label: 'Publish',
+            content: (
+              <div className={styles.panelGrid}>
+                <PublicationPanel course={course} userId={userId} isStaff={isStaff} canApprove={canApprove} teachBase={teachBase} onChanged={onChanged} />
+                {course.status === 'published' && (isStaff || canDecideCorrections) ? (
+                  <CorrectionsPanel
+                    key={selected?.id ?? 'course'}
+                    course={course}
+                    lesson={selected}
+                    canDecide={canDecideCorrections}
+                    canPropose={isStaff || canDecideCorrections}
+                  />
+                ) : null}
+                {course.status === 'published' && canArchive ? <ArchivePanel course={course} onChanged={onChanged} /> : null}
+              </div>
+            ),
+          },
+        ]}
+      />
     </>
   )
 }

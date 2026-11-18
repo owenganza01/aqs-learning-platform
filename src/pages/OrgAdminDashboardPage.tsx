@@ -1,8 +1,9 @@
 import { Link, useParams } from 'react-router'
 import { PageHeader } from '../components/layout/PageHeader'
 import { RoleShell } from '../components/layout/RoleShell'
-import { Badge, Banner, ButtonLink, Card, CardHeader, ProgressBar, StatCard, Table, type TableColumn } from '../components/ui'
+import { Badge, Banner, BarChart, ButtonLink, Card, CardHeader, ProgressBar, StatCard, Table, type TableColumn } from '../components/ui'
 import { previewUser } from '../dev/role-preview'
+import { ORG_COMPLETION_BY_COURSE, ORG_INVITATIONS_BY_STATUS, ORG_OVERDUE_BY_COURSE, SAMPLE_CHART_NOTE } from '../dev/sample-chart-data'
 import { sampleOrgAdminService, type DashboardCourse } from '../dev/sample-org-admin-service'
 import { getOrgAdminShell } from '../lib/navigation'
 import { NotFound } from './NotFound'
@@ -111,6 +112,19 @@ export default function OrgAdminDashboardPage() {
         <StatCard label="Published courses" value={String(publishedCourses.length)} note={`${dashboard.courses.length - publishedCourses.length} draft`} />
         <StatCard label="Overdue required courses" value="—" note="Not available: due dates are not built yet (D7)" />
       </div>
+
+      {/* Phase C (C.3, task 7-3): chart designs with sample data; real figures need the summaries of 7-1. */}
+      <section className={styles.charts} aria-label="Charts (sample data)">
+        <Card padding="lg">
+          <BarChart title="Course completion" description={SAMPLE_CHART_NOTE} unit="percent" labelHeading="Course" valueHeading="Completion" data={ORG_COMPLETION_BY_COURSE} />
+        </Card>
+        <Card padding="lg">
+          <BarChart title="Overdue assignments by course" description={SAMPLE_CHART_NOTE} labelHeading="Course" valueHeading="Overdue" data={ORG_OVERDUE_BY_COURSE} />
+        </Card>
+        <Card padding="lg">
+          <BarChart title="Invitations by status" description={SAMPLE_CHART_NOTE} labelHeading="Status" valueHeading="Invitations" data={ORG_INVITATIONS_BY_STATUS} />
+        </Card>
+      </section>
 
       <div className={styles.main}>
         <Card padding="none" as="section" aria-label="Completion by course">

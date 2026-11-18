@@ -29,20 +29,26 @@ test.describe('sign-in demo route (development only)', () => {
       'Continue with Apple',
       'Continue with Facebook',
     ])
-    await expect(page.getByRole('button', { name: 'Sign in with Email' })).toBeVisible()
+    // Phase A (A.1): the email form itself is the email option
+    await expect(page.getByRole('form', { name: 'Sign in with email' })).toBeVisible()
     await expect(page.getByText(DEMO_NOTICE, { exact: true })).toBeVisible()
     await expect(page.getByText(PLACEHOLDER, { exact: true })).toHaveCount(0)
   })
 
-  test('the photo is the learner on a video call, 3:2, cropped to fill the panel', async ({ page }) => {
+  test('the photo is the learner on a video call, filling the navy side below the words', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto('/sign-in')
     const photo = page.getByRole('img', { name: PHOTO_ALT })
     await expect(photo).toBeVisible()
     await expect(photo).toHaveAttribute('src', '/images/auth/learner-video-call.jpg')
     await expect(photo).toHaveCSS('object-fit', 'cover')
     expect(await photo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth)).toBe(960)
-    const box = await photo.boundingBox()
-    expect(box && Math.round((box.width / box.height) * 100) / 100).toBe(1.5)
+    // Client request (14 Nov): from below the headline to the side's bottom and right edges
+    const side = page.getByRole('complementary', { name: 'About AQS E-Learning' })
+    const [box, sideBox] = await Promise.all([photo.boundingBox(), side.boundingBox()])
+    if (!box || !sideBox) throw new Error('missing layout box')
+    expect(Math.round(box.x + box.width)).toBe(Math.round(sideBox.x + sideBox.width))
+    expect(Math.round(box.y + box.height)).toBe(Math.round(sideBox.y + sideBox.height))
   })
 
   test('every option is inert, including the email form', async ({ page }) => {
@@ -53,8 +59,7 @@ test.describe('sign-in demo route (development only)', () => {
     const requests: string[] = []
     page.on('request', (request) => requests.push(request.url()))
     for (const name of ['Continue with Apple', 'Continue with Facebook']) await page.getByRole('button', { name }).click()
-    await page.getByRole('button', { name: 'Sign in with Email' }).click()
-    await expect(page.getByRole('button', { name: 'Sign in with Email' })).toHaveAttribute('aria-expanded', 'true')
+    // Phase A (A.1): no toggle to click; the form is already shown
     const form = page.getByRole('form', { name: 'Sign in with email' })
     await expect(form.getByLabel('Email address')).toBeDisabled()
     await expect(form.getByLabel('Password')).toBeDisabled()

@@ -51,7 +51,12 @@ test.describe('sign-in page', () => {
       'Continue with Apple',
       'Continue with Facebook',
     ])
-    await expect(page.getByRole('button', { name: 'Sign in with Email' })).toBeVisible()
+    // The email form comes first and starts open (integration 275f12a, 14 Nov); the providers follow it
+    // Phase A (A.1): the form is the one email option, shown without a separate "Sign in with Email" button
+    await expect(page.getByRole('form', { name: 'Sign in with email' })).toBeVisible()
+    const formBox = await page.getByRole('form', { name: 'Sign in with email' }).boundingBox()
+    const providersBox = await page.getByRole('list', { name: 'Sign-in options' }).boundingBox()
+    expect(formBox && providersBox && formBox.y < providersBox.y).toBe(true)
     await expect(page.getByRole('link', { name: 'Create an account' })).toHaveAttribute('href', '/sign-up?next=%2Fmy-courses')
   })
 
@@ -76,7 +81,6 @@ test.describe('sign-in page', () => {
     await mockSupabase(page)
     const calls = await answerAuth(page, 'token', () => ({ status: 200, json: sessionFor(USER.email) }))
     await page.goto('/sign-in')
-    await page.getByRole('button', { name: 'Sign in with Email' }).click()
     const form = page.getByRole('form', { name: 'Sign in with email' })
     await expect(form.getByLabel('Email address')).toBeFocused()
     await form.getByLabel('Email address').fill('not-an-address')
@@ -91,7 +95,6 @@ test.describe('sign-in page', () => {
     await mockSupabase(page)
     const calls = await answerAuth(page, 'token', () => ({ status: 400, json: { code: 400, error_code: 'invalid_credentials', msg: 'Invalid login credentials' } }))
     await page.goto('/sign-in')
-    await page.getByRole('button', { name: 'Sign in with Email' }).click()
     const form = page.getByRole('form', { name: 'Sign in with email' })
     await form.getByLabel('Email address').fill('zz-test@example.test')
     await form.getByLabel('Password').fill('wrong-password')
@@ -107,7 +110,6 @@ test.describe('sign-in page', () => {
     await mockSupabase(page, { tables: { ...sessionTables(), enrollments: () => ({ json: [] }), courses: () => ({ json: [] }) } })
     await answerAuth(page, 'token', () => ({ status: 200, json: sessionFor('zz-test@example.test') }))
     await page.goto('/sign-in?next=%2Fprofile')
-    await page.getByRole('button', { name: 'Sign in with Email' }).click()
     const form = page.getByRole('form', { name: 'Sign in with email' })
     await form.getByLabel('Email address').fill('zz-test@example.test')
     await form.getByLabel('Password').fill('correct-password')
@@ -127,10 +129,14 @@ test.describe('sign-in page', () => {
 })
 
 test.describe('sign-up page', () => {
-  test('offers Google, Apple, Facebook and Sign up with Email; Get started leads here', async ({ page }) => {
+  test('offers Google, Apple, Facebook and Sign up with Email; reached from sign-in', async ({ page }) => {
     await mockSupabase(page, { tables: { courses: () => ({ json: [] }) } })
+    // Get started opens the Get Started page (task 2-5); sign-up is reached from sign-in.
     await page.goto('/')
     await page.getByRole('banner').getByRole('link', { name: 'Get started' }).first().click()
+    await expect(page).toHaveURL(/\/get-started$/)
+    await page.goto('/sign-in')
+    await page.getByRole('link', { name: 'Create an account' }).click()
     await expect(page).toHaveURL(/\/sign-up$/)
     await expect(page.getByRole('heading', { level: 1, name: 'Create your learner account' })).toBeVisible()
     await expect(page.getByRole('list', { name: 'Sign-in options' }).getByRole('button')).toHaveText([
@@ -138,9 +144,11 @@ test.describe('sign-up page', () => {
       'Continue with Apple',
       'Continue with Facebook',
     ])
-    await expect(page.getByRole('button', { name: 'Sign up with Email' })).toHaveAttribute('aria-expanded', 'false')
+    // Phase A (A.1): the form is the one email option, shown without a separate "Sign up with Email" button
+    await expect(page.getByRole('form', { name: 'Sign up with email' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toHaveAttribute('href', '/sign-in')
-    await expect(page.getByRole('link', { name: 'See how organizations get started' })).toHaveAttribute('href', '/#organizations')
+    // The organisation route is the workspace request form now that it exists (task 3-3).
+    await expect(page.getByRole('link', { name: 'See how organizations get started' })).toHaveAttribute('href', '/request-workspace')
   })
 
   test('Continue with Facebook on sign-up opens Facebook with the callback', async ({ page }) => {
@@ -158,7 +166,6 @@ test.describe('sign-up page', () => {
     await mockSupabase(page)
     const calls = await answerAuth(page, 'signup', () => ({ status: 200, json: {} }))
     await page.goto('/sign-up')
-    await page.getByRole('button', { name: 'Sign up with Email' }).click()
     const form = page.getByRole('form', { name: 'Sign up with email' })
     await expect(form.getByLabel('Full name')).toBeFocused()
     await form.getByLabel('Email address').fill('zz-test@example.test')
@@ -179,7 +186,6 @@ test.describe('sign-up page', () => {
       json: { id: '00000000-0000-4000-8000-0000000000b2', email: body.email, aud: 'authenticated', role: 'authenticated', identities: [], user_metadata: body.data, app_metadata: { provider: 'email' }, created_at: '2026-11-12T00:00:00Z' },
     }))
     await page.goto('/sign-up?next=%2Fcatalog')
-    await page.getByRole('button', { name: 'Sign up with Email' }).click()
     const form = page.getByRole('form', { name: 'Sign up with email' })
     await form.getByLabel('Full name').fill('ZZ Test Learner')
     await form.getByLabel('Email address').fill('zz-test-learner@example.test')
@@ -203,7 +209,6 @@ test.describe('sign-up page', () => {
     await mockSupabase(page)
     await answerAuth(page, 'signup', () => ({ status: 429, json: { code: 429, error_code: 'over_email_send_rate_limit', msg: 'email rate limit exceeded' } }))
     await page.goto('/sign-up')
-    await page.getByRole('button', { name: 'Sign up with Email' }).click()
     const form = page.getByRole('form', { name: 'Sign up with email' })
     await form.getByLabel('Full name').fill('ZZ Test Learner')
     await form.getByLabel('Email address').fill('zz-test-learner@example.test')

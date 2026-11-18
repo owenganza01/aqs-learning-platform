@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { PageHeader } from '../../../components/layout/PageHeader'
-import { Badge, Button, ButtonLink, Card, CardHeader, EmptyState, ProgressBar, StatCard, Table, TextField, type TableColumn } from '../../../components/ui'
+import { Badge, Button, ButtonLink, Card, EmptyState, ProgressBar, StatCard, TextField } from '../../../components/ui'
 import styles from '../../../pages/InstructorDashboardPage.module.css'
 import { ActionFeedback, Loaded } from '../../components/States'
 import { LiveShell } from '../../components/LiveShell'
@@ -10,68 +10,35 @@ import { instructorShell } from '../../navigation'
 import { useCurrentOrg } from '../../org-context'
 import { useSession } from '../../session-context'
 import { useAction, useResource } from '../../useResource'
-import { courseStatus, loadTeachCourses, type TeachCourse } from './teach-data'
+import { courseStatus, loadTeachCourses } from './teach-data'
+import teach from './CourseEditor.module.css'
 
 /*
  * Instructor dashboard at /o/:orgSlug/teach, from the approved instructor dashboard frame
  * (InstructorDashboardPage.tsx). Enrolment and completion figures are counted from the
  * learner records course staff may read (G2). The design's "Recent learner activity" needs an
  * activity feed the first release does not record, so it is not shown.
+ * B.1 (Revision 2 Phase 4): the heading names the page's purpose, and each course is a card with its status
+ * and completion, as in the instructor dashboard frame. No chart card: instructor charts wait for 7-1 (7-4).
  */
 export default function LiveInstructorDashboard() {
   const org = useCurrentOrg()
-  const { me, userId } = useSession()
+  const { userId } = useSession()
   const courses = useResource(() => loadTeachCourses(org.id, userId ?? '', !org.roles.includes('org_admin')), `${org.id}:${userId}`)
-  const firstName = me.state === 'ready' && me.data ? me.data.fullName.split(' ')[0] : ''
   const base = `/o/${org.slug}/teach`
-
-  const columns: Array<TableColumn<TeachCourse>> = [
-    {
-      key: 'course',
-      header: 'Course',
-      render: (c) => (
-        <div className={styles.courseCell}>
-          <p className={styles.courseTitle}>{c.title}</p>
-          <p className={styles.courseMeta}>{c.lessonCount} lessons</p>
-        </div>
-      ),
-    },
-    { key: 'status', header: 'Status', render: (c) => <Badge tone={courseStatus(c).tone}>{courseStatus(c).label}</Badge> },
-    { key: 'enrolled', header: 'Enrolled', align: 'right', render: (c) => c.enrolled },
-    {
-      key: 'completion',
-      header: 'Completion',
-      render: (c) => {
-        const percent = c.enrolled ? Math.round((c.completed / c.enrolled) * 100) : 0
-        return (
-          <div className={styles.progressCell}>
-            <span className={styles.percent} aria-hidden="true">
-              {percent}%
-            </span>
-            <ProgressBar value={percent} label={`${c.title} completion`} hideLabel />
-          </div>
-        )
-      },
-    },
-    {
-      key: 'action',
-      header: <span className="visually-hidden">Action</span>,
-      align: 'right',
-      render: (c) => (
-        <ButtonLink to={`${base}/courses/${c.id}`} variant="secondary" size="sm">
-          View<span className="visually-hidden"> {c.title}</span>
-        </ButtonLink>
-      ),
-    },
-  ]
 
   return (
     <LiveShell shell={instructorShell(org.slug, org.name)}>
       <PageHeader
-        title={`Welcome back${firstName ? `, ${firstName}` : ''}`}
-        actions={<ButtonLink to={`${base}/courses#new`}>Create course</ButtonLink>}
+        title="Your courses"
+        description={`Build, publish and follow your courses in ${org.name}.`}
+        actions={
+          <ButtonLink to={`${base}/courses#new`} iconStart="plus">
+            Create course
+          </ButtonLink>
+        }
       />
-      <Loaded resource={courses} label="Loading your courses">
+      <Loaded resource={courses} label="Loading your courses" loading="dashboard">
         {(list) => (
           <>
             <div className={styles.stats}>
@@ -79,30 +46,35 @@ export default function LiveInstructorDashboard() {
               <StatCard label="Published" value={list.filter((c) => c.status === 'published').length} note="Open to learners" />
               <StatCard label="Learners enrolled" value={list.reduce((n, c) => n + c.enrolled, 0)} note="Across your courses" />
             </div>
-            <Card padding="none" as="section" aria-label="Course performance">
-              <div className={styles.cardPad}>
-                <CardHeader
-                  title="Course performance"
-                  subtitle="Track enrollment and learning progress."
-                  size="md"
-                  action={
-                    <ButtonLink to={`${base}/courses`} variant="text" size="sm" iconEnd="arrowRight">
-                      View all courses
-                    </ButtonLink>
-                  }
-                />
-              </div>
-              <div className={styles.tableWrap}>
-                <Table
-                  caption="Course performance"
-                  columns={columns}
-                  rows={list}
-                  getRowKey={(c) => c.id}
-                  emptyMessage={<EmptyState title="No courses yet" description="Create your first course to get started." />}
-                  footer={`${list.length} courses · ${list.filter((c) => c.status === 'published').length} published`}
-                />
-              </div>
-            </Card>
+            {list.length === 0 ? (
+              <EmptyState title="No courses yet" description="Use Create course to start your first draft." />
+            ) : (
+              <ul className={teach.courseCards} aria-label="Your courses">
+                {list.map((c) => {
+                  const percent = c.enrolled ? Math.round((c.completed / c.enrolled) * 100) : 0
+                  const status = courseStatus(c)
+                  return (
+                    <li key={c.id}>
+                      <Card as="article" className={teach.courseCard}>
+                        <div className={teach.courseCardTop}>
+                          <h2 className={styles.courseTitle}>{c.title}</h2>
+                          <Badge tone={status.tone}>{status.label}</Badge>
+                        </div>
+                        <p className={styles.courseMeta}>
+                          {c.lessonCount} lessons · {c.enrolled} enrolled
+                        </p>
+                        <ProgressBar value={percent} label="Completion" />
+                        <div>
+                          <ButtonLink to={`${base}/courses/${c.id}`} variant="secondary" size="sm">
+                            Open<span className="visually-hidden"> {c.title}</span>
+                          </ButtonLink>
+                        </div>
+                      </Card>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
           </>
         )}
       </Loaded>
@@ -111,7 +83,19 @@ export default function LiveInstructorDashboard() {
 }
 
 /** Create-course form shared by the dashboard's course list page. */
-export function CreateCourseForm({ orgId, base }: { orgId: string | null; base: string }) {
+export function CreateCourseForm({
+  orgId,
+  base,
+  autoFocus = false,
+  onCancel,
+}: {
+  orgId: string | null
+  base: string
+  /** B.2: the form opened from "Create course" takes focus on its first field. */
+  autoFocus?: boolean
+  /** B.2: closes the form again (Teaching Studio courses page). */
+  onCancel?: () => void
+}) {
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
@@ -124,10 +108,10 @@ export function CreateCourseForm({ orgId, base }: { orgId: string | null; base: 
         const result = await create.run()
         if (result.ok) navigate(`${base}/courses/${result.value}`)
       }}
-      style={{ display: 'grid', gap: 12, maxWidth: 560 }}
+      className={teach.createForm}
       aria-label="Create a course"
     >
-      <TextField id="course-title" label="Course title" value={title} required minLength={2} maxLength={200} onChange={(e) => setTitle(e.target.value)} />
+      <TextField id="course-title" label="Course title" autoFocus={autoFocus} value={title} required minLength={2} maxLength={200} onChange={(e) => setTitle(e.target.value)} />
       <TextField
         id="course-slug"
         label="Web address"
@@ -137,10 +121,15 @@ export function CreateCourseForm({ orgId, base }: { orgId: string | null; base: 
         onChange={(e) => setSlug(e.target.value)}
       />
       <ActionFeedback error={create.error} />
-      <div>
+      <div className={teach.formActions}>
         <Button type="submit" loading={create.busy}>
           Create draft course
         </Button>
+        {onCancel ? (
+          <Button variant="neutral" onClick={onCancel}>
+            Cancel
+          </Button>
+        ) : null}
       </div>
     </form>
   )

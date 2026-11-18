@@ -60,9 +60,9 @@ export default function LiveLessonPage() {
 
   if (data.state === 'loading') {
     return (
-      <main id="main-content" style={{ maxWidth: 960, margin: '32px auto', padding: '0 16px' }}>
+      <main id="main-content" style={{ maxWidth: 960, margin: 'var(--space-32) auto', padding: '0 var(--space-16)' }}>
         {/* CM3-8: a content-shaped skeleton (player frame, meta line, title, text). */}
-        <div aria-busy="true" role="status" style={{ display: 'grid', gap: 12 }}>
+        <div aria-busy="true" role="status" style={{ display: 'grid', gap: 'var(--space-12)' }}>
           <span className="visually-hidden">Loading lesson</span>
           <Skeleton height="auto" className={styles.video} />
           <Skeleton shape="text" width="40%" />
@@ -76,7 +76,7 @@ export default function LiveLessonPage() {
   }
   if (data.state === 'error') {
     return (
-      <main id="main-content" style={{ maxWidth: 960, margin: '32px auto', padding: '0 16px' }}>
+      <main id="main-content" style={{ maxWidth: 960, margin: 'var(--space-32) auto', padding: '0 var(--space-16)' }}>
         <ErrorBanner error={data.error} onRetry={data.reload} />
       </main>
     )
@@ -126,7 +126,7 @@ function LessonContentView({
     return (
       <FocusLayout back={{ label: 'course', to: `/courses/${course.id}` }} title={course.title} user={user}>
         <Banner tone="info">Enrol in this course to open its lessons.</Banner>
-        <p style={{ marginTop: 16 }}>
+        <p style={{ marginTop: 'var(--space-16)' }}>
           <ButtonLink to={`/courses/${course.id}`}>Go to the course page</ButtonLink>
         </p>
       </FocusLayout>
@@ -176,6 +176,7 @@ function LessonContentView({
     <FocusLayout
       back={{ label: 'course', to: `/courses/${course.id}` }}
       title={course.title}
+      titleLevel="h2"
       progress={{ label: 'Your progress', value: percent }}
       user={user}
       footer={footer}
@@ -216,7 +217,8 @@ function LessonContentView({
           <p className={styles.meta}>
             {moduleTitle} · Lesson {index + 1} of {lessons.length} · {LESSON_TYPE_LABEL[lesson.type]}
           </p>
-          <h2 className={styles.lessonTitle}>{lesson.title}</h2>
+          {/* A.2: the lesson is the page's subject, so its title is the one h1 (the course title is h2). */}
+          <h1 className={styles.lessonTitle}>{lesson.title}</h1>
 
           {/* CM3-4 (G15): on narrow screens Overview and Documents open in the sheet. */}
           <div className={sheetStyles.mobileOnly}>
@@ -269,7 +271,7 @@ function Attachments({ resources }: { resources: LessonContent['resources'] }) {
                 {file.contentType.split('/')[1]?.toUpperCase()} · {formatBytes(file.sizeBytes)}
               </span>
             </span>
-            <Button
+            <Button needsConnection
               variant="text"
               className={styles.download}
               onClick={async () => {

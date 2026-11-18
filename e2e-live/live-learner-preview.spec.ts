@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { mockSupabase, sessionTables, signIn, USER } from './mock-supabase.js'
+import { settleAnimations } from '../e2e/settle-animations.js'
 
 // CM3-3 (G13, owner approval 4 November 2026): "Preview as learner" for course staff creates NO
 // records. Against the MOCKED Supabase API: the preview reads only (GET on tables, read-only
@@ -76,6 +77,7 @@ for (const width of [1440, 390]) {
     await open(page)
     await expect(page.getByRole('heading', { name: 'Fire exits' })).toBeVisible()
     await page.screenshot({ path: `test-results/cm3-3-screens/preview-${width}.png`, fullPage: true })
+    await settleAnimations(page)
     const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
     expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true)

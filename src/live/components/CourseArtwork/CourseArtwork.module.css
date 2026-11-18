@@ -1,0 +1,39 @@
+/* Course picture fallback (task 8-2): fills the frame it is placed in. */
+.artwork {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  border-radius: inherit;
+  background-image: radial-gradient(rgb(30 58 95 / 0.14) 1.5px, transparent 1.6px);
+  background-size: 18px 18px;
+}
+
+.dark {
+  background-color: var(--color-navy);
+  background-image: radial-gradient(rgb(219 234 254 / 0.22) 1.5px, transparent 1.6px);
+}
+
+.initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  height: 56px;
+  padding: 0 var(--space-12);
+  border-radius: var(--radius);
+  background: var(--color-navy);
+  color: var(--color-white);
+  font-size: var(--text-subsection);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 0 4px rgb(255 255 255 / 0.7);
+}
+
+.dark .initials {
+  background: var(--color-white);
+  color: var(--color-navy);
+  box-shadow: 0 0 0 4px var(--color-orange);
+}

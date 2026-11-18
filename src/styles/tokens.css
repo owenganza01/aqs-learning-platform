@@ -50,6 +50,27 @@
   --color-violet: #6d28d9; /* General Admin role badge · 7.10:1 */
   --color-violet-bg: #f5f3ff;
 
+  /* ---- Workspace shell (Unified Refinement Plan, Phase 2, 15 November 2026) ----
+   * The signed-in shell reads these instead of fixed colours, so each workspace can set its own
+   * (see "Workspace identities" at the end of this file). The values here are the learner shell,
+   * which is the brand baseline and is unchanged. */
+  --shell-bg: var(--color-navy);
+  --shell-border: transparent;
+  --shell-fg: var(--color-border-strong); /* 7.75:1 on navy */
+  --shell-fg-strong: var(--color-white);
+  --shell-hover-bg: rgb(255 255 255 / 0.06);
+  --shell-active-bg: var(--color-navy-light);
+  --shell-active-fg: var(--color-white);
+  --shell-active-bar: transparent;
+  --shell-focus-gap: var(--color-navy);
+  --shell-focus-color: var(--focus-ring-on-dark);
+  --workspace-accent: var(--color-blue); /* decorative: bars and rules */
+  --workspace-accent-text: var(--color-blue); /* text on white · 5.17:1 */
+  --workspace-accent-bg: var(--color-blue-50);
+  --workspace-mark-bg: var(--color-navy);
+  --workspace-mark-fg: var(--color-white);
+  --workspace-header-rule: transparent;
+
   /* ---- Focus ring (D1: visible keyboard focus) ---- */
   --focus-ring-color: var(--color-blue); /* 5.17:1 on white, 4.94:1 on canvas */
   --focus-ring-gap: var(--color-white);
@@ -96,6 +117,11 @@
   --text-badge: 11px; /* status badges — measured 10–11; 11 is the readable minimum */
   --leading-badge: 14px;
   --text-button-sm: 13px; /* row/table actions — measured 12–14 */
+  /* Task 8-4: sizes already used consistently across pages, now named so they stay consistent. */
+  --text-meta: 13px; /* course meta lines, dates and small labels under titles */
+  --text-subsection: 22px; /* sub-section headings inside a page section */
+  --text-h1-mobile: 36px; /* h1 and h2 headings on narrow screens */
+  --text-display: 48px; /* display titles (course hero, auth panel, quiz score) */
 
   --weight-regular: 400;
   --weight-medium: 500;
@@ -130,4 +156,57 @@
   --content-max-width: 1296px;
 
   --transition-fast: 120ms ease;
+  --transition-enter: 180ms ease-out; /* task 8-3: content appearing after a state change */
+}
+
+/*
+ * Workspace identities (Unified Refinement Plan, Phase 2). Set on the shell with data-workspace.
+ * Colour is the last of several signals: each workspace also has its own identity block, page
+ * titles, navigation groups and density. Brand foundations (navy, blue, canvas, Inter) are unchanged.
+ * Contrast ratios are WCAG 2.x, measured (evidence/phase-2/contrast.txt in the execution record).
+ */
+
+/* Instructor: Teaching Studio. Light sidebar, warm accent. Primary buttons stay blue (D41). */
+[data-workspace='studio'] {
+  --shell-bg: var(--color-white);
+  --shell-border: var(--color-border);
+  --shell-fg: var(--color-text-subtle); /* #475569 on white · 7.58:1 */
+  --shell-fg-strong: var(--color-text); /* 17.85:1 */
+  --shell-hover-bg: var(--color-surface-muted);
+  --shell-active-bg: var(--color-orange-50);
+  --shell-active-fg: var(--color-warning); /* #9a3412 on #fff7ed · 6.88:1 */
+  --shell-active-bar: var(--color-accent-text);
+  --shell-focus-gap: var(--color-white);
+  --shell-focus-color: var(--color-blue);
+  --workspace-accent: var(--color-accent-text); /* #c2410c */
+  --workspace-accent-text: var(--color-accent-text); /* on white · 5.18:1 */
+  --workspace-accent-bg: var(--color-orange-50);
+  --workspace-mark-bg: var(--color-orange-50);
+  --workspace-mark-fg: var(--color-warning);
+  --workspace-header-rule: transparent;
+}
+
+/* Organization Admin: Organization Workspace. AQS navy, blue accent, the organization's own badge. */
+[data-workspace='organization'] {
+  --shell-active-bar: #60a5fa; /* decorative bar on navy */
+  --workspace-mark-bg: var(--color-navy);
+  --workspace-mark-fg: var(--color-white); /* 11.5:1 */
+}
+
+/* Platform Admin: Platform Control Center. Charcoal shell, indigo accent, light content. */
+[data-workspace='platform'] {
+  --shell-bg: #15171c;
+  --shell-fg: var(--color-border-strong); /* #cbd5e1 on #15171c · 12.1:1 */
+  --shell-hover-bg: rgb(255 255 255 / 0.07);
+  --shell-active-bg: #2a2c4d;
+  --shell-active-fg: var(--color-white); /* on #2a2c4d · 13.41:1 */
+  --shell-active-bar: #818cf8; /* decorative bar */
+  --shell-focus-gap: #15171c;
+  --shell-focus-color: #a5b4fc;
+  --workspace-accent: #4f46e5;
+  --workspace-accent-text: #4338ca; /* on white · 7.9:1, on its tint · 7.07:1 */
+  --workspace-accent-bg: #eef2ff;
+  --workspace-mark-bg: #15171c;
+  --workspace-mark-fg: #c7d2fe; /* on #15171c · 12.0:1 */
+  --workspace-header-rule: #4f46e5;
 }

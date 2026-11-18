@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router'
 import { Banner } from '../../components/ui'
 import { useAuth } from '../../lib/auth-context'
-import { friendlyAuthError } from '../../lib/auth-errors'
+import { SIGN_IN_NOT_CONFIGURED, SIGN_IN_PROBLEM_MESSAGES, friendlyAuthError, signInProblemFromQuery } from '../../lib/auth-errors'
 import { parseAuthMethods, type AuthMethodId } from '../../lib/auth-methods'
 import { SignInView } from '../../pages/SignInPage'
 import { safeNext } from '../safe-next'
@@ -21,7 +21,11 @@ export default function LiveSignInPage() {
   const [params] = useSearchParams()
   const next = safeNext(params.get('next'))
   const [busy, setBusy] = useState<AuthMethodId | null>(null)
-  const [error, setError] = useState<string | null>(params.get('error') ? 'We couldn’t sign you in. Please try again.' : null)
+  // Task 2-4: the reason a previous attempt came back (cancelled, expired or failed), from /auth/callback.
+  const returned = signInProblemFromQuery(params.get('error'))
+  const [error, setError] = useState<{ tone: 'info' | 'danger'; text: string } | null>(
+    returned ? SIGN_IN_PROBLEM_MESSAGES[returned] : null,
+  )
 
   if (session) return <Navigate to={next} replace />
 
@@ -31,14 +35,13 @@ export default function LiveSignInPage() {
     <SignInView
       methods={METHODS}
       busy={busy}
-      defaultEmailOpen={true}
       signUpTo={`/sign-up${query}`}
       notice={
         !authAvailable ? (
-          <Banner tone="warning">Sign-in is not configured for this site.</Banner>
+          <Banner tone="warning">{SIGN_IN_NOT_CONFIGURED}</Banner>
         ) : error ? (
-          // A danger banner is announced at once (role="alert").
-          <Banner tone="danger">{error}</Banner>
+          // A danger banner is announced at once (role="alert"); a cancelled sign-in is information.
+          <Banner tone={error.tone}>{error.text}</Banner>
         ) : undefined
       }
       onProvider={async (provider) => {
@@ -48,7 +51,7 @@ export default function LiveSignInPage() {
         const result = await signInWithProvider(provider, { redirectTo })
         // On success the browser is leaving for the provider; only a failure comes back here.
         if (result.error) {
-          setError(friendlyAuthError(result.code, 'provider'))
+          setError({ tone: 'danger', text: friendlyAuthError(result.code, 'provider') })
           setBusy(null)
         }
       }}
@@ -57,7 +60,7 @@ export default function LiveSignInPage() {
         setError(null)
         const result = await signInWithEmail({ email, password })
         // Success: the auth listener sets the session and this page redirects to `next`.
-        if (result.error) setError(friendlyAuthError(result.code, 'sign-in'))
+        if (result.error) setError({ tone: 'danger', text: friendlyAuthError(result.code, 'sign-in') })
         setBusy(null)
       }}
       footer={<LegalFooter />}

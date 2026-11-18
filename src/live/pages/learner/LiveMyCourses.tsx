@@ -140,7 +140,7 @@ export default function LiveMyCourses() {
         <h1 className={styles.title}>My courses</h1>
         <p className={styles.intro}>Your courses and where you left off in each one.</p>
       </header>
-      <Loaded resource={overview} label="Loading your courses">
+      <Loaded resource={overview} label="Loading your courses" loading="cards">
         {({ enrolled, unavailable }) => {
           if (enrolled.length === 0) {
             return unavailable.length > 0 ? (

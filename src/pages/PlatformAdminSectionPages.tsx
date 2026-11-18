@@ -1,8 +1,9 @@
 import { Link } from 'react-router'
 import { PageHeader } from '../components/layout/PageHeader'
 import { RoleShell } from '../components/layout/RoleShell'
-import { Badge, Banner, Button, Card, CardHeader, EmptyState, StatCard, Table, type BadgeTone, type TableColumn } from '../components/ui'
+import { Badge, Banner, BarChart, Button, Card, CardHeader, EmptyState, StatCard, Table, type BadgeTone, type TableColumn } from '../components/ui'
 import { previewUser } from '../dev/role-preview'
+import { PLATFORM_ORGANIZATIONS_BY_STATUS, PLATFORM_TOTALS, SAMPLE_CHART_NOTE } from '../dev/sample-chart-data'
 import { samplePlatformAdminService } from '../dev/sample-platform-admin-service'
 import { SAMPLE_COURSE_CATALOG, playableLessons } from '../dev/sample-course'
 import { getPlatformAdminShell } from '../lib/navigation'
@@ -39,6 +40,15 @@ export function PlatformAdminOverviewPage() {
         <StatCard label="Pending invitations" value={String(pending)} note="Across all organizations" />
         <StatCard label="Courses (sample)" value={String(Object.keys(SAMPLE_COURSE_CATALOG).length)} note="Platform courses in the preview" />
       </div>
+      {/* Phase C (C.5, task 7-5): a counts-only chart design with sample data (P19: counts, never people). */}
+      <section className={styles.charts} aria-label="Charts (sample data)">
+        <Card padding="lg">
+          <BarChart title="Organizations by status" description={SAMPLE_CHART_NOTE} labelHeading="Status" valueHeading="Organizations" data={PLATFORM_ORGANIZATIONS_BY_STATUS} />
+        </Card>
+        <Card padding="lg">
+          <BarChart title="Learners and courses" description={SAMPLE_CHART_NOTE} labelHeading="Count of" valueHeading="Number" data={PLATFORM_TOTALS} />
+        </Card>
+      </section>
       <Card padding="lg" className={styles.card}>
         <h2 className={styles.heading}>Needs attention</h2>
         {attention.length === 0 ? (

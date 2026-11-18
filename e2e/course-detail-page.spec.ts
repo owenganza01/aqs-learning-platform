@@ -12,7 +12,7 @@ test.describe('course detail page (development only)', () => {
     await page.goto(COURSE)
     await expect(page.getByRole('heading', { level: 1, name: 'Introduction to Regression' })).toBeVisible()
     await expect(page.getByText(SAMPLE_NOTICE, { exact: true })).toBeVisible()
-    await expect(page.getByText("Sign in with Google to enroll. It's free.", { exact: true })).toBeVisible()
+    await expect(page.getByText("Sign in or create a free account to enroll.", { exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Sign in to enroll (not available yet)' })).toBeDisabled()
     await expect(page.getByRole('button', { name: /^Enroll/ })).toHaveCount(0)
   })

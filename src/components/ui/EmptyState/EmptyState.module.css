@@ -1,5 +1,6 @@
 /* Centred message for empty lists ("Start your first course"). */
 .empty {
+  animation: state-in var(--transition-enter) both;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -35,4 +36,16 @@
 
 .action {
   margin-top: var(--space-16);
+}
+
+/* Task 8-3: short entrance after a state change; reduced motion stops it (global rule). */
+@keyframes state-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }

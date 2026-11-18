@@ -19,8 +19,14 @@
   height: 100vh;
   padding: 28px var(--space-16) var(--space-24);
   overflow-y: auto;
-  background: var(--color-navy);
-  color: var(--color-white);
+  /* An inset shadow, not a border, so the sidebar's inner width is the same in every workspace. */
+  box-shadow: inset -1px 0 0 var(--shell-border);
+  background: var(--shell-bg);
+  color: var(--shell-fg-strong);
+  /* Keyboard focus inside the sidebar follows the workspace's shell colours. */
+  --focus-ring-color: var(--shell-focus-color);
+  --focus-ring-gap: var(--shell-focus-gap);
+  --focus-ring: 0 0 0 2px var(--focus-ring-gap), 0 0 0 4px var(--focus-ring-color);
 }
 
 .sidebarTop {
@@ -51,29 +57,31 @@
   min-height: 48px;
   padding: 0 var(--space-16);
   border-radius: var(--radius);
-  color: var(--color-border-strong); /* 7.75:1 on navy */
-  font-size: 15px;
+  box-shadow: inset 3px 0 0 transparent;
+  color: var(--shell-fg); /* learner: 7.75:1 on navy */
+  font-size: var(--text-body-sm);
   text-decoration: none;
   transition: background-color var(--transition-fast);
 }
 
 .navItem:hover {
-  background: rgb(255 255 255 / 0.06);
-  color: var(--color-white);
+  background: var(--shell-hover-bg);
+  color: var(--shell-fg-strong);
 }
 
 /* Destination not built yet (NavItem.unavailable) */
 .navItemUnavailable,
 .navItemUnavailable:hover {
   background: transparent;
-  color: var(--color-border-strong);
+  color: var(--shell-fg);
   opacity: 0.6;
   cursor: not-allowed;
 }
 
 .navItem[aria-current='page'] {
-  background: var(--color-navy-light);
-  color: var(--color-white);
+  background: var(--shell-active-bg);
+  box-shadow: inset 3px 0 0 var(--shell-active-bar);
+  color: var(--shell-active-fg);
   font-weight: var(--weight-semibold);
 }
 
@@ -84,7 +92,7 @@
   margin-top: var(--space-32);
   padding: var(--space-16);
   border-radius: var(--radius);
-  background: var(--color-navy-light);
+  background: var(--shell-active-bg);
 }
 
 .helpTitle {
@@ -96,7 +104,7 @@
 .helpText {
   font-size: var(--text-label);
   line-height: 18px;
-  color: var(--color-border-strong);
+  color: var(--shell-fg);
 }
 
 .helpLink {
@@ -104,7 +112,7 @@
   align-items: center;
   gap: var(--space-8);
   margin-top: var(--space-4);
-  color: var(--color-white);
+  color: var(--shell-fg-strong);
   font-size: var(--text-caption);
   font-weight: var(--weight-semibold);
   text-decoration: none;
@@ -126,13 +134,13 @@
   padding: var(--space-4) 0;
   border: 0;
   background: transparent;
-  color: var(--color-border-strong);
-  font-size: 15px;
+  color: var(--shell-fg);
+  font-size: var(--text-body-sm);
   cursor: pointer;
 }
 
 .signOut:hover {
-  color: var(--color-white);
+  color: var(--shell-fg-strong);
 }
 
 /* Help link, sign out and notifications when unavailableActions is set */
@@ -152,7 +160,7 @@
 }
 
 .signOut:disabled:hover {
-  color: var(--color-border-strong);
+  color: var(--shell-fg);
 }
 
 .iconButton:disabled:hover {
@@ -162,7 +170,7 @@
 .copyright {
   margin-top: var(--space-12);
   font-size: var(--text-label);
-  color: var(--color-border-strong);
+  color: var(--shell-fg);
 }
 
 /* ---- Header ---- */
@@ -182,6 +190,8 @@
   height: var(--header-height);
   padding: 0 var(--space-40);
   border-bottom: 1px solid var(--color-border);
+  /* A thin rule in the workspace's colour where one is set (Platform Control Center). */
+  box-shadow: inset 0 3px 0 var(--workspace-header-rule);
   background: var(--color-white);
 }
 
@@ -190,7 +200,39 @@
 }
 
 .workspace {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
   min-width: 0;
+}
+
+/* Workspace identity (Phase 2): a tile with the organization's initials or the platform mark, the
+   workspace name and its kind. It stays visible at every width. */
+.workspaceMark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 var(--space-8);
+  border-radius: var(--radius-sm);
+  background: var(--workspace-mark-bg);
+  color: var(--workspace-mark-fg);
+  font-size: var(--text-button-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+}
+
+.workspaceText {
+  min-width: 0;
+}
+
+.workspaceTitle,
+.workspaceSubtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .workspaceTitle {
@@ -198,6 +240,21 @@
   line-height: 24px;
   font-weight: var(--weight-semibold);
   color: var(--color-navy);
+}
+
+.scopeTag {
+  flex: none;
+  padding: 2px var(--space-8);
+  border: 1px solid var(--workspace-accent);
+  border-radius: var(--radius-full);
+  background: var(--workspace-accent-bg);
+  color: var(--workspace-accent-text);
+  font-size: var(--text-badge);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  line-height: var(--leading-label);
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .workspaceSubtitle {
@@ -227,7 +284,7 @@
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius);
   background: var(--color-canvas);
-  font-size: 15px;
+  font-size: var(--text-body-sm);
 }
 
 .searchInput::placeholder {
@@ -278,7 +335,7 @@
 }
 
 .userName {
-  font-size: 15px;
+  font-size: var(--text-body-sm);
   line-height: 20px;
   font-weight: var(--weight-semibold);
   color: var(--color-navy);
@@ -302,6 +359,11 @@
 }
 
 .backdrop {
+  display: none;
+}
+
+.scopeInline,
+.drawerSwitcher {
   display: none;
 }
 
@@ -349,7 +411,7 @@
   }
 
   .closeButton {
-    color: var(--color-white);
+    color: var(--shell-fg-strong);
   }
 
   .menuButton {
@@ -365,8 +427,24 @@
 
   .search,
   .divider,
-  .userText {
+  .userText,
+  .headerSwitcher {
     display: none;
+  }
+
+  /* The switcher, full width, between the wordmark and the menu. */
+  .drawerSwitcher {
+    display: block;
+    margin: calc(-1 * var(--space-12)) 0 var(--space-24);
+    padding: 0 var(--space-8);
+    --switcher-margin: 0;
+    --switcher-button-width: 100%;
+    --switcher-menu-position: static;
+    --switcher-menu-min: 0;
+  }
+
+  .workspace {
+    flex: 1;
   }
 
   .headerEnd {
@@ -375,5 +453,31 @@
 
   .content {
     padding: var(--space-24) var(--space-24) var(--space-48);
+  }
+}
+
+/* Phones: the scope tag replaces the subtitle line instead of sitting beside the title. */
+@media (max-width: 767px) {
+  /* Staff workspaces only: the identity block needs the room. The learner header keeps its padding. */
+  .shell:not([data-workspace='learner']) .header {
+    padding: 0 var(--space-16);
+  }
+
+  .scopeTag,
+  .hasScope {
+    display: none;
+  }
+
+  .scopeInline {
+    display: block;
+    overflow: hidden;
+    color: var(--workspace-accent-text);
+    font-size: var(--text-badge);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.04em;
+    line-height: var(--leading-hint);
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 }

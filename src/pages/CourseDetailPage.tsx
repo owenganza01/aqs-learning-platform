@@ -135,7 +135,7 @@ function EnrolControl({ access }: { access: AccessState }) {
   // this preview, so the control stays disabled with the D24 hidden label.
   const signInToEnrol = (
     <div className={styles.accessBlock}>
-      <p className={styles.accessNote}>Sign in with Google to enroll. It's free.</p>
+      <p className={styles.accessNote}>Sign in or create a free account to enroll.</p>
       <Button disabled className={styles.enroll}>
         Sign in to enroll
         <span className="visually-hidden"> (not available yet)</span>

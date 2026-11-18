@@ -10,7 +10,7 @@ import { uploadCause, type UploadState } from './upload-status'
 export function UploadStatus({ state, id }: { state: UploadState; id: string }) {
   if (state.phase === 'idle') return <div id={id} role="status" aria-live="polite" />
   return (
-    <div id={id} role="status" aria-live="polite" style={{ display: 'grid', gap: 4 }}>
+    <div id={id} role="status" aria-live="polite" style={{ display: 'grid', gap: 'var(--space-4)' }}>
       {state.phase === 'uploading' ? (
         state.percent === undefined ? (
           <span>Uploading {state.name}…</span>

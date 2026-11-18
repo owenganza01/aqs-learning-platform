@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Card, CardHeader, Icon, Select, TextField, useConfirm } from '../../../components/ui'
+import { Button, Card, CardHeader, Icon, Select, TextField, highImpact, useConfirm } from '../../../components/ui'
 import { countOf } from '../../../lib/plural'
 import base from '../../../pages/InstructorCoursePage.module.css'
 import { ActionFeedback } from '../../components/States'
@@ -63,7 +63,7 @@ export function OutlinePanel({
         {course.modules.map((module, moduleIndex) => (
           <li key={module.id}>
             <div className={styles.moduleRow}>
-              <div className={base.moduleButton} style={{ cursor: 'default' }}>
+              <div className={`${base.moduleButton} ${styles.staticModule}`}>
                 <span>{module.title}</span>
                 <span className={base.moduleMeta}>{countOf(module.lessons.length, 'lesson')}</span>
               </div>
@@ -102,11 +102,15 @@ export function OutlinePanel({
                     className={styles.iconButton}
                     disabled={run.busy}
                     onClick={async () => {
-                      const ok = await confirm({
-                        title: `Delete the module “${module.title}”?`,
-                        message: 'Its lessons are deleted with it. This cannot be undone.',
-                        confirmLabel: 'Delete module',
-                      })
+                      const ok = await confirm(
+                        highImpact({
+                          title: `Delete the module “${module.title}”?`,
+                          happens: 'Its lessons are deleted with it, with their content, files and quizzes.',
+                          kept: 'The other modules and lessons are kept.',
+                          canUndo: false,
+                          confirmLabel: 'Delete module',
+                        }),
+                      )
                       if (ok) void run.run(() => authoring.deleteModule(module.id))
                     }}
                   >

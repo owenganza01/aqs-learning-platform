@@ -128,58 +128,30 @@
   box-shadow: 0 12px 32px -4px rgb(30 58 95 / 15%);
 }
 
-.heroPlaceholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  aspect-ratio: 1200 / 505;
-  min-height: 280px;
-  border: 2px dashed var(--color-border);
-  border-radius: 16px;
-  background: var(--color-white);
-  box-shadow: 0 12px 32px -4px rgb(30 58 95 / 10%);
-  padding: var(--space-24);
-  text-align: center;
-}
+/* Desktop (two columns): the photo fills the whole right column, top to bottom, at the height of
+   the text beside it (client request, 12 November 2026). Below 1024px the hero is one column and
+   the photo keeps the 1200 : 505 frame above. */
+@media (min-width: 1024px) {
+  /* Edge to edge (client request, 12 November 2026): the photo starts right under the header,
+     cancelling the hero's 80px top padding, and runs to the screen's right edge, cancelling the
+     container's 72px padding and, on screens wider than the 1440px grid, the centred margin. The
+     hero clips anything past the edge (overflow: hidden), so the page never scrolls sideways. */
+  .heroMedia {
+    align-self: stretch;
+    display: flex;
+    margin-top: -80px;
+    margin-right: calc(-72px - max(0px, (100vw - (var(--content-max-width) + 2 * 72px)) / 2));
+  }
 
-.heroPlaceholderCard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-8);
-}
-
-.heroPlaceholderBadge {
-  display: inline-block;
-  padding: 4px 10px;
-  background: var(--color-canvas, #f1f5f9);
-  color: var(--color-text-muted);
-  border-radius: 9999px;
-  font-size: var(--text-hint);
-  font-weight: var(--weight-medium);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.heroPlaceholderTitle {
-  font-size: var(--text-base);
-  font-weight: var(--weight-medium);
-  color: var(--color-text);
-  margin: 0;
-}
-
-.heroPlaceholderHint {
-  font-size: var(--text-hint);
-  color: var(--color-text-muted);
-  margin: 0;
-}
-
-.heroCaption {
-  margin-top: var(--space-12);
-  color: var(--color-text-muted);
-  font-size: var(--text-hint);
-  line-height: var(--leading-hint);
+  /* Square corners and no frame where the photo touches the header and the screen edge. The photo
+     keeps the left part of the 3:2 frame in view, where the two women work at the screen. */
+  .heroImage {
+    height: 100%;
+    aspect-ratio: auto;
+    object-position: 4% 50%;
+    border: 0;
+    box-shadow: none;
+  }
 }
 
 /* -------------------------------------------------------------- Sections */
@@ -401,14 +373,9 @@
 
 .organizationsAction p {
   margin: 0;
-  color: var(--color-blue-100);
+  color: var(--color-text-subtle);
   font-size: var(--text-body-sm);
   line-height: var(--leading-body-sm);
-}
-
-/* Focus ring on the navy band uses the light ring (6.38:1 on navy) */
-.organizations :focus-visible {
-  box-shadow: 0 0 0 2px var(--color-navy), 0 0 0 4px var(--focus-ring-on-dark);
 }
 
 /* ------------------------------------- Statements, learning items, About */

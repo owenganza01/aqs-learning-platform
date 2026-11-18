@@ -59,9 +59,11 @@ test('inline upload status: an organisation video of the wrong type says "Wrong 
   }, { 'course-video': () => ({ json: { Key: 'x' } }) })
   const input = page.getByRole('region', { name: 'Video' }).locator('input[type=file][accept^="video"]')
   await input.setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('x') })
-  await expect(page.getByRole('region', { name: 'Video' }).getByRole('status').first()).toContainText('Wrong file type: Videos must be MP4 or WebM files.')
+  // The panel also has the always-present action-feedback region (task 6-3), so pick the upload status by its text.
+  const video = page.getByRole('region', { name: 'Video' })
+  await expect(video.getByRole('status').filter({ hasText: 'Wrong file type' })).toContainText('Wrong file type: Videos must be MP4 or WebM files.')
   await input.setInputFiles({ name: 'lecture.mp4', mimeType: 'video/mp4', buffer: Buffer.from('fake mp4') })
-  await expect(page.getByRole('region', { name: 'Video' }).getByRole('status').first()).toContainText('Video uploaded.')
+  await expect(video.getByRole('status').filter({ hasText: 'Video uploaded.' })).toContainText('Video uploaded.')
 })
 
 test('consistent confirmations: removing a file, the video and the thumbnail ask through the dialog', async ({ page }) => {
@@ -72,9 +74,11 @@ test('consistent confirmations: removing a file, the video and the thumbnail ask
     { 'course-files': () => ({ json: [] }) }, { videoPath: `${COURSE_ID}/l1/0000-lecture.mp4`, thumbnail: `course-files/${COURSE_ID}/thumb.png` })
   for (const [button, title, confirmLabel, rpcName] of [
     ['Remove zz-map.pdf', /Remove zz-map\.pdf\?/, 'Remove file', 'delete_lesson_resource'],
-    ['Remove video', /Remove this video\?/, 'Remove video', 'clear_lesson_video'],
-    ['Remove thumbnail', /Remove the thumbnail\?/, 'Remove thumbnail', 'clear_course_thumbnail'],
+    ['Remove video', /Remove the video from “Lecture”\?/, 'Remove video', 'clear_lesson_video'], // Phase B (B.5): the title names the object
+    ['Remove thumbnail', /Remove the thumbnail of “ZZ Safety basics”\?/, 'Remove thumbnail', 'clear_course_thumbnail'], // Phase B (B.5)
   ] as const) {
+    // Phase B (B.3): the thumbnail is on the Details tab, the lesson's file and video on Content
+    await page.getByRole('tab', { name: button === 'Remove thumbnail' ? 'Details' : 'Content' }).click()
     await page.getByRole('button', { name: button }).click()
     const dialog = page.getByRole('dialog', { name: title })
     await dialog.getByRole('button', { name: 'Cancel' }).click()
@@ -88,6 +92,7 @@ test('consistent confirmations: removing a file, the video and the thumbnail ask
 test('the course editor is no wider than a 390 px screen (Thumbnail block fixed)', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 900 })
   await editor(page, { organization_members: () => ({ json: [] }) })
+  await page.getByRole('tab', { name: 'Details' }).click() // Phase B (B.3): the thumbnail is on the Details tab
   await expect(page.getByRole('heading', { name: 'Thumbnail' })).toBeVisible()
   // On failure, name what sticks out (content inside its own scroll box does not count).
   const wide = await page.evaluate(() =>

@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { COURSE, mockSupabase, sessionTables, signIn, USER } from './mock-supabase.js'
+import { settleAnimations } from '../e2e/settle-animations.js'
 
 // Automated accessibility checks for the live screens (axe-core, WCAG 2.0-2.2 A and AA rules),
 // against the MOCKED Supabase API. Each screen is scanned at 1440 px and 390 px and must report
@@ -110,6 +111,7 @@ async function expectAccessible(page: Page) {
   await page.waitForLoadState('networkidle')
   // Live screens finish rendering after their mocked requests resolve.
   await page.waitForTimeout(500)
+  await settleAnimations(page)
   const result = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()
   const summary = result.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(', ')}`)
   expect(summary).toEqual([])

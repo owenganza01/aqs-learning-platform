@@ -176,7 +176,11 @@ test.describe('live mode, signed-in learner', () => {
     await page.goto('/learn')
     await page.getByRole('button', { name: 'Sign out' }).click()
     await expect(page).toHaveURL('/')
-    expect(await page.evaluate(() => localStorage.getItem('sb-127-auth-token'))).toBeNull()
+    // The session ends just after the page changes: wait for the stored token to go
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('sb-127-auth-token'))).toBeNull()
+    // and the person stays on the home page, not sent to sign-in
+    await page.waitForTimeout(500)
+    await expect(page).toHaveURL('/')
   })
 
   test('the profile saves the display name only', async ({ page }) => {

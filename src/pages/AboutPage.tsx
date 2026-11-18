@@ -2,18 +2,19 @@ import { PublicLayout } from '../components/layout/PublicLayout'
 import { ButtonLink } from '../components/ui'
 import { cx } from '../lib/cx'
 import { publicHeaderNav } from '../lib/public-navigation'
-import { ABOUT_CONTENT } from '../content/public-site'
-import { PlaceholderNote } from './info/PlaceholderNote'
+import { ABOUT_AND_CONTACT_APPROVED, ABOUT_CONTENT } from '../content/public-site'
+import { SAMPLE_ABOUT_CONTENT } from '../content/public-site.sample'
+import { SampleContentBanner, SampleNote } from './info/SampleNote'
 import styles from './PublicInfoPages.module.css'
 
 /*
  * About AQS at /about (landing page Concept C amendment, approved by the owner on 10 November 2026).
  *
- * Owner decisions: the page is implemented, but its navigation links stay hidden and production
- * builds do not register the route until the owner approves the content (content/public-site.ts).
- * Nothing about AQS is invented: the introduction, mission, purpose and the ownership wording are
- * marked placeholders until approved text is set in ABOUT_CONTENT. "What the platform offers"
- * repeats the landing page's approved description of the product.
+ * Owner decisions: production builds do not register the route until the owner approves the content
+ * (content/public-site.ts). Until then, development builds show the page with SAMPLE CONTENT, each
+ * piece under a "Sample" mark (owner instruction, 15 November 2026; content/public-site.sample.ts), so
+ * the design can be reviewed. Approved text set in ABOUT_CONTENT replaces a sample at once. "What the
+ * platform offers" repeats the landing page's approved description of the product.
  */
 export default function AboutPage() {
   return (
@@ -29,11 +30,9 @@ export default function AboutPage() {
             {ABOUT_CONTENT.introduction ? (
               <p className={styles.lead}>{ABOUT_CONTENT.introduction}</p>
             ) : (
-              <PlaceholderNote label="Introduction">
-                [Who AQS is, in two or three sentences, approved by AQS, with the official name and the approved ownership
-                wording.]
-              </PlaceholderNote>
+              <SampleNote className={styles.lead}>{SAMPLE_ABOUT_CONTENT.introduction}</SampleNote>
             )}
+            {ABOUT_AND_CONTACT_APPROVED ? null : <SampleContentBanner />}
           </div>
         </div>
       </section>
@@ -45,7 +44,7 @@ export default function AboutPage() {
             {ABOUT_CONTENT.mission ? (
               <p>{ABOUT_CONTENT.mission}</p>
             ) : (
-              <PlaceholderNote label="Mission">[AQS mission statement, as approved by AQS.]</PlaceholderNote>
+              <SampleNote>{SAMPLE_ABOUT_CONTENT.mission}</SampleNote>
             )}
           </div>
           <div className={styles.block}>
@@ -53,7 +52,7 @@ export default function AboutPage() {
             {ABOUT_CONTENT.purpose ? (
               <p>{ABOUT_CONTENT.purpose}</p>
             ) : (
-              <PlaceholderNote label="Purpose">[The platform&apos;s purpose in AQS&apos;s own words, as approved by AQS.]</PlaceholderNote>
+              <SampleNote>{SAMPLE_ABOUT_CONTENT.purpose}</SampleNote>
             )}
           </div>
         </div>

@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { mockSupabase, sessionTables, signIn, USER, type Handler, type Mock } from './mock-supabase.js'
+import { settleAnimations } from '../e2e/settle-animations.js'
 
 // CM3-1 (G16): every destructive action asks through the one ConfirmDialog (native <dialog>),
 // against the MOCKED Supabase API. For each of the five actions: Cancel sends nothing; confirming
@@ -145,6 +146,7 @@ for (const width of [1440, 390]) {
     await page.getByRole('button', { name: 'Delete lesson' }).click()
     await expect(page.getByRole('dialog')).toBeVisible()
     await page.screenshot({ path: `test-results/cm3-1-screens/confirm-dialog-${width}.png` })
+    await settleAnimations(page)
     const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
     expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
     const box = await page.getByRole('dialog').boundingBox()

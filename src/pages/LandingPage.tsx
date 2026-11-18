@@ -26,7 +26,8 @@ import styles from './LandingPage.module.css'
  *   2026; see landing/HeroNetwork.tsx). It is decorative and still for reduced motion.
  * - Only statements cleared in content/public-site.ts are shown (no unverified security, privacy or
  *   capability claims). The "Private organization workspaces" block is therefore not rendered yet.
- * - The hero product visual area is kept as an image placeholder ready for asset selection.
+ * - The hero shows the office team photo (client request, 12 November 2026; restored 15 November 2026
+ *   after the merge of PR #32 left a placeholder card in its place).
  * - The page has no About AQS block (removed at the client's request, 11 November 2026); the header's
  *   About link opens the About AQS page instead.
  * - The For organizations band uses the page's light palette (client request, 11 November 2026).
@@ -159,18 +160,14 @@ export function LandingPage() {
             </p>
           </div>
           <figure className={styles.heroMedia}>
-            <div
-              className={styles.heroPlaceholder}
-              role="img"
-              aria-label="The learner dashboard: a welcome message, and a course to continue with its progress bar and an overdue due date."
-            >
-              <div className={styles.heroPlaceholderCard}>
-                <span className={styles.heroPlaceholderBadge}>Image Placeholder</span>
-                <p className={styles.heroPlaceholderTitle}>Learner dashboard preview</p>
-                <p className={styles.heroPlaceholderHint}>Image placeholder — asset selection pending.</p>
-              </div>
-            </div>
-            <figcaption className={styles.heroCaption}>The learner dashboard, shown with sample data.</figcaption>
+            {/* Photo: Pexels 7689856, "People working in the office" (client request, 12 November 2026). */}
+            <img
+              src="/images/landing/team-working-office.jpg"
+              width={1600}
+              height={1066}
+              alt="Four colleagues wearing headsets work together at laptops and a monitor in an office."
+              className={styles.heroImage}
+            />
           </figure>
         </div>
       </section>
@@ -260,8 +257,9 @@ export function LandingPage() {
             ))}
           </ol>
           {REQUEST_WORKSPACE_AVAILABLE ? (
-            /* Step 1 starts here (WP3, task 3-3). On navy the primary button uses its inverse style (D41). */
-            <div className={cx('on-dark', styles.organizationsAction)}>
+            /* Step 1 starts here (WP3, task 3-3). The band is light (client request, 11 November 2026), so the
+               standard primary button and text colours apply. */
+            <div className={styles.organizationsAction}>
               <ButtonLink to="/request-workspace">Request a workspace</ButtonLink>
               <p>AQS reviews every request. Nothing is set up until we have checked it with you.</p>
             </div>

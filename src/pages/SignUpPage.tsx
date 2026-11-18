@@ -1,10 +1,10 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { AuthLayout } from '../components/layout/AuthLayout'
 import { REQUEST_WORKSPACE_AVAILABLE } from '../content/public-site'
 import { AUTH_METHOD_ORDER, type AuthMethodId, type OAuthProviderId } from '../lib/auth-methods'
 import { cx } from '../lib/cx'
-import { EmailSignUpForm, EmailToggle, OrDivider, ProviderButtons } from './auth/AuthOptions'
+import { EmailSignUpForm, ProviderButtons, ProviderGroup } from './auth/AuthOptions'
 import { HERO_PLACEHOLDER, MockAuthFooter, MockAuthNotice } from './MockAuthParts'
 import styles from './MockAuth.module.css'
 
@@ -36,8 +36,6 @@ type SignUpViewProps = {
   footer?: ReactNode
   /** The navy side's content: a photo, or the placeholder until its photo is placed. */
   illustration?: ReactNode
-  /** Starts with the email form expanded. */
-  defaultEmailOpen?: boolean
 }
 
 export function SignUpView({
@@ -51,12 +49,20 @@ export function SignUpView({
   signInTo = '/sign-in',
   footer,
   illustration,
-  defaultEmailOpen = false,
 }: SignUpViewProps) {
   const noticeId = useId()
   const emailFormId = useId()
-  const [emailOpen, setEmailOpen] = useState(defaultEmailOpen)
   const confirmationRef = useRef<HTMLHeadingElement>(null)
+  const offersEmail = methods.includes('email')
+  const providers = (
+    <ProviderButtons
+      methods={methods}
+      onProvider={inert ? undefined : onProvider}
+      busyProvider={busy && busy !== 'email' ? busy : null}
+      disabled={busy !== null}
+      describedBy={notice ? noticeId : undefined}
+    />
+  )
 
   // After sign-up, focus the confirmation message so screen readers announce it.
   useEffect(() => {
@@ -93,29 +99,15 @@ export function SignUpView({
           <h1 className={cx('text-h2', styles.heading)}>Create your learner account</h1>
           <p className={cx('text-body', styles.lead)}>Choose how you want to sign in to AQS. It's free.</p>
 
-          {methods.includes('email') ? (
+          {/* A.1: one email entry point. The form is the email option; the providers follow in one group. */}
+          {offersEmail ? (
             <>
-              <EmailToggle
-                label="Sign up with Email"
-                open={emailOpen}
-                onToggle={() => setEmailOpen((open) => !open)}
-                controls={emailFormId}
-                disabled={busy !== null && busy !== 'email'}
-              />
-              {emailOpen ? (
-                <EmailSignUpForm id={emailFormId} inert={inert} busy={busy === 'email'} autoFocus onSubmit={onEmailSignUp} />
-              ) : null}
-              <OrDivider />
+              <EmailSignUpForm id={emailFormId} inert={inert} busy={busy === 'email'} autoFocus onSubmit={onEmailSignUp} />
+              <ProviderGroup>{providers}</ProviderGroup>
             </>
-          ) : null}
-
-          <ProviderButtons
-            methods={methods}
-            onProvider={inert ? undefined : onProvider}
-            busyProvider={busy && busy !== 'email' ? busy : null}
-            disabled={busy !== null}
-            describedBy={notice ? noticeId : undefined}
-          />
+          ) : (
+            providers
+          )}
 
           <p className={cx('text-caption', styles.note)}>
             Already have an account?{' '}

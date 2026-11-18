@@ -136,7 +136,7 @@ function InviteFlow({ token }: { token: string | null }) {
           You're signed in as <strong>{email}</strong>. Sign in with the address the invitation was sent to. If it has
           expired or was cancelled, ask the person who invited you for a new one.
         </p>
-        <Button
+        <Button needsConnection
           onClick={async () => {
             await signOut()
             await signIn()

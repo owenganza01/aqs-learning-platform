@@ -79,3 +79,111 @@
     padding-right: var(--space-16);
   }
 }
+
+/*
+ * Phones and tablets (refinement plan, Phase 3): one card per row, from the width where the workspace menu
+ * becomes a drawer. The journey walkthroughs found a request table too wide for a 768 px tablet. The first cell is the card's title; every other
+ * cell shows its column name (data-label) beside its value; a cell without a column name (an actions
+ * column) takes the full width. Column headers stay in the page for screen readers.
+ */
+@media (max-width: 1023px) {
+  .table,
+  .table tbody,
+  .table tr,
+  .td {
+    display: block;
+    width: 100%;
+  }
+
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .row {
+    padding: var(--space-16);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .row:first-child {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .row:hover .td {
+    background: none;
+  }
+
+  .td {
+    display: grid;
+    /* The column name takes a third of a phone card, but no more than 176 px on a tablet. */
+    grid-template-columns: clamp(96px, 38%, 176px) minmax(0, 1fr);
+    gap: var(--space-12);
+    align-items: center;
+    justify-items: start;
+    padding: var(--space-4) 0;
+    border-bottom: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  /* Block content (a progress bar, a group of lines) fills the value column; badges and text keep their size. */
+  .td > div {
+    justify-self: stretch;
+  }
+
+  .td::before {
+    content: attr(data-label);
+    color: var(--color-text-subtle);
+    font-size: var(--text-label);
+    line-height: var(--leading-label);
+    font-weight: var(--weight-semibold);
+  }
+
+  .td:not([data-label]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .td:not([data-label])::before {
+    content: none;
+  }
+
+  /* The first cell names the row, so it reads as the card's title, without its column name. */
+  .td:first-child {
+    grid-template-columns: minmax(0, 1fr);
+    padding-bottom: var(--space-8);
+    font-weight: var(--weight-semibold);
+  }
+
+  .td:first-child::before {
+    content: none;
+  }
+
+  /* An actions column (no visible header) sits under the values. */
+  .td:not([data-label]):not(:first-child) {
+    justify-items: stretch;
+    padding-top: var(--space-12);
+  }
+
+  .emptyCell {
+    display: block;
+  }
+}
+
+/* Assignment 3.6: compact density for wide screens only; the cards below 1024 px are unchanged. */
+@media (min-width: 1024px) {
+  .compact .th {
+    padding: var(--space-8) var(--space-16);
+  }
+
+  .compact .td {
+    padding: var(--space-8) var(--space-16);
+  }
+
+  .compact .emptyCell {
+    padding: var(--space-24) var(--space-16);
+  }
+}

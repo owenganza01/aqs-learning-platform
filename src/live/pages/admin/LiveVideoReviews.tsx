@@ -70,7 +70,7 @@ function Queue({ status }: { status: SubmissionStatus }) {
     },
   ]
   return (
-    <Loaded resource={rows} label="Loading video submissions">
+    <Loaded resource={rows} label="Loading video submissions" loading="table">
       {(data) => (
         <div className={sectionStyles.tableWrap}>
           <Table caption="Video submissions" columns={columns} rows={data} getRowKey={(r) => r.submissionId} emptyMessage={<EmptyState title="Nothing here" description="No video submission has this status." />} />

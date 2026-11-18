@@ -1,6 +1,6 @@
 /*
  * Photos for the navy side of the auth layout, from the owner's requirements document (client
- * request, 11–12 November 2026). Each is 3:2 and fills the 480 × 320 panel with object-fit: cover
+ * request, 11–12 November 2026). Each is 3:2 and fills the space below the headline with object-fit: cover
  * (AuthLayout.module.css). The side is hidden below 900px, so phones load no photo.
  */
 export type AuthPhoto = { src: string; alt: string }

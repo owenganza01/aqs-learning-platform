@@ -8,7 +8,15 @@
  * from production builds (see src/App.tsx).
  */
 import { useEffect, useRef, type MouseEvent, type ReactNode } from 'react'
-import { AppShell, AuthLayout, FocusLayout, PublicLayout, type NavItem } from '../../components/layout'
+import {
+  AppShell,
+  AuthLayout,
+  FocusLayout,
+  PublicLayout,
+  type NavItem,
+  type WorkspaceIdentity,
+  type WorkspaceKind,
+} from '../../components/layout'
 import {
   Avatar,
   Badge,
@@ -26,8 +34,7 @@ import {
   Tabs,
   TextArea,
   TextField,
-  type TableColumn,
-} from '../../components/ui'
+  type TableColumn, BarChart } from '../../components/ui'
 import { contrastRatio } from './contrast'
 import styles from './DesignSystemPage.module.css'
 
@@ -168,6 +175,64 @@ const learnerNav: NavItem[] = [
 
 const mockUser = { name: 'Sample Learner', roleLabel: 'Learner' }
 
+/*
+ * The three staff workspaces (refinement plan, Phase 2): the same AppShell with a different
+ * `workspaceKind`. The learner shell above is the fourth and keeps its navy sidebar.
+ */
+const WORKSPACE_SHELL_SAMPLES: {
+  kind: WorkspaceKind
+  label: string
+  roleLabel: string
+  helpTitle: string
+  heading: string
+  note: string
+  workspace: WorkspaceIdentity
+  nav: NavItem[]
+}[] = [
+  {
+    kind: 'studio',
+    helpTitle: 'Here to help you teach',
+    label: 'AppShell — Teaching Studio (instructor)',
+    roleLabel: 'Instructor',
+    heading: 'Teaching Studio',
+    note: 'White sidebar with a warm active item.',
+    workspace: { title: 'Teaching Studio', subtitle: 'Sample organization', mark: 'SO' },
+    nav: [
+      { label: 'Dashboard', to: '/mock/teach', active: true },
+      { label: 'Courses', to: '/mock/teach/courses' },
+      { label: 'Learners', to: '/mock/teach/learners' },
+    ],
+  },
+  {
+    kind: 'organization',
+    helpTitle: 'Here to help you manage',
+    label: 'AppShell — Organization workspace (organization admin)',
+    roleLabel: 'Organization Admin',
+    heading: 'Organization workspace',
+    note: 'Navy sidebar with the organization tile in the header.',
+    workspace: { title: 'Sample organization', subtitle: 'Organization workspace', mark: 'SO' },
+    nav: [
+      { label: 'Dashboard', to: '/mock/manage', active: true },
+      { label: 'Members', to: '/mock/manage/members' },
+      { label: 'Invitations', to: '/mock/manage/invitations' },
+    ],
+  },
+  {
+    kind: 'platform',
+    helpTitle: 'Here to help you manage',
+    label: 'AppShell — Platform Control Center (platform admin)',
+    roleLabel: 'Platform Admin',
+    heading: 'Platform Control Center',
+    note: 'Charcoal sidebar, indigo marker and the Platform-wide tag.',
+    workspace: { title: 'AQS Platform', subtitle: 'Control Center', mark: 'AQS', scope: 'Platform-wide' },
+    nav: [
+      { label: 'Overview', to: '/mock/admin', active: true },
+      { label: 'Organizations', to: '/mock/admin/organizations' },
+      { label: 'Users and roles', to: '/mock/admin/users' },
+    ],
+  },
+]
+
 const sections = [
   { id: 'colour', label: 'Colour' },
   { id: 'typography', label: 'Typography' },
@@ -181,6 +246,7 @@ const sections = [
   { id: 'feedback', label: 'Empty states & banners' },
   { id: 'table', label: 'Table' },
   { id: 'tabs', label: 'Tabs' },
+  { id: 'charts', label: 'Charts' },
   { id: 'layouts', label: 'Layouts' },
 ]
 
@@ -757,6 +823,33 @@ export default function DesignSystemPage() {
             </Card>
           </Section>
 
+          {/* Handoff 2, Phase C (C.2, task 7-2): the bar chart in each state it has to handle. */}
+          <Section id="charts" title="Charts" note="Horizontal bars drawn as SVG, values on the bars, a table with the same numbers for screen readers and on request. No motion with reduced motion.">
+            <div className={styles.chartGrid}>
+              <Card padding="lg">
+                <BarChart title="With values" description="Completion by course" unit="percent" labelHeading="Course" valueHeading="Completion"
+                  data={[{ label: 'Introduction to Regression', value: 71 }, { label: 'Data analytics fundamentals', value: 54 }, { label: 'Statistics for decision makers', value: 33 }]} />
+              </Card>
+              <Card padding="lg">
+                <BarChart title="All zero" description="Nothing completed yet" labelHeading="Course" valueHeading="Learners"
+                  data={[{ label: 'Course A', value: 0 }, { label: 'Course B', value: 0 }, { label: 'Course C', value: 0 }]} />
+              </Card>
+              <Card padding="lg">
+                <BarChart title="One item" labelHeading="Status" valueHeading="Organizations" data={[{ label: 'Active', value: 12 }]} />
+              </Card>
+              <Card padding="lg">
+                <BarChart title="Long labels" description="Labels wrap; nothing is cut" labelHeading="Course" valueHeading="Learners"
+                  data={[{ label: 'Data protection and information security for every team member, including contractors', value: 128 }, { label: 'Leading hybrid and distributed teams through organisational change', value: 64 }]} />
+              </Card>
+              <Card padding="lg">
+                <BarChart title="Loading" data={[]} loading />
+              </Card>
+              <Card padding="lg">
+                <BarChart title="Empty" data={[]} />
+              </Card>
+            </div>
+          </Section>
+
           {/* 12 Layouts */}
           <Section
             id="layouts"
@@ -817,6 +910,25 @@ export default function DesignSystemPage() {
                 </div>
               </AppShell>
             </Frame>
+
+            {WORKSPACE_SHELL_SAMPLES.map((sample) => (
+              <Frame key={sample.kind} label={sample.label} note="Mock content" cue={skipFrameCue}>
+                <AppShell
+                  mainId={`sample-shell-${sample.kind}-main`}
+                  navItems={sample.nav}
+                  user={{ name: 'Sample Person', roleLabel: sample.roleLabel }}
+                  workspaceKind={sample.kind}
+                  workspace={sample.workspace}
+                  helpTitle={sample.helpTitle}
+                >
+                  <h3 className="text-title">{sample.heading}</h3>
+                  <p className="text-muted" style={{ margin: '8px 0 24px' }}>
+                    {sample.note} (Mock content.)
+                  </p>
+                  <div className={styles.mockBlock}>Page content area</div>
+                </AppShell>
+              </Frame>
+            ))}
 
             <Frame label="FocusLayout — course player and quiz" note="Mock content" cue={skipFrameCue}>
               <FocusLayout

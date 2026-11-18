@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Badge, Banner, Button, ButtonLink, Card, CardHeader, TextArea, TextField, useConfirm } from '../../../components/ui'
+import { Badge, Banner, Button, ButtonLink, Card, CardHeader, TextArea, TextField, highImpact, useConfirm } from '../../../components/ui'
 import base from '../../../pages/InstructorCoursePage.module.css'
 import { ActionFeedback } from '../../components/States'
 import { authoring, type AuthoringCourse, type AuthoringLesson } from '../../data/authoring'
@@ -97,14 +97,18 @@ export function LessonPanel({
             <Button type="submit" variant="secondary" loading={run.busy} disabled={!textChanged}>
               Save lesson
             </Button>
-            <Button
+            <Button needsConnection
               variant="text"
               onClick={async () => {
-                const ok = await confirm({
-                  title: `Delete the lesson “${lesson.title}”?`,
-                  message: 'It is removed from the course with its content. This cannot be undone.',
-                  confirmLabel: 'Delete lesson',
-                })
+                const ok = await confirm(
+                  highImpact({
+                    title: `Delete the lesson “${lesson.title}”?`,
+                    happens: 'It is removed from the course with its content, files and quiz.',
+                    kept: 'The rest of the course is kept.',
+                    canUndo: false,
+                    confirmLabel: 'Delete lesson',
+                  }),
+                )
                 if (ok) {
                   void run.run(async () => {
                     await authoring.deleteLesson(lesson.id)
@@ -178,11 +182,11 @@ export function LessonPanel({
                         >
                           {file.downloadable ? 'Stop downloads' : 'Allow downloads'}
                         </Button>
-                        <Button
+                        <Button needsConnection
                           variant="text"
                           size="sm"
                           onClick={async () => {
-                            if (await confirm({ title: `Remove ${file.fileName}?`, message: 'Learners will no longer see this file.', confirmLabel: 'Remove file' }))
+                            if (await confirm(highImpact({ title: `Remove ${file.fileName}?`, happens: 'Learners will no longer see this file.', kept: 'The lesson and its other files are kept.', canUndo: false, undo: "This can't be undone, but you can upload the file again.", confirmLabel: 'Remove file' })))
                               void run.run(() => authoring.deleteResource(file.id, file.storagePath), 'File removed.')
                           }}
                         >

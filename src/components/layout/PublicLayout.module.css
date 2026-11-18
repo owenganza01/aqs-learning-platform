@@ -163,7 +163,7 @@
 
 .footerLink {
   color: var(--color-text);
-  font-size: 15px;
+  font-size: var(--text-body-sm);
   text-decoration: none;
 }
 

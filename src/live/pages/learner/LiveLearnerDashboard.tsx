@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Badge, Banner, ButtonLink, EmptyState, ProgressBar, StatCard, Tabs, type TabItem } from '../../../components/ui'
 import { cx } from '../../../lib/cx'
+import { CourseArtwork } from '../../components/CourseArtwork/CourseArtwork'
 import styles from '../../../pages/LearnerDashboardPage.module.css'
 import { ErrorBanner, LoadingBlock } from '../../components/States'
 import { LiveShell } from '../../components/LiveShell'
@@ -45,7 +46,7 @@ export default function LiveLearnerDashboard() {
         <h1 className="text-title">Welcome back{firstName ? `, ${firstName}` : ''}</h1>
       </header>
 
-      {overview.state === 'loading' ? <LoadingBlock label="Loading your dashboard" rows={4} /> : null}
+      {overview.state === 'loading' ? <LoadingBlock label="Loading your dashboard" shape="cards" /> : null}
       {overview.state === 'error' ? <ErrorBanner error={overview.error} onRetry={overview.reload} /> : null}
       {overview.state === 'ready' && overview.data.unavailable.length > 0 ? (
         <Banner tone="info">
@@ -82,10 +83,13 @@ function DashboardBody({
     <>
       {featured && featured.progress.next ? <ContinueHero course={featured} /> : null}
 
-      <div className={styles.statsRow}>
-        <StatCard label="Courses in progress" value={inProgress.length} />
-        <StatCard label="Lessons completed" value={lessonsCompleted} />
-      </div>
+      {/* A.4: a number card shows only when it has something to count; a new learner sees none. */}
+      {inProgress.length > 0 || lessonsCompleted > 0 ? (
+        <div className={styles.statsRow}>
+          {inProgress.length > 0 ? <StatCard label="Courses in progress" value={inProgress.length} /> : null}
+          {lessonsCompleted > 0 ? <StatCard label="Lessons completed" value={lessonsCompleted} /> : null}
+        </div>
+      ) : null}
 
       <section className={styles.section} aria-labelledby="my-courses-heading">
         <SectionHeader
@@ -185,7 +189,12 @@ export function CourseImage({ course, tint, wide = false, hero = false }: { cour
       </div>
     )
   }
-  return <div className={className} aria-hidden="true" />
+  // Task 8-2: no thumbnail yet, so the course's own artwork in AQS colours, not an empty box.
+  return (
+    <div className={className} aria-hidden="true">
+      <CourseArtwork title={course.title} />
+    </div>
+  )
 }
 
 function ContinueHero({ course }: { course: EnrolledCourse }) {

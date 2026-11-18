@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { COURSE, mockSupabase, sessionTables, signIn, type Handler } from './mock-supabase.js'
+import { settleAnimations } from '../e2e/settle-animations.js'
 
 // CM3-2 (G30): the catalog is paged by the database (.range() with count: 'exact', 12 per page)
 // and searched there, against the MOCKED Supabase API. Synthetic course titles only.
@@ -70,6 +71,7 @@ for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await openCatalog(page)
     await expect(page.getByText('Showing 1–12 of 30 courses')).toBeVisible()
+    await settleAnimations(page)
     const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
     expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true)

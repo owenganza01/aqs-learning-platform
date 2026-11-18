@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { COURSE, mockSupabase, sessionTables, signIn, USER, type Handler } from './mock-supabase.js'
+import { settleAnimations } from '../e2e/settle-animations.js'
 
 // CM2-4 (D39; package part 5): the learner players against the MOCKED Supabase API. YouTube embed
 // parameters, title, placeholder and note; stored video with its caption track (served with CORS,
@@ -146,6 +147,7 @@ for (const width of [1440, 390]) {
         await openLesson(page, kind === 'YouTube' ? { video_path: null, youtube_id: 'AbCdEfGhI_1' } : { video_path: `${COURSE.id}/${VIDEO_LESSON.id}/0000-org.mp4`, youtube_id: null })
         await expect(page.locator(kind === 'YouTube' ? 'iframe' : 'video')).toBeVisible()
         await page.screenshot({ path: `test-results/cm2-4-screens/${kind.toLowerCase()}-player-${width}.png`, fullPage: true })
+        await settleAnimations(page)
         const result = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()
         expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true)

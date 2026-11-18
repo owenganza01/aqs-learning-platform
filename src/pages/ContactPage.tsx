@@ -3,21 +3,22 @@ import { Link } from 'react-router'
 import { PublicLayout } from '../components/layout/PublicLayout'
 import { cx } from '../lib/cx'
 import { publicHeaderNav } from '../lib/public-navigation'
-import { CONTACT_CONTENT, LEGAL_PAGES_AVAILABLE, REQUEST_WORKSPACE_AVAILABLE } from '../content/public-site'
-import { PlaceholderNote } from './info/PlaceholderNote'
+import { ABOUT_AND_CONTACT_APPROVED, CONTACT_CONTENT, LEGAL_PAGES_AVAILABLE, REQUEST_WORKSPACE_AVAILABLE } from '../content/public-site'
+import { SAMPLE_CONTACT_CONTENT } from '../content/public-site.sample'
+import { SampleContentBanner, SampleNote } from './info/SampleNote'
 import styles from './PublicInfoPages.module.css'
 
 /*
  * Contact at /contact (landing page Concept C amendment, approved by the owner on 10 November 2026).
  *
- * Owner decisions: the page is implemented, but its navigation links stay hidden and production
- * builds do not register the route until the owner approves the contact details
- * (content/public-site.ts). No email address, phone number or address is invented: each is a
- * marked placeholder until set in CONTACT_CONTENT. There is no contact form (it would need its own
- * server check and privacy review).
+ * Owner decisions: production builds do not register the route until the owner approves the contact
+ * details (content/public-site.ts). Until then, development builds show SAMPLE details, each under a
+ * "Sample" mark and never as a working email or phone link (owner instruction, 15 November 2026;
+ * content/public-site.sample.ts). There is no contact form (it would need its own server check and
+ * privacy review).
  */
 
-function ContactCard({ title, value, href, placeholder, note }: { title: string; value: string | null; href?: string; placeholder: string; note: string }) {
+function ContactCard({ title, value, href, sample, note }: { title: string; value: string | null; href?: string; sample: string; note: string }) {
   return (
     <div className={styles.contactCard}>
       <h2 className={styles.cardTitle}>{title}</h2>
@@ -25,9 +26,7 @@ function ContactCard({ title, value, href, placeholder, note }: { title: string;
         <p className={styles.contactValue}>{href ? <a href={href}>{value}</a> : value}</p>
       ) : (
         <>
-          <PlaceholderNote label={title} inline>
-            {placeholder}
-          </PlaceholderNote>
+          <SampleNote className={styles.contactValue}>{sample}</SampleNote>
           {import.meta.env.DEV ? <p className={styles.cardNote}>{note}</p> : null}
         </>
       )}
@@ -55,6 +54,7 @@ export default function ContactPage() {
             Contact AQS
           </h1>
           <p className={styles.lead}>Choose the route that fits your question.</p>
+          {ABOUT_AND_CONTACT_APPROVED ? null : <SampleContentBanner />}
         </div>
       </section>
 
@@ -65,31 +65,27 @@ export default function ContactPage() {
               title="Email"
               value={email}
               href={email ? `mailto:${email}` : undefined}
-              placeholder="[AQS email address]"
+              sample={SAMPLE_CONTACT_CONTENT.email}
               note="Shown as an email link once approved."
             />
             <ContactCard
               title="Phone"
               value={phone}
               href={phone ? `tel:${phone.replace(/[^+\d]/g, '')}` : undefined}
-              placeholder="[AQS phone number, with country code]"
+              sample={SAMPLE_CONTACT_CONTENT.phone}
               note="Shown as a tap-to-call link on mobile."
             />
             <ContactCard
               title="Address"
               value={address}
-              placeholder="[AQS physical or postal address]"
+              sample={SAMPLE_CONTACT_CONTENT.address}
               note="Shown only if AQS wants it public."
             />
           </div>
           {replyTimes ? (
             <p className={styles.replyTimes}>{replyTimes}</p>
           ) : (
-            <p className={styles.replyTimes}>
-              <PlaceholderNote label="Reply times" inline>
-                [When AQS replies, if AQS wants to publish it]
-              </PlaceholderNote>
-            </p>
+            <SampleNote className={styles.replyTimes}>{SAMPLE_CONTACT_CONTENT.replyTimes}</SampleNote>
           )}
         </div>
       </section>

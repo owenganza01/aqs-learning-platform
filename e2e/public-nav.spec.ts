@@ -88,11 +88,13 @@ test.describe('header and footer destinations', () => {
   test('the footer lists working links only, with nothing greyed out', async ({ page }) => {
     await page.goto('/')
     const footer = page.getByRole('contentinfo')
-    await expect(footer.getByRole('heading', { level: 2 })).toHaveText(['Learn', 'Organizations', 'AQS'])
+    await expect(footer.getByRole('heading', { level: 2 })).toHaveText(['Learn', 'Organizations', 'AQS', 'Legal'])
     await expect(footer.getByRole('navigation', { name: 'Learn' }).getByRole('link')).toHaveText(['Courses', 'Get started', 'Sign in'])
     await expect(footer.getByRole('navigation', { name: 'Organizations' }).getByRole('link')).toHaveText(['For organizations', 'Request a workspace'])
     await expect(footer.getByRole('navigation', { name: 'AQS' }).getByRole('link')).toHaveText(['About AQS', 'Contact'])
-    for (const gone of ['Our Story', 'Instructors', 'Careers', 'Blog', 'Privacy Policy', 'Terms', 'Cookie Policy']) {
+    // Legal pages built 15 November 2026 (tasks 5-3 and 5-5): their links are live.
+    await expect(footer.getByRole('navigation', { name: 'Legal' }).getByRole('link')).toHaveText(['Terms of Use', 'Privacy Policy', 'Cookie Policy'])
+    for (const gone of ['Our Story', 'Instructors', 'Careers', 'Blog']) {
       await expect(footer.getByText(gone, { exact: true })).toHaveCount(0)
     }
     await expect(footer.locator('[aria-disabled="true"]')).toHaveCount(0)
@@ -116,26 +118,28 @@ test.describe('header and footer destinations', () => {
     await expect(page.locator('#organizations')).toBeFocused()
   })
 
-  test('development build: About AQS shows marked placeholders and no invented company facts', async ({ page }) => {
+  test('development build: About AQS shows sample content under a Sample mark, with no ownership or history claims', async ({ page }) => {
     await page.goto('/about')
     await expect(page.getByRole('heading', { level: 1, name: 'About AQS' })).toBeVisible()
-    for (const label of ['Introduction', 'Mission', 'Purpose']) {
-      await expect(page.getByText(`Placeholder · ${label} · AQS to supply`)).toBeVisible()
-    }
+    await expect(page.locator('[data-sample-content="notice"]')).toContainText('Sample content · not approved.')
+    const samples = page.locator('[data-sample-content="true"]')
+    await expect(samples).toHaveCount(3)
+    for (const sample of await samples.all()) await expect(sample).toContainText(/^Sample /)
     await expect(page.getByText(/owned and operated|founded|award/i)).toHaveCount(0)
     await expect(page.getByRole('link', { name: 'Contact AQS' })).toHaveAttribute('href', '/contact')
   })
 
-  test('development build: Contact shows marked placeholders, no real-looking details and no form', async ({ page }) => {
+  test('development build: Contact shows sample details under a Sample mark, no working contact links and no form', async ({ page }) => {
     await page.goto('/contact')
     await expect(page.getByRole('heading', { level: 1, name: 'Contact AQS' })).toBeVisible()
-    for (const label of ['Email', 'Phone', 'Address']) {
-      await expect(page.getByText(`Placeholder · ${label} · AQS to supply`)).toBeVisible()
-    }
+    await expect(page.locator('[data-sample-content="notice"]')).toContainText('Sample content · not approved.')
+    const samples = page.locator('[data-sample-content="true"]')
+    await expect(samples).toHaveCount(4)
+    for (const sample of await samples.all()) await expect(sample).toContainText(/^Sample /)
     await expect(page.getByRole('link', { name: /@|mailto|tel:/ })).toHaveCount(0)
     await expect(page.locator('a[href^="mailto:"], a[href^="tel:"]')).toHaveCount(0)
     await expect(page.locator('form')).toHaveCount(0)
-    await expect(page.getByRole('heading', { level: 3 })).toHaveText(['Training for your organization', 'Help with an assigned course'])
+    await expect(page.getByRole('heading', { level: 3 })).toHaveText(['Training for your organization', 'Help with an assigned course', 'Privacy questions'])
   })
 })
 

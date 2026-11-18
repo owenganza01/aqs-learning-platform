@@ -1,4 +1,4 @@
-import type { NavItem } from '../components/layout/types'
+import type { NavItem, WorkspaceIdentity } from '../components/layout/types'
 
 /*
  * Sidebar navigation for each role shell, from the approved design references (learner
@@ -69,11 +69,19 @@ export function getInstructorShell(orgSlug: string): ShellDefinition {
   }
 }
 
+/** Up to two initials for an organization's tile: "ABC Corporation" gives "AC". */
+export function workspaceInitials(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean)
+  if (words.length === 0) return ''
+  const letters = words.length === 1 ? words[0].slice(0, 2) : words[0][0] + words[1][0]
+  return letters.toUpperCase()
+}
+
 export interface ShellDefinition {
   role: ShellRole
   /** Shown under the user's name in the header. */
   roleLabel: string
-  workspace: { title: string; subtitle?: string }
+  workspace: WorkspaceIdentity
   helpTitle: string
   navItems: NavItem[]
 }
@@ -103,7 +111,7 @@ export function getShellDefinition(role: ShellRole, dashboardTo: string): ShellD
       return {
         role,
         roleLabel: 'Instructor',
-        workspace: { title: 'Sample organization', subtitle: 'Instructor workspace' },
+        workspace: { title: 'Teaching Studio', subtitle: 'Sample organization', mark: workspaceInitials('Sample organization') },
         helpTitle: 'Here to help you teach',
         navItems: [
           { label: 'Dashboard', to: dashboardTo },
@@ -119,7 +127,7 @@ export function getShellDefinition(role: ShellRole, dashboardTo: string): ShellD
       return {
         role,
         roleLabel: 'Organization Admin',
-        workspace: { title: 'Sample organization', subtitle: 'Organization admin' },
+        workspace: { title: 'Sample organization', subtitle: 'Organization workspace', mark: workspaceInitials('Sample organization') },
         helpTitle: 'Here to help you manage',
         navItems: [
           { label: 'Dashboard', to: dashboardTo },
@@ -132,7 +140,7 @@ export function getShellDefinition(role: ShellRole, dashboardTo: string): ShellD
       return {
         role,
         roleLabel: 'Platform Admin',
-        workspace: { title: 'AQS E-Learning', subtitle: 'Platform console' },
+        workspace: { title: 'AQS Platform', subtitle: 'Control Center', mark: 'AQS', scope: 'Platform-wide' },
         helpTitle: 'Here to help you manage',
         navItems: [
           { label: 'Overview', to: dashboardTo },

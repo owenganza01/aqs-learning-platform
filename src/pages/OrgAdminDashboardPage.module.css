@@ -116,3 +116,19 @@
   font-weight: 600;
   color: var(--color-text);
 }
+
+/* Task 8-1: the "Your people" card's two actions. */
+.peopleActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+/* Phase C (C.3): sample-data chart previews. */
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+  gap: var(--space-16);
+  margin-bottom: var(--space-24);
+}

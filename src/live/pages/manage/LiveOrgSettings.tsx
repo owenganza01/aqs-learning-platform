@@ -10,11 +10,12 @@ import { useCurrentOrg } from '../../org-context'
 import { useResource } from '../../useResource'
 
 /*
- * Organization settings at /o/:orgSlug/manage/settings (archived settings reference). The
+ * Organization details at /o/:orgSlug/manage/settings (archived settings reference; Assignment 2.7
+ * renames it because it is read-only). The
  * first-release data model holds the organization's name, web address and status, set by a
  * Platform Admin during onboarding. WP3 (0021) adds the organisation profile (type, country, website,
  * primary contact), shown here read-only: Platform Admins keep it up to date. Branding is not stored
- * yet.
+ * (organization logo deferred, Decision 13), so there is no Branding card.
  */
 const STATUS_LABEL = { draft: 'Being set up', active: 'Active', suspended: 'Suspended' } as const
 
@@ -23,7 +24,7 @@ export default function LiveOrgSettings() {
   const profile = useResource(() => organizationProfile(org.id), org.id)
   return (
     <LiveShell shell={orgAdminShell(org.slug, org.name)}>
-      <PageHeader title="Organization settings" description="Your organization's details on AQS E-Learning." />
+      <PageHeader title="Organization details" description="Your organization's details on AQS E-Learning." />
       <div className={styles.grid}>
         <Card as="section" padding="lg" aria-label="Organization" className={styles.card}>
           <CardHeader title="Organization" headingLevel="h2" size="md" />
@@ -47,7 +48,7 @@ export default function LiveOrgSettings() {
         </Card>
         <Card as="section" padding="lg" aria-label="Organisation profile" className={styles.card}>
           <CardHeader title="Organisation profile" subtitle="What AQS holds about your organisation." headingLevel="h2" size="md" />
-          <Loaded resource={profile} label="Loading the organisation profile">
+          <Loaded resource={profile} label="Loading the organisation profile" loading="form">
             {(p) =>
               p ? (
                 <dl className={styles.fields}>
@@ -76,9 +77,6 @@ export default function LiveOrgSettings() {
             }
           </Loaded>
           <p className={styles.signInNote}>To change these details, contact AQS support.</p>
-        </Card>
-        <Card as="section" padding="lg" aria-label="Branding" className={styles.card}>
-          <CardHeader title="Branding" subtitle="Coming later." headingLevel="h2" size="md" />
         </Card>
       </div>
     </LiveShell>

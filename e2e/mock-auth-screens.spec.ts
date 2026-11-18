@@ -70,7 +70,8 @@ test.describe('sign-up screen (development only)', () => {
       'Continue with Apple',
       'Continue with Facebook',
     ])
-    await expect(page.getByRole('button', { name: 'Sign up with Email' })).toHaveAttribute('aria-expanded', 'false')
+    // Phase A (A.1): the email form is the one email option and is always shown (no "Sign up with Email" toggle)
+    await expect(page.getByRole('form', { name: 'Sign up with email' })).toBeVisible()
     await expect(page.getByText(DEMO_NOTICE, { exact: true })).toBeVisible()
     await expect(page.getByRole('link', { name: 'See how organizations get started' })).toHaveAttribute(
       'href',
@@ -88,7 +89,6 @@ test.describe('sign-up screen (development only)', () => {
     for (const name of ['Continue with Google', 'Continue with Apple', 'Continue with Facebook']) {
       await page.getByRole('button', { name }).click()
     }
-    await page.getByRole('button', { name: 'Sign up with Email' }).click()
     const form = page.getByRole('form', { name: 'Sign up with email' })
     for (const label of ['Full name', 'Email address', 'Password', 'Confirm password']) {
       await expect(form.getByLabel(label, { exact: true })).toBeDisabled()
@@ -117,7 +117,8 @@ test.describe('sign-up screen (development only)', () => {
       await page.keyboard.press('Tab')
       focused.push(await page.evaluate(() => document.activeElement?.textContent?.trim() ?? ''))
     }
-    for (const item of ['Continue with Google', 'Continue with Apple', 'Continue with Facebook', 'Sign up with Email', 'Sign in']) {
+    // Phase A (A.1): "Sign up with Email" no longer exists; the inert preview's email form is disabled, so it is not a stop
+    for (const item of ['Continue with Google', 'Continue with Apple', 'Continue with Facebook', 'Sign in']) {
       expect(focused).toContain(item)
     }
     for (const item of ['Privacy Policy', 'Terms', 'Learn about teaching.']) {

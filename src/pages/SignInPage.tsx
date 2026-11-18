@@ -1,11 +1,11 @@
-import { useId, useState, type ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { AuthLayout, AuthPhotoImage } from '../components/layout/AuthLayout'
 import { AUTH_PHOTOS } from '../components/layout/auth-photos'
 import { Banner } from '../components/ui'
 import { AUTH_METHOD_ORDER, type AuthMethodId, type OAuthProviderId } from '../lib/auth-methods'
 import { cx } from '../lib/cx'
-import { EmailSignInForm, EmailToggle, OrDivider, ProviderButtons } from './auth/AuthOptions'
+import { EmailSignInForm, ProviderButtons, ProviderGroup } from './auth/AuthOptions'
 import styles from './SignInPage.module.css'
 
 /*
@@ -43,8 +43,6 @@ type SignInViewProps = {
   signUpTo?: string
   /** Footer: legal links (live) or unavailable placeholders (demo). */
   footer?: ReactNode
-  /** Starts with the email form expanded. */
-  defaultEmailOpen?: boolean
 }
 
 /** The approved sign-in layout, shared by the demo page and the live page. */
@@ -57,12 +55,19 @@ export function SignInView({
   inert = false,
   signUpTo = '/sign-up',
   footer,
-  defaultEmailOpen = false,
 }: SignInViewProps) {
   const noticeId = useId()
   const emailFormId = useId()
-  const [emailOpen, setEmailOpen] = useState(defaultEmailOpen)
   const offersEmail = methods.includes('email')
+  const providers = (
+    <ProviderButtons
+      methods={methods}
+      onProvider={inert ? undefined : onProvider}
+      busyProvider={busy && busy !== 'email' ? busy : null}
+      disabled={busy !== null}
+      describedBy={notice ? noticeId : undefined}
+    />
+  )
 
   return (
     <AuthLayout illustration={<AuthPhotoImage photo={AUTH_PHOTOS.learnerVideoCall} />}>
@@ -81,29 +86,15 @@ export function SignInView({
         Sign in to continue your courses and pick up right where you left off.
       </p>
 
+      {/* A.1: one email entry point. The form is the email option; the providers follow in one group. */}
       {offersEmail ? (
         <>
-          <EmailToggle
-            label="Sign in with Email"
-            open={emailOpen}
-            onToggle={() => setEmailOpen((open) => !open)}
-            controls={emailFormId}
-            disabled={busy !== null && busy !== 'email'}
-          />
-          {emailOpen ? (
-            <EmailSignInForm id={emailFormId} inert={inert} busy={busy === 'email'} autoFocus onSubmit={onEmailSignIn} />
-          ) : null}
-          <OrDivider />
+          <EmailSignInForm id={emailFormId} inert={inert} busy={busy === 'email'} autoFocus onSubmit={onEmailSignIn} />
+          <ProviderGroup>{providers}</ProviderGroup>
         </>
-      ) : null}
-
-      <ProviderButtons
-        methods={methods}
-        onProvider={inert ? undefined : onProvider}
-        busyProvider={busy && busy !== 'email' ? busy : null}
-        disabled={busy !== null}
-        describedBy={notice ? noticeId : undefined}
-      />
+      ) : (
+        providers
+      )}
 
       <p className={cx('text-caption', styles.note)}>
         New here?{' '}

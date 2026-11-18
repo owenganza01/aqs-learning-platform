@@ -59,8 +59,8 @@ export default function LiveQuizPage() {
 
   if (data.state === 'loading' || data.state === 'error') {
     return (
-      <main id="main-content" style={{ maxWidth: 800, margin: '32px auto', padding: '0 16px' }}>
-        {data.state === 'loading' ? <LoadingBlock label="Loading quiz" /> : <ErrorBanner error={data.error} onRetry={data.reload} />}
+      <main id="main-content" style={{ maxWidth: 800, margin: 'var(--space-32) auto', padding: '0 var(--space-16)' }}>
+        {data.state === 'loading' ? <LoadingBlock label="Loading quiz" shape="form" /> : <ErrorBanner error={data.error} onRetry={data.reload} />}
       </main>
     )
   }
@@ -110,10 +110,10 @@ function QuizFlow({ data, user, onFinished }: { data: QuizData; user: { name: st
     const attemptsLeft = result ? Math.min(status.attemptsLeft, quiz.maxAttempts - result.attemptNumber) : status.attemptsLeft
     const canRetake = attemptsLeft > 0 && (!passedEver || quiz.retakeAfterPass)
     return (
-      <FocusLayout back={back} title={title} progress={{ label: 'Quiz complete', value: 100 }} user={user}>
+      <FocusLayout back={back} title={title} titleLevel="h2" progress={{ label: 'Quiz complete', value: 100 }} user={user}>
         <div className={styles.content}>
           <Card padding="lg" className={styles.resultCard}>
-            <p className={styles.eyebrow}>{lesson?.title ?? 'Quiz'}</p>
+            <h1 className={styles.eyebrow}>{lesson?.title ?? 'Quiz'}</h1>
             <span className={cx(styles.resultIcon, !passed && styles.resultIconFail)} aria-hidden="true">
               <Icon name={passed ? 'check' : 'info'} size={22} />
             </span>
@@ -185,7 +185,10 @@ function QuizFlow({ data, user, onFinished }: { data: QuizData; user: { name: st
     <FocusLayout
       back={back}
       title={title}
-      progress={{ label: 'Quiz complete', value: Math.round(((current + 1) / quiz.questions.length) * 100) }}
+      titleLevel="h2"
+      // A.8 (verification finding 3): while answering, the header counts questions; "Quiz complete" is
+      // only on the result screen.
+      progress={{ label: `Question ${current + 1} of ${quiz.questions.length}`, value: Math.round(((current + 1) / quiz.questions.length) * 100) }}
       user={user}
     >
       <div className={styles.content}>
@@ -194,7 +197,7 @@ function QuizFlow({ data, user, onFinished }: { data: QuizData; user: { name: st
         ) : null}
         <Card padding="lg" className={styles.questionCard}>
           <div className={styles.questionMeta}>
-            <p className={styles.eyebrow}>{lesson?.title ?? 'Quiz'}</p>
+            <h1 className={styles.eyebrow}>{lesson?.title ?? 'Quiz'}</h1>
             <p className={styles.counter}>
               Question {current + 1} of {quiz.questions.length}
             </p>
@@ -255,7 +258,7 @@ function QuizFlow({ data, user, onFinished }: { data: QuizData; user: { name: st
 
 function QuizReview({ quiz, onBack }: { quiz: LearnerQuiz; onBack: () => void }) {
   const review = useResource(() => getQuizReview(quiz.id), quiz.id)
-  if (review.state === 'loading') return <LoadingBlock label="Loading your answers" />
+  if (review.state === 'loading') return <LoadingBlock label="Loading your answers" shape="form" />
   if (review.state === 'error') return <ErrorBanner error={review.error} onRetry={review.reload} />
   const byOption = new Map<string, ReviewRow>(review.data.map((row) => [row.optionId, row]))
   return (
@@ -267,7 +270,7 @@ function QuizReview({ quiz, onBack }: { quiz: LearnerQuiz; onBack: () => void })
           <Card key={question.id} padding="lg" className={styles.questionCard}>
             <p className={styles.counter}>Question {index + 1}</p>
             <h3 className={styles.prompt}>{question.prompt}</h3>
-            <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 8 }}>
+            <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 'var(--space-8)' }}>
               {question.options.map((option) => {
                 const row = byOption.get(option.id)
                 return (

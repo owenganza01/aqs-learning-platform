@@ -5,6 +5,7 @@ import { Banner, Button, ButtonLink, Card, Icon } from '../../../components/ui'
 import { useAuth } from '../../../lib/auth-context'
 import { cx } from '../../../lib/cx'
 import { countOf } from '../../../lib/plural'
+import { CourseArtwork } from '../../components/CourseArtwork/CourseArtwork'
 import styles from '../../../pages/CourseDetailPage.module.css'
 import { NotFound } from '../../../pages/NotFound'
 import { query } from '../../api'
@@ -71,7 +72,7 @@ export default function LiveCourseDetail() {
     <PublicLayout>
       {data.state === 'loading' ? (
         <div className={styles.container}>
-          <LoadingBlock label="Loading course" rows={4} />
+          <LoadingBlock label="Loading course" shape="detail" />
         </div>
       ) : null}
       {data.state === 'error' ? (
@@ -118,7 +119,9 @@ function DetailContent({ data, signedIn, onChanged }: { data: DetailData; signed
             {thumbnail ? (
               <img src={thumbnail} alt="" className={styles.imagePlaceholder} style={{ objectFit: 'cover' }} />
             ) : (
-              <div className={styles.imagePlaceholder} aria-hidden="true" />
+              <div className={styles.imagePlaceholder} aria-hidden="true" style={{ border: 0, padding: 0 }}>
+                <CourseArtwork title={course.title} tone="dark" />
+              </div>
             )}
             <figcaption>
               <p className={styles.imageMeta}>{structure}</p>
@@ -202,7 +205,7 @@ function EnrolControl({ data, signedIn, onChanged }: { data: DetailData; signedI
     if (!signedIn) {
       return (
         <div className={styles.accessBlock}>
-          <p className={styles.accessNote}>Sign in with Google to enrol. It's free.</p>
+          <p className={styles.accessNote}>Sign in or create a free account to enroll.</p>
           <ButtonLink to={`/sign-in?next=${encodeURIComponent(`/courses/${course.id}`)}`} className={styles.enroll}>
             Sign in to enroll
           </ButtonLink>
@@ -317,7 +320,7 @@ function ModuleList({
                       ) : null}
                     </span>
                     {openPreview === lesson.id && preview !== undefined ? (
-                      <div style={{ gridColumn: '1 / -1', paddingTop: 8 }}>
+                      <div style={{ gridColumn: '1 / -1', paddingTop: 'var(--space-8)' }}>
                         <LessonText body={preview} />
                       </div>
                     ) : null}

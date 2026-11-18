@@ -34,6 +34,7 @@ export function WorkspaceSwitcher({ workspaces, currentTo }: { workspaces: Works
   }, [open])
 
   if (workspaces.length < 2) return null
+  const current = workspaces.find((workspace) => workspace.to === currentTo)
 
   return (
     <div className={styles.root} ref={rootRef}>
@@ -41,6 +42,8 @@ export function WorkspaceSwitcher({ workspaces, currentTo }: { workspaces: Works
         ref={buttonRef}
         type="button"
         className={styles.button}
+        // Phase 3: the name also says which workspace is open. It starts with the visible text (WCAG 2.5.3).
+        aria-label={current ? `Switch workspace, current: ${current.label}` : undefined}
         aria-expanded={open}
         aria-controls={menuId}
         onClick={() => setOpen((value) => !value)}
@@ -57,7 +60,8 @@ export function WorkspaceSwitcher({ workspaces, currentTo }: { workspaces: Works
                 aria-current={workspace.to === currentTo ? 'true' : undefined}
                 onClick={() => setOpen(false)}
               >
-                {workspace.label}
+                <span>{workspace.label}</span>
+                {workspace.to === currentTo ? <span className={styles.current}>Current</span> : null}
               </Link>
             </li>
           ))}

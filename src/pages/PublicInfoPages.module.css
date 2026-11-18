@@ -209,7 +209,7 @@
   }
 
   .title {
-    font-size: 36px;
+    font-size: var(--text-h1-mobile);
     line-height: 42px;
   }
 

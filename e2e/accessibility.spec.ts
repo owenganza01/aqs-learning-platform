@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
+import { settleAnimations } from './settle-animations.js'
 
 // Automated accessibility checks for the design-preview build (axe-core, WCAG 2.0-2.2 A and AA rules).
 // Every route is scanned at desktop (1440 px) and phone (390 px) widths, and must report zero axe
@@ -13,6 +14,9 @@ const ROUTES = [
   '/',
   '/about',
   '/contact',
+  '/terms',
+  '/privacy',
+  '/cookies',
   '/sign-in',
   '/sign-in/error',
   '/catalog',
@@ -53,6 +57,7 @@ for (const width of [1440, 390]) {
         await page.goto(route)
         await page.waitForLoadState('networkidle')
 
+        await settleAnimations(page)
         const result = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()
         const summary = result.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(', ')}`)
         expect(summary).toEqual([])

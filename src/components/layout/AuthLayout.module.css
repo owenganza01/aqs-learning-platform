@@ -63,41 +63,39 @@
 
 .headline {
   max-width: 440px;
-  font-size: 48px;
+  font-size: var(--text-display);
   line-height: 52px;
   font-weight: var(--weight-bold);
   letter-spacing: -0.02em;
 }
 
 .illustration {
+  position: relative;
   flex: 1;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  margin-top: var(--space-32);
+  min-height: 320px;
+  /* Client request (14 Nov): the photo starts where the words end and fills the rest of the navy
+     side, to its bottom and right edges, with square corners (like the landing hero). */
+  margin: var(--space-32) -72px 0;
 }
 
-/* The photo (AuthPhotoImage): same frame as the placeholder, 3:2, cropped to fill */
+/* The photo (AuthPhotoImage): covers the whole frame, cropped to fill */
 .photo {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
-  max-width: 480px;
-  height: auto;
-  aspect-ratio: 3 / 2;
+  height: 100%;
   object-fit: cover;
   object-position: center;
-  border-radius: 24px 24px 0 0;
 }
 
 /* Quiet stand-in until the photo is exported from Figma as its own image */
 .placeholder {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: flex-end;
-  width: 100%;
-  max-width: 480px;
-  min-height: 320px;
-  border-radius: 24px 24px 0 0;
-  padding: var(--space-24);
+  padding: var(--space-24) 72px;
   background: rgb(255 255 255 / 0.06);
   font-size: var(--text-hint);
   line-height: var(--leading-hint);

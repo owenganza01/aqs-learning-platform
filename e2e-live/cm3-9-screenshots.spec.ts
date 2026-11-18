@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { COURSE, mockSupabase, sessionTables, signIn, USER } from './mock-supabase.js'
 
-// CM3-9 (owner instruction 4 November 2026): a screenshot set of the live screens at 390 px and
+// CM3-9 (owner instruction 4 November 2026): a screenshot set of the live screens at 390, 768 and
 // 1440 px for the owner's review of the undesigned pages. Same synthetic fixtures and MOCKED
 // Supabase API as live-accessibility.spec.ts (copied, not imported, so that spec is unchanged).
 // Runs only with CM3_9_SCREENSHOTS=1; output: test-results/cm3-9-screens/<who>/<route>-<width>.jpg
@@ -105,16 +105,22 @@ const SCREENS: { who: 'public' | 'signed-in' | 'platform admin'; routes: string[
 ]
 
 // The CM2/CM3 screens that are not in the accessibility list, added for the review.
-const EXTRA: { who: 'signed-in' | 'platform admin'; routes: string[] }[] = [
+const EXTRA: { who: 'public' | 'signed-in' | 'platform admin'; routes: string[] }[] = [
   { who: 'platform admin', routes: ['/admin/video-reviews'] },
   { who: 'signed-in', routes: [`/o/abc/teach/courses/${COURSE.id}/preview`] },
+  // Task 8-6: the screens added since CM3-9 (sign-up, Get Started, workspace requests, sign-in errors).
+  { who: 'public', routes: ['/sign-up', '/get-started', '/request-workspace', '/sign-in?error=cancelled'] },
+  { who: 'platform admin', routes: ['/admin/requests'] },
+  // Handoff Assignment 1 (16 November 2026): the pages the refreshed base added. About and Contact
+  // exist in development builds only, with labelled sample content.
+  { who: 'public', routes: ['/terms', '/privacy', '/cookies', '/about', '/contact'] },
 ]
 
 const slug = (route: string) => (route === '/' ? 'home' : route.replace(/^\/+/, '').replace(/[^a-z0-9]+/gi, '-').replace(/-+$/, '').slice(0, 80))
 
 test.skip(!process.env.CM3_9_SCREENSHOTS, 'screenshot set: run with CM3_9_SCREENSHOTS=1')
 
-for (const width of [1440, 390]) {
+for (const width of [1440, 768, 390]) {
   for (const { who, routes } of [...SCREENS, ...EXTRA]) {
     test.describe(`CM3-9 screenshots, ${who}, ${width} px`, () => {
       for (const route of routes) {
@@ -132,4 +138,42 @@ for (const width of [1440, 390]) {
       }
     })
   }
+}
+
+// Page states on the refreshed shell (tasks 6-1 and 6-4): the offline notice in each workspace and the
+// table placeholder while a list loads.
+const STATE_SCREENS = [
+  { name: 'offline-learner', path: '/learn', admin: false },
+  { name: 'offline-teaching-studio', path: '/o/abc/teach', admin: false },
+  { name: 'offline-organization-workspace', path: '/o/abc/manage', admin: false },
+  { name: 'offline-platform', path: '/admin', admin: true },
+]
+
+for (const width of [1440, 768, 390]) {
+  test.describe(`page-state screenshots, ${width} px`, () => {
+    for (const { name, path, admin } of STATE_SCREENS) {
+      test(name, async ({ page, context }) => {
+        await page.setViewportSize({ width, height: 900 })
+        await signIn(page)
+        await mockSupabase(page, { tables: tables(admin), rpc: { ...rpc, video_review_queue: () => ({ json: [] }), lesson_spoken_language: () => ({ json: null }) } })
+        await page.goto(path)
+        await page.waitForLoadState('networkidle')
+        await context.setOffline(true)
+        await page.waitForTimeout(500)
+        await page.screenshot({ path: `test-results/cm3-9-screens/states/${name}-${width}.jpg`, fullPage: true, type: 'jpeg', quality: 60 })
+        await context.setOffline(false)
+      })
+    }
+
+    test('loading-invitations-table', async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await signIn(page)
+      await mockSupabase(page, { tables: tables(false), rpc })
+      await page.route('**/rest/v1/invitations**', () => new Promise(() => {}))
+      await page.goto('/o/abc/manage/invitations')
+      await page.locator('[data-shape="table"]').waitFor()
+      await page.waitForTimeout(300)
+      await page.screenshot({ path: `test-results/cm3-9-screens/states/loading-invitations-table-${width}.jpg`, fullPage: true, type: 'jpeg', quality: 60 })
+    })
+  })
 }

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { PageHeader } from '../../../components/layout/PageHeader'
-import { Avatar, Badge, Button, ButtonLink, EmptyState, Pagination, Table, Tabs, TextField, usePagination, type BadgeTone, type TableColumn, useConfirm } from '../../../components/ui'
+import { Avatar, Badge, Button, ButtonLink, EmptyState, Pagination, Table, Tabs, TextField, usePagination, type BadgeTone, type TableColumn, useConfirm, highImpact } from '../../../components/ui'
 import styles from '../../../pages/OrgAdminMembersPage.module.css'
 import { ActionFeedback, ErrorBanner, LoadingBlock } from '../../components/States'
 import { LiveShell } from '../../components/LiveShell'
@@ -98,38 +98,54 @@ export default function LiveOrgMembers() {
             </Button>
           )
         }
+        const who = m.fullName || m.email
         return (
-          <div className={styles.badges}>
-            {toggle('instructor')}
-            {toggle('learner')}
-            <Button
-              variant="text"
-              size="sm"
-              onClick={async () => {
-                const ok = await confirm({
-                  title: `Suspend ${m.fullName || m.email}?`,
-                  message: 'They lose access until reactivated.',
-                  confirmLabel: 'Suspend member',
-                })
-                if (ok) void act.run(() => memberActions.setStatus(org.id, m.userId, 'suspended'), `${m.fullName || m.email} is suspended.`)
-              }}
-            >
-              Suspend<span className="visually-hidden"> {m.fullName || m.email}</span>
-            </Button>
-            <Button
-              variant="text"
-              size="sm"
-              onClick={async () => {
-                const ok = await confirm({
-                  title: `Remove ${m.fullName || m.email} from ${org.name}?`,
-                  message: 'Their learning records are kept.',
-                  confirmLabel: 'Remove member',
-                })
-                if (ok) void act.run(() => memberActions.setStatus(org.id, m.userId, 'removed'), `${m.fullName || m.email} was removed.`)
-              }}
-            >
-              Remove<span className="visually-hidden"> {m.fullName || m.email}</span>
-            </Button>
+          <div className={styles.actions}>
+            <div className={styles.badges}>
+              {toggle('instructor')}
+              {toggle('learner')}
+            </div>
+            {/* Assignment 2.5: actions that end someone's access sit apart from routine role changes. */}
+            <div className={styles.accessActions} role="group" aria-label={`Access for ${who}`}>
+              <Button needsConnection
+                variant="text"
+                size="sm"
+                onClick={async () => {
+                  const ok = await confirm(
+                    highImpact({
+                      title: `Suspend ${who}?`,
+                      happens: `They lose access to ${org.name} and its courses straight away.`,
+                      kept: 'Their roles and learning records are kept.',
+                      canUndo: true,
+                      undo: "Lifting a suspension isn't available on this page yet: ask AQS support.",
+                      confirmLabel: 'Suspend member',
+                    }),
+                  )
+                  if (ok) void act.run(() => memberActions.setStatus(org.id, m.userId, 'suspended'), `${who} is suspended.`)
+                }}
+              >
+                Suspend<span className="visually-hidden"> {who}</span>
+              </Button>
+              <Button needsConnection
+                variant="text"
+                size="sm"
+                onClick={async () => {
+                  const ok = await confirm(
+                    highImpact({
+                      title: `Remove ${who} from ${org.name}?`,
+                      happens: `They lose access to ${org.name} and its courses, and leave the member list.`,
+                      kept: 'Their learning records are kept.',
+                      canUndo: true,
+                      undo: 'To bring them back later, send them a new invitation. They return with the invited role only.',
+                      confirmLabel: 'Remove member',
+                    }),
+                  )
+                  if (ok) void act.run(() => memberActions.setStatus(org.id, m.userId, 'removed'), `${who} was removed.`)
+                }}
+              >
+                Remove<span className="visually-hidden"> {who}</span>
+              </Button>
+            </div>
           </div>
         )
       },
@@ -149,7 +165,7 @@ export default function LiveOrgMembers() {
         }
       />
       <ActionFeedback error={act.error} success={message} />
-      {data.state === 'loading' ? <LoadingBlock label="Loading members" /> : null}
+      {data.state === 'loading' ? <LoadingBlock label="Loading members" shape="table" /> : null}
       {data.state === 'error' ? <ErrorBanner error={data.error} onRetry={data.reload} /> : null}
       {data.state === 'ready' ? (
         <>

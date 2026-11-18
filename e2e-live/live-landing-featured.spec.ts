@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { COURSE, mockSupabase, sessionTables } from './mock-supabase.js'
+import { settleAnimations } from '../e2e/settle-animations.js'
 
 // CM3-7 (G10, G11; PB; owner instruction 4 November 2026): the landing page shows only real data.
 // Landing page Concept C (owner, 10 November 2026): the Courses block shows up to three real published
@@ -52,6 +53,7 @@ for (const width of [1440, 820, 390]) {
     await open(page, real)
     await expect(page.getByRole('list', { name: 'Featured courses' })).toBeVisible()
     await page.screenshot({ path: `test-results/landing-concept-c/landing-featured-${width}.png`, fullPage: true })
+    await settleAnimations(page)
     const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
     expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true)

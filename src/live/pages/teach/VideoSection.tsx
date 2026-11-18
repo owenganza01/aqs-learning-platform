@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Badge, Banner, Button, ProgressBar, TextArea, TextField, useConfirm } from '../../../components/ui'
+import { Badge, Banner, Button, ProgressBar, TextArea, TextField, highImpact, useConfirm } from '../../../components/ui'
 import base from '../../../pages/InstructorCoursePage.module.css'
 import { ActionFeedback } from '../../components/States'
 import { authoring, type AuthoringCourse, type AuthoringLesson } from '../../data/authoring'
@@ -89,7 +89,7 @@ function PublicVideo({ course, lesson, editable, onChanged }: { course: Authorin
         open && open.status !== 'uploading' ? (
           <div className={styles.row}>
             <Button variant="text" size="sm" loading={run.busy} onClick={async () => {
-                if (await confirm({ title: 'Withdraw this video submission?', message: 'AQS stops reviewing it. The file is kept; you can submit a new one.', confirmLabel: 'Withdraw submission' }))
+                if (await confirm(highImpact({ title: `Withdraw the video submission for “${lesson.title}”?`, happens: 'AQS stops reviewing it.', kept: 'The file is kept.', canUndo: false, undo: "This can't be undone, but you can submit a new one.", confirmLabel: 'Withdraw submission' })))
                   void run.run(() => videoReview.withdraw(open.id))
               }}>
               Withdraw this submission
@@ -109,7 +109,7 @@ function PublicVideo({ course, lesson, editable, onChanged }: { course: Authorin
               onChanged()
             }}
             onWithdraw={open ? async () => {
-              if (await confirm({ title: 'Withdraw this video submission?', message: 'AQS stops reviewing it. The file is kept; you can submit a new one.', confirmLabel: 'Withdraw submission' }))
+              if (await confirm(highImpact({ title: `Withdraw the video submission for “${lesson.title}”?`, happens: 'AQS stops reviewing it.', kept: 'The file is kept.', canUndo: false, undo: "This can't be undone, but you can submit a new one.", confirmLabel: 'Withdraw submission' })))
                 void run.run(() => videoReview.withdraw(open.id))
               } : undefined}
           />
@@ -118,11 +118,11 @@ function PublicVideo({ course, lesson, editable, onChanged }: { course: Authorin
 
       {editable && lesson.videoPath ? (
         <div>
-          <Button
+          <Button needsConnection
             variant="text"
             size="sm"
             onClick={async () => {
-              if (await confirm({ title: 'Remove the uploaded video?', message: 'The lesson will have no stored video. Public courses use AQS review and YouTube instead.', confirmLabel: 'Remove video' }))
+              if (await confirm(highImpact({ title: `Remove the uploaded video from “${lesson.title}”?`, happens: 'The lesson will have no stored video. Public courses use AQS review and YouTube instead.', kept: 'The lesson and its text are kept.', canUndo: false, undo: "This can't be undone, but you can upload a video again.", confirmLabel: 'Remove video' })))
                 void run.run(() => authoring.clearVideo(lesson.id))
             }}
           >
@@ -424,11 +424,11 @@ function OrganizationVideo({ course, lesson, editable, onChanged }: { course: Au
       ) : null}
       {editable && lesson.videoPath ? (
         <div>
-          <Button
+          <Button needsConnection
             variant="text"
             size="sm"
             onClick={async () => {
-              if (await confirm({ title: 'Remove this video?', message: 'Learners will have no video for this lesson, and its captions must be confirmed again after a new upload.', confirmLabel: 'Remove video' }))
+              if (await confirm(highImpact({ title: `Remove the video from “${lesson.title}”?`, happens: 'Learners will have no video for this lesson.', kept: 'The lesson and its text are kept. Captions must be confirmed again after a new upload.', canUndo: false, undo: "This can't be undone, but you can upload a video again.", confirmLabel: 'Remove video' })))
                 void run.run(() => authoring.clearVideo(lesson.id), 'Video removed.')
             }}
           >

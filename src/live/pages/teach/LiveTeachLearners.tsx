@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { PageHeader } from '../../../components/layout/PageHeader'
-import { Badge, Card, CardHeader, EmptyState, ProgressBar, Select, Table, type TableColumn } from '../../../components/ui'
+import { Badge, Card, CardHeader, EmptyState, Pagination, ProgressBar, Select, Table, TextField, usePagination, type TableColumn } from '../../../components/ui'
 import { rpc } from '../../api'
 import { Loaded } from '../../components/States'
 import { LiveShell } from '../../components/LiveShell'
@@ -12,6 +12,7 @@ import { useSession } from '../../session-context'
 import { useResource } from '../../useResource'
 import { loadTeachCourses } from './teach-data'
 import { isOverdue } from '../../../lib/format-date'
+import styles from './CourseEditor.module.css'
 
 /*
  * Learners at /o/:orgSlug/teach/learners: per course, each learner's progress (P8, G2) and
@@ -19,7 +20,10 @@ import { isOverdue } from '../../../lib/format-date'
  * see their organization's members only (G1).
  * I3: an assignment past its due date and not completed is marked Overdue and counted. Only
  * assigned enrolments carry a due date, so public learners are never counted.
+ * B.6 (Revision 2 Phase 4): search by name, an "Overdue only" filter and paging, all over the rows the page
+ * already loaded; nothing new is requested.
  */
+const PAGE_SIZE = 10
 
 function isOverdueRow(r: { status: string; due_at: string | null }, now: number): boolean {
   return isOverdue(r.due_at, r.status === 'completed', now)
@@ -47,7 +51,7 @@ export default function LiveTeachLearners() {
   return (
     <LiveShell shell={instructorShell(org.slug, org.name)}>
       <PageHeader title="Learners" description="Progress and quiz results for the courses you teach." />
-      <Loaded resource={courses} label="Loading courses">
+      <Loaded resource={courses} label="Loading courses" loading="table">
         {(list) => {
           const published = list.filter((c) => c.status !== 'draft')
           if (published.length === 0) {
@@ -56,7 +60,7 @@ export default function LiveTeachLearners() {
           const selected = courseId || published[0].id
           return (
             <>
-              <div style={{ maxWidth: 420, marginBottom: 24 }}>
+              <div className={styles.courseSelect}>
                 <Select
                   id="learners-course"
                   label="Course"
@@ -75,6 +79,8 @@ export default function LiveTeachLearners() {
 }
 
 function CourseLearners({ courseId }: { courseId: string }) {
+  const [query, setQuery] = useState('')
+  const [overdueOnly, setOverdueOnly] = useState(false)
   const data = useResource(async () => {
     const [learners, course] = await Promise.all([rpc<LearnerRow[]>('course_learners', { p_course: courseId }), getAuthoringCourse(courseId)])
     const quizzes = (course?.modules ?? []).flatMap((m) => m.lessons).filter((l) => l.quizId)
@@ -119,13 +125,17 @@ function CourseLearners({ courseId }: { courseId: string }) {
   ]
 
   return (
-    <Loaded resource={data} label="Loading learners">
+    <Loaded resource={data} label="Loading learners" loading="table">
       {({ learners, results, now }) => {
         const overdue = learners.filter((r) => isOverdueRow(r, now)).length
+        const needle = query.trim().toLowerCase()
+        const visible = learners.filter(
+          (r) => (!overdueOnly || isOverdueRow(r, now)) && (needle === '' || (r.display_name || 'Learner').toLowerCase().includes(needle)),
+        )
         return (
-        <div style={{ display: 'grid', gap: 24 }}>
+        <div className={styles.learnerGrid}>
           <Card padding="none" as="section" aria-label="Enrolled learners">
-            <div style={{ padding: 24 }}>
+            <div className={styles.cardPad}>
               <CardHeader
                 title="Enrolled learners"
                 subtitle={`${learners.length} learners${overdue > 0 ? ` · ${overdue} overdue` : ''}`}
@@ -133,19 +143,72 @@ function CourseLearners({ courseId }: { courseId: string }) {
                 size="md"
               />
             </div>
-            <Table caption="Enrolled learners" columns={columns} rows={learners} getRowKey={(r) => r.user_id} emptyMessage="No one is enrolled yet." />
+            {learners.length > 0 ? (
+              <div className={styles.learnerFilters}>
+                <TextField id="learner-search" label="Search learners by name" type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
+                <label className={styles.checkLabel}>
+                  <input type="checkbox" checked={overdueOnly} onChange={(e) => setOverdueOnly(e.target.checked)} />
+                  <span>Overdue only</span>
+                </label>
+              </div>
+            ) : null}
+            <PagedLearners
+              rows={visible}
+              resetKey={`${needle}|${overdueOnly}`}
+              columns={columns}
+              empty={
+                learners.length === 0 ? (
+                  <EmptyState title="No one is enrolled yet" description="Learners appear here when they enroll, or when an Organization Admin assigns the course." />
+                ) : (
+                  <EmptyState title="No learners match" description="Try another name, or clear Overdue only." />
+                )
+              }
+            />
           </Card>
           {results.map((quiz) => (
             <Card key={quiz.lesson} padding="none" as="section" aria-label={`Quiz results: ${quiz.lesson}`}>
-              <div style={{ padding: 24 }}>
+              <div className={styles.cardPad}>
                 <CardHeader title={quiz.lesson} subtitle="Quiz results" headingLevel="h2" size="md" />
               </div>
-              <Table caption={`Quiz results: ${quiz.lesson}`} columns={resultColumns} rows={quiz.rows} getRowKey={(r) => r.user_id} emptyMessage="No attempts yet." />
+              <Table caption={`Quiz results: ${quiz.lesson}`} columns={resultColumns} rows={quiz.rows} getRowKey={(r) => r.user_id} emptyMessage={<EmptyState title="No attempts yet" description="Results appear here after learners submit this quiz." />} />
             </Card>
           ))}
         </div>
         )
       }}
     </Loaded>
+  )
+}
+
+/** B.6: one page of the enrolled learners, with Previous, page numbers and Next. */
+function PagedLearners({
+  rows,
+  resetKey,
+  columns,
+  empty,
+}: {
+  rows: LearnerRow[]
+  resetKey: string
+  columns: Array<TableColumn<LearnerRow>>
+  empty: ReactNode
+}) {
+  const paged = usePagination(rows, PAGE_SIZE, resetKey)
+  return (
+    <>
+      <Table caption="Enrolled learners" columns={columns} rows={paged.items} getRowKey={(r) => r.user_id} emptyMessage={empty} />
+      {rows.length > 0 ? (
+        <Pagination
+          label="Enrolled learners"
+          noun="learners"
+          singular="learner"
+          page={paged.page}
+          pageCount={paged.pageCount}
+          start={paged.start}
+          end={paged.end}
+          total={paged.total}
+          onPageChange={paged.setPage}
+        />
+      ) : null}
+    </>
   )
 }

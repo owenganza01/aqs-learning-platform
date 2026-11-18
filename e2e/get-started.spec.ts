@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
+import { settleAnimations } from './settle-animations.js'
 
 // Get Started (WP2 2-1, 2-5; research and design report, 10 November 2026, Part D): three journeys,
 // equal weight, no form and no account creation. Development preview (no Supabase).
@@ -60,6 +61,7 @@ test.describe('Get Started page', () => {
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
       expect(await overflow(page)).toBeLessThanOrEqual(0)
       await page.screenshot({ path: `test-results/wp3-screens/get-started-${width}.png`, fullPage: true })
+      await settleAnimations(page)
       const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
       expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
     })

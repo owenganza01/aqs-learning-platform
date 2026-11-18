@@ -1,0 +1,151 @@
+/* Handoff 2, Phase C (7-2): horizontal bar chart. Tokens only. */
+.chart {
+  display: grid;
+  gap: var(--space-16);
+  min-width: 0;
+  margin: 0;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-8) var(--space-16);
+}
+
+.head figcaption {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.title {
+  color: var(--color-text);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+}
+
+.description {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.rows {
+  display: grid;
+  gap: var(--space-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Phones: the label above its bar, so a long label wraps instead of being cut. */
+.row {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.label {
+  color: var(--color-text);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+  overflow-wrap: anywhere;
+}
+
+.plot {
+  display: block;
+  width: 100%;
+  height: 24px;
+  overflow: visible;
+}
+
+.track {
+  fill: var(--color-surface-muted);
+}
+
+.bar {
+  fill: var(--color-action);
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: grow var(--transition-enter, 200ms) ease-out both;
+}
+
+.value,
+.valueInside {
+  font-size: 13px;
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.value {
+  fill: var(--color-text);
+}
+
+.valueInside {
+  fill: var(--color-white);
+}
+
+/* Wider screens: label beside the bar. */
+@media (min-width: 640px) {
+  .row {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    align-items: center;
+    gap: var(--space-16);
+  }
+}
+
+.loading {
+  display: grid;
+  gap: var(--space-12);
+}
+
+.empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-body-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--space-8) var(--space-12);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.table td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.table thead th {
+  color: var(--color-text-subtle);
+  font-weight: var(--weight-semibold);
+}
+
+.table thead th:last-child {
+  text-align: right;
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Reduced motion: the bars are drawn at their length straight away. */
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+  }
+}

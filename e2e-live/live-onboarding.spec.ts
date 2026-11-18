@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { mockSupabase, sessionTables, signIn, USER, type Handler, type Mock } from './mock-supabase.js'
+import { settleAnimations } from '../e2e/settle-animations.js'
 
 // Organisation onboarding (WP3, migration 0021 and the organisation-request Edge Function), against
 // the MOCKED Supabase API: the public request, the Platform Admin review, approval into a draft
@@ -53,6 +54,7 @@ const PROFILE = {
 }
 
 const axe = async (page: Page) => {
+  await settleAnimations(page)
   const result = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()
   expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)

@@ -104,7 +104,7 @@
 
 .category {
   color: var(--color-blue);
-  font-size: 13px;
+  font-size: var(--text-meta);
   line-height: 18px;
   font-weight: var(--weight-medium);
 }
@@ -120,7 +120,7 @@
 .meta {
   margin-top: var(--space-8);
   color: var(--color-text-subtle);
-  font-size: 13px;
+  font-size: var(--text-meta);
   line-height: 16px;
 }
 
@@ -142,7 +142,7 @@
 .byline {
   margin-top: var(--space-4);
   color: var(--color-text-subtle);
-  font-size: 13px;
+  font-size: var(--text-meta);
   line-height: 18px;
 }
 
@@ -159,7 +159,7 @@
   align-items: center;
   gap: var(--space-4);
   color: var(--color-text-subtle);
-  font-size: 13px;
+  font-size: var(--text-meta);
   line-height: 18px;
 }
 
@@ -217,7 +217,7 @@
 .heroFootnote {
   margin-top: var(--space-8);
   color: var(--color-text-subtle);
-  font-size: 13px;
+  font-size: var(--text-meta);
   line-height: 18px;
 }
 

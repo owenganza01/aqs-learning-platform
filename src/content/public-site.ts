@@ -21,8 +21,41 @@ export const ABOUT_AND_CONTACT_APPROVED = false
  */
 export const REQUEST_WORKSPACE_AVAILABLE = true
 
-/** Terms of Use, Privacy Policy and Cookie Policy pages (tasks 5-1 to 5-5). */
-export const LEGAL_PAGES_AVAILABLE = false
+/**
+ * Terms of Use, Privacy Policy and Cookie Policy pages (tasks 5-1 to 5-5): built 15 November 2026 from
+ * the documents the owner supplied that day (content/legal), so their links appear.
+ */
+export const LEGAL_PAGES_AVAILABLE = true
+
+/**
+ * PROVISIONAL (owner instruction, 15 November 2026): the supplied legal documents are not the final
+ * approved versions. While this is false every legal page says so, outside the document text. Only the
+ * owner sets it to true, after the final documents replace the provisional ones (docs/legal/README.md)
+ * and legal approval is given. It is separate from "the pages are built".
+ */
+export const LEGAL_CONTENT_FINAL = false
+
+/**
+ * Sign-in notice (task 2-3). PROVISIONAL wording, accepted by the owner as a stand-in on 15 November
+ * 2026; the owner sets the real sentence later. It only restates Terms 1.2 and 4.1. `before`, the two
+ * link labels and the text between and after them make one sentence.
+ */
+export const SIGN_IN_NOTICE = {
+  provisional: true,
+  beforeTerms: 'By signing in, you agree to the ',
+  termsLabel: 'Terms of Use',
+  afterTerms: ' and confirm that you are at least 18 years of age. See the ',
+  privacyLabel: 'Privacy Policy',
+  afterPrivacy: ' for how AQS handles personal data.',
+} as const
+
+/**
+ * Where the About AQS and Contact pages exist: development builds (with labelled sample content, owner
+ * instruction 15 November 2026) and, once the owner approves the real content, every build. The public
+ * header and footer show the two links only where this is true, so no build links to a missing page.
+ * It must stay a build-time constant (see LiveApp.tsx).
+ */
+export const INFO_PAGES_AVAILABLE: boolean = import.meta.env.DEV || ABOUT_AND_CONTACT_APPROVED
 
 /** The /get-started page (tasks 2-1 and 2-5): built 10 November 2026; every "Get started" opens it. */
 export const GET_STARTED_PAGE_AVAILABLE = true

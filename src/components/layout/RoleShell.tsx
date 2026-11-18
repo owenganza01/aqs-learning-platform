@@ -1,7 +1,15 @@
 import type { ReactNode } from 'react'
 import { AppShell } from './AppShell'
-import type { CurrentUser } from './types'
-import type { ShellDefinition } from '../../lib/navigation'
+import type { CurrentUser, WorkspaceKind } from './types'
+import type { ShellDefinition, ShellRole } from '../../lib/navigation'
+
+/** Each role's workspace (Unified Refinement Plan, Phase 2). Presentation only: it grants nothing. */
+const WORKSPACE_KIND: Record<ShellRole, WorkspaceKind> = {
+  learner: 'learner',
+  instructor: 'studio',
+  'org-admin': 'organization',
+  'platform-admin': 'platform',
+}
 
 type RoleShellProps = {
   /** Navigation, workspace title and help text for one role (see lib/navigation.ts). */
@@ -28,6 +36,7 @@ export function RoleShell({ shell, user, banner, onSignOut, workspaceExtra, hide
       navItems={shell.navItems}
       user={user}
       workspace={shell.workspace}
+      workspaceKind={WORKSPACE_KIND[shell.role]}
       helpTitle={shell.helpTitle}
       unavailableActions
       hideUnbuilt={hideUnbuilt}

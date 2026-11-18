@@ -93,7 +93,7 @@ test("the owning organization's Organization Admin sees Archive on a published o
       },
     },
   })
-  await page.goto(`/o/abc/teach/courses/${ORG_COURSE}`)
+  await page.goto(`/o/abc/teach/courses/${ORG_COURSE}?tab=publish`) // Phase B: Archive is on the Publish tab
   await expect(page.getByRole('heading', { level: 1, name: /Safety basics/ })).toBeVisible()
   await expect(page.getByText('Published', { exact: true })).toBeVisible()
 
@@ -105,6 +105,8 @@ test("the owning organization's Organization Admin sees Archive on a published o
   await page.getByLabel('Reason for archiving').fill('Superseded by the 2027 revision.')
   await expect(archive).toBeEnabled()
   await archive.click()
+  // Phase B (B.4): archiving asks first; confirm in the dialog
+  await page.getByRole('dialog').getByRole('button', { name: 'Archive course' }).click()
   await expect(page.getByText('Course archived.')).toBeVisible()
   expect(mock.calls.some((c) => c.kind === 'rpc' && c.name === 'archive_course')).toBe(true)
 })
@@ -113,7 +115,7 @@ test('a Platform Admin who also holds the organization role sees Archive on the 
   await signIn(page)
   const course = publishedCourse({ id: ORG_COURSE, ownerType: 'organization', orgId: ORG.id, staff: [USER.id] })
   await mockSupabase(page, { tables: editorTables(course, ['org_admin'], true), rpc: assignRpc })
-  await page.goto(`/o/abc/teach/courses/${ORG_COURSE}`)
+  await page.goto(`/o/abc/teach/courses/${ORG_COURSE}?tab=publish`) // Phase B: Archive is on the Publish tab
   await expect(page.getByRole('heading', { level: 1, name: /Safety basics/ })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Archive course' })).toBeVisible()
 })
@@ -123,12 +125,12 @@ test('a Platform Admin without the organization role is not offered Archive on a
   const course = publishedCourse({ id: ORG_COURSE, ownerType: 'organization', orgId: ORG.id, staff: [USER.id] })
   await mockSupabase(page, { tables: editorTables(course, ['instructor'], true), rpc: peopleRpc })
   // Organization route: the Platform Admin is course staff there, but not its Organization Admin.
-  await page.goto(`/o/abc/teach/courses/${ORG_COURSE}`)
+  await page.goto(`/o/abc/teach/courses/${ORG_COURSE}?tab=publish`) // Phase B: Archive is on the Publish tab
   await expect(page.getByRole('heading', { level: 1, name: /Safety basics/ })).toBeVisible()
   await expect(page.getByText('Published', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Archive course' })).toHaveCount(0)
   // Platform route: no organization is in scope at all, so the role cannot be held here.
-  await page.goto(`/admin/courses/${ORG_COURSE}`)
+  await page.goto(`/admin/courses/${ORG_COURSE}?tab=publish`) // Phase B: Archive is on the Publish tab
   await expect(page.getByRole('heading', { level: 1, name: /Safety basics/ })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Archive course' })).toHaveCount(0)
 })
@@ -137,7 +139,7 @@ test('an Organization Admin is not offered Archive on a published platform cours
   await signIn(page)
   const course = publishedCourse({ id: PLATFORM_COURSE, ownerType: 'platform', orgId: null, staff: [] })
   await mockSupabase(page, { tables: editorTables(course, ['org_admin']), rpc: peopleRpc })
-  await page.goto(`/o/abc/teach/courses/${PLATFORM_COURSE}`)
+  await page.goto(`/o/abc/teach/courses/${PLATFORM_COURSE}?tab=publish`) // Phase B: Archive is on the Publish tab
   await expect(page.getByRole('heading', { level: 1, name: /Safety basics/ })).toBeVisible()
   await expect(page.getByText('Published', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Archive course' })).toHaveCount(0)
@@ -147,7 +149,7 @@ test("an Organization Admin is not offered Archive on an organization course tha
   await signIn(page)
   const course = publishedCourse({ id: ORG_COURSE, ownerType: 'organization', orgId: OTHER_ORG_ID, staff: [USER.id] })
   await mockSupabase(page, { tables: editorTables(course, ['org_admin']), rpc: peopleRpc })
-  await page.goto(`/o/abc/teach/courses/${ORG_COURSE}`)
+  await page.goto(`/o/abc/teach/courses/${ORG_COURSE}?tab=publish`) // Phase B: Archive is on the Publish tab
   await expect(page.getByRole('heading', { level: 1, name: /Safety basics/ })).toBeVisible()
   await expect(page.getByText('Published', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Archive course' })).toHaveCount(0)

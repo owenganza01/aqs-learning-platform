@@ -9,7 +9,8 @@ import { Loaded } from '../../components/States'
 import { CATALOG_PAGE_SIZE, listCatalogPage } from '../../data/learning'
 import { learnerShell } from '../../navigation'
 import { useResource } from '../../useResource'
-import { PlatformTutorials } from '../../../pages/catalog/PlatformTutorials'
+import { PLATFORM_TUTORIALS } from '../../../content/public-site'
+import { PlatformTutorials, TutorialsComingNotice } from '../../../pages/catalog/PlatformTutorials'
 
 /*
  * Course catalog at /catalog. Signed-out visitors see the public courses (F1, L8) in the public
@@ -21,6 +22,9 @@ import { PlatformTutorials } from '../../../pages/catalog/PlatformTutorials'
  * Client request (11 November 2026): the page is called Courses and starts with the public platform
  * tutorials, kept apart from the course list under its own heading.
  */
+/** A.3: the full tutorial cards show once any tutorial has an approved video; until then, one line below the courses. */
+const TUTORIAL_VIDEOS = PLATFORM_TUTORIALS.some((tutorial) => Boolean(tutorial.youtubeId))
+
 export default function LiveCatalog() {
   const { session } = useAuth()
   const [search, setSearch] = useState('')
@@ -40,11 +44,11 @@ export default function LiveCatalog() {
         <h1 className={styles.title}>Courses</h1>
         <p className={styles.intro}>
           {session
-            ? 'Platform tutorials, and the courses open to you from your organizations and the public catalog.'
-            : 'Watch a short tutorial or browse the public courses. You only need to sign in to enroll.'}
+            ? 'The courses open to you from your organizations and the public catalog.'
+            : 'Browse the public courses. You only need to sign in to enroll.'}
         </p>
       </header>
-      <PlatformTutorials />
+      {TUTORIAL_VIDEOS ? <PlatformTutorials /> : null}
       <h2 className={styles.sectionTitle} id="catalog-courses-heading">
         {session ? 'Courses open to you' : 'Public courses'}
       </h2>
@@ -119,6 +123,7 @@ export default function LiveCatalog() {
         }}
       </Loaded>
       )}
+      {TUTORIAL_VIDEOS ? null : <TutorialsComingNotice />}
     </>
   )
 

@@ -20,7 +20,7 @@ const PATHS = [
   {
     id: 'learn',
     title: 'I want to learn on my own',
-    text: 'Browse open courses and enrol. You sign in with a Google account when you enrol.',
+    text: 'Browse open courses and enrol. You sign in, or create a free account, when you enrol.',
     action: 'Find a course',
     to: '/catalog',
   },

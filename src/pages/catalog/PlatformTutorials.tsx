@@ -58,3 +58,16 @@ function TutorialVideo({ tutorial }: { tutorial: PlatformTutorial }) {
     </div>
   )
 }
+
+/*
+ * CFI-5 (Revision 2 Phase 7, A.3): until a tutorial video exists, the Courses page shows this one line below
+ * the courses instead of two empty video frames above them. When a video ID is set, the page shows the
+ * full tutorial cards (PlatformTutorials) again, unchanged.
+ */
+export function TutorialsComingNotice() {
+  return (
+    <p className={styles.coming} data-testid="tutorials-coming">
+      Short platform tutorials on finding your way around AQS are coming soon.
+    </p>
+  )
+}

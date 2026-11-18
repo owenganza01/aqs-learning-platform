@@ -17,15 +17,23 @@ type BannerProps = {
   action?: ReactNode
   /** Edge-to-edge strip with square corners (sits directly under a header). */
   flush?: boolean
+  /**
+   * The banner announces itself (role status, or alert for danger). Set false when it sits inside
+   * a live region that is already on the page (ActionFeedback), so it is announced once.
+   */
+  live?: boolean
 }
 
 /**
  * Status messages are announced politely to screen readers; "danger" banners
  * are announced immediately (role="alert").
  */
-export function Banner({ tone = 'info', icon, children, action, flush = false }: BannerProps) {
+export function Banner({ tone = 'info', icon, children, action, flush = false, live = true }: BannerProps) {
   return (
-    <div className={cx(styles.banner, styles[tone], flush && styles.flush)} role={tone === 'danger' ? 'alert' : 'status'}>
+    <div
+      className={cx(styles.banner, styles[tone], flush && styles.flush)}
+      role={live ? (tone === 'danger' ? 'alert' : 'status') : undefined}
+    >
       {icon ? <Icon name={icon} size={20} className={styles.icon} /> : null}
       <div className={styles.message}>{children}</div>
       {action ? <div className={styles.action}>{action}</div> : null}

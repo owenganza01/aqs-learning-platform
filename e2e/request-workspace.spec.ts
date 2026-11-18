@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
+import { settleAnimations } from './settle-animations.js'
 
 // "Request a workspace" (WP3 3-3) in the development preview: the same page as the live app with a
 // preview submit that sends nothing. The live journey (Edge Function, review, approval) is covered
@@ -98,6 +99,7 @@ test.describe('Request a workspace (development preview)', () => {
       await page.setViewportSize({ width, height: 900 })
       await page.goto('/request-workspace')
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+      await settleAnimations(page)
       const axe = () => new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
       expect(await overflow(page)).toBeLessThanOrEqual(0)
       await page.screenshot({ path: `test-results/wp3-screens/request-form-${width}.png`, fullPage: true })

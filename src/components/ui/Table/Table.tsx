@@ -25,6 +25,11 @@ type TableProps<Row> = {
   emptyMessage?: ReactNode
   /** Footer, e.g. "Showing 5 of 5 organizations". */
   footer?: ReactNode
+  /**
+   * Assignment 3.6: "compact" tightens the rows at 1024 px and wider, for the Platform Control Center's
+   * scanning tables. Below 1024 px every table is cards, whatever the density.
+   */
+  density?: 'comfortable' | 'compact'
 }
 
 export function Table<Row>({
@@ -35,6 +40,7 @@ export function Table<Row>({
   getRowKey,
   emptyMessage = 'Nothing to show yet.',
   footer,
+  density = 'comfortable',
 }: TableProps<Row>) {
   // WCAG 2.1.1 / axe scrollable-region-focusable (M5): when the table is wider than its box
   // (narrow screens), keyboard users must be able to reach and scroll it, so the scroll box
@@ -51,6 +57,12 @@ export function Table<Row>({
     return () => observer?.disconnect()
   }, [rows.length, columns.length])
 
+  // Phones and tablets (Phase 3 of the refinement plan): each row shows as a card, with the column name beside each
+  // value (data-label) so nothing has to be scrolled sideways. Explicit roles keep the table's meaning for
+  // screen readers when the phone styles change how the cells are laid out.
+  const labelOf = (column: TableColumn<Row>) =>
+    !column.hideHeader && typeof column.header === 'string' ? column.header : undefined
+
   const alignClass = (align?: TableColumn<Row>['align']) =>
     align === 'right' ? styles.alignRight : align === 'center' ? styles.alignCenter : undefined
 
@@ -61,29 +73,34 @@ export function Table<Row>({
         className={styles.scroll}
         {...(scrolls ? { tabIndex: 0, role: 'region', 'aria-label': `${caption} (scrolls sideways)` } : {})}
       >
-        <table className={styles.table}>
+        <table className={cx(styles.table, density === 'compact' && styles.compact)} role="table" data-density={density}>
           <caption className={captionVisible ? styles.caption : 'visually-hidden'}>{caption}</caption>
-          <thead>
-            <tr>
+          <thead role="rowgroup">
+            <tr role="row">
               {columns.map((column) => (
-                <th key={column.key} scope="col" className={cx(styles.th, alignClass(column.align))}>
+                <th key={column.key} scope="col" role="columnheader" className={cx(styles.th, alignClass(column.align))}>
                   {column.hideHeader ? <span className="visually-hidden">{column.header}</span> : column.header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
             {rows.length === 0 ? (
-              <tr>
-                <td className={styles.emptyCell} colSpan={columns.length}>
+              <tr role="row">
+                <td role="cell" className={styles.emptyCell} colSpan={columns.length}>
                   {emptyMessage}
                 </td>
               </tr>
             ) : (
               rows.map((row) => (
-                <tr key={getRowKey(row)} className={styles.row}>
+                <tr key={getRowKey(row)} role="row" className={styles.row}>
                   {columns.map((column) => (
-                    <td key={column.key} className={cx(styles.td, alignClass(column.align))}>
+                    <td
+                      key={column.key}
+                      role="cell"
+                      data-label={labelOf(column)}
+                      className={cx(styles.td, alignClass(column.align))}
+                    >
                       {column.render(row)}
                     </td>
                   ))}

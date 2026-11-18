@@ -1,0 +1,391 @@
+/*
+ * Legal documents (15 November 2026). Same grid as the other public pages: 72px side padding at
+ * 1440px, 32px on tablet, 16px on mobile. The text column is capped near 72 characters a line.
+ */
+
+.container {
+  width: 100%;
+  max-width: calc(var(--content-max-width) + 2 * 72px);
+  margin: 0 auto;
+  padding: 0 72px;
+}
+
+.intro {
+  padding: 64px 0 40px;
+  background: linear-gradient(180deg, var(--color-blue-50) 0, var(--color-white) 100%);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+  margin: var(--space-8) 0 0;
+  color: var(--color-text);
+}
+
+.provisional {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8) var(--space-12);
+  max-width: 760px;
+  margin: var(--space-16) 0 0;
+  color: var(--color-text-subtle);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.download {
+  margin: var(--space-16) 0 0;
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: var(--space-64);
+  align-items: start;
+  padding-top: var(--space-48);
+  padding-bottom: 80px;
+}
+
+/* ---------------------------------------------------------------- Contents */
+
+.contents {
+  position: sticky;
+  top: var(--space-24);
+  max-height: calc(100vh - 2 * var(--space-24));
+  overflow-y: auto;
+  padding-right: var(--space-8);
+}
+
+.contentsToggle {
+  display: none;
+}
+
+.contentsTitle {
+  margin: 0 0 var(--space-12);
+  color: var(--color-text-subtle);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  line-height: var(--leading-label);
+  text-transform: uppercase;
+}
+
+.contentsList {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contentsList a {
+  display: block;
+  padding: 6px var(--space-12);
+  border-left: 2px solid var(--color-border);
+  color: var(--color-text-subtle);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  text-decoration: none;
+}
+
+.contentsList a:hover {
+  border-left-color: var(--color-blue);
+  color: var(--color-text);
+}
+
+/* ---------------------------------------------------------------- Document */
+
+.document {
+  max-width: 72ch;
+  color: var(--color-text);
+  font-size: var(--text-body);
+  line-height: 27px;
+  overflow-wrap: anywhere;
+}
+
+.document p {
+  margin: 0 0 var(--space-16);
+}
+
+.heading {
+  margin: var(--space-48) 0 var(--space-16);
+  color: var(--color-text);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-h3);
+  scroll-margin-top: var(--space-24);
+}
+
+.document > .heading:first-child {
+  margin-top: 0;
+}
+
+.subheading {
+  margin: var(--space-32) 0 var(--space-12);
+  color: var(--color-text);
+  font-size: var(--text-card-sm);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-card-sm);
+  scroll-margin-top: var(--space-24);
+}
+
+.heading:focus,
+.subheading:focus {
+  outline: none;
+}
+
+.heading:focus-visible,
+.subheading:focus-visible {
+  border-radius: 4px;
+  box-shadow: var(--focus-ring);
+}
+
+/* Numbered clauses and lettered items: the number hangs in its own column, as in the PDF. */
+.clause,
+.letters li {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  column-gap: var(--space-8);
+}
+
+.number {
+  color: var(--color-text-subtle);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-medium);
+}
+
+.sub {
+  padding-left: calc(56px + var(--space-8));
+}
+
+.list {
+  margin: 0 0 var(--space-16);
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  margin-bottom: var(--space-8);
+}
+
+.letters {
+  padding-left: calc(56px + var(--space-8));
+}
+
+.letters li {
+  grid-template-columns: 40px minmax(0, 1fr);
+}
+
+.bullets {
+  padding-left: var(--space-24);
+  list-style: disc;
+}
+
+.bullets li::marker {
+  color: var(--color-text-muted);
+}
+
+.document a {
+  color: var(--color-blue);
+}
+
+/* ---------------------------------------------------------------- Table */
+
+.tableWrap {
+  margin: 0 0 var(--space-24);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+  overflow-x: auto;
+}
+
+.tableWrap:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--space-12) var(--space-16);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.table th {
+  background: var(--color-surface-muted);
+  color: var(--color-text-subtle);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  line-height: var(--leading-label);
+  text-transform: uppercase;
+}
+
+.table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* ---------------------------------------------------------------- Related */
+
+.related {
+  padding: var(--space-40) 0;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-canvas);
+}
+
+.relatedTitle {
+  margin: 0 0 var(--space-12);
+  font-size: var(--text-card-sm);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-card-sm);
+}
+
+.relatedList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8) var(--space-32);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: var(--weight-medium);
+}
+
+.relatedList a,
+.download a {
+  display: inline-block;
+  padding: 4px 0;
+  color: var(--color-blue);
+}
+
+/* ---------------------------------------------------------------- Tablet and mobile */
+
+@media (max-width: 1023px) {
+  .container {
+    padding: 0 var(--space-32);
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-24);
+    padding-top: var(--space-32);
+    padding-bottom: var(--space-64);
+  }
+
+  .contents {
+    position: static;
+    max-height: none;
+    padding-right: 0;
+  }
+
+  .contentsFixed {
+    display: none;
+  }
+
+  .contentsToggle {
+    display: block;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-white);
+  }
+
+  .contentsToggle summary {
+    padding: var(--space-12) var(--space-16);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+  }
+
+  .contentsToggle .contentsList {
+    padding: 0 var(--space-16) var(--space-16);
+  }
+
+  .contentsToggle .contentsList a {
+    padding: 10px var(--space-12);
+  }
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding: 0 var(--space-16);
+  }
+
+  .intro {
+    padding: var(--space-40) 0 var(--space-32);
+  }
+
+  .clause {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .sub,
+  .letters {
+    padding-left: var(--space-24);
+  }
+
+  .letters li {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  /* The three-column table becomes one stacked card per row, each cell under its column name. */
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+  }
+
+  .table tr {
+    padding: var(--space-12) var(--space-16);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .table tr:last-child {
+    border-bottom: 0;
+  }
+
+  .table td {
+    padding: 0 0 var(--space-8);
+    border: 0;
+  }
+
+  .table td::before {
+    display: block;
+    color: var(--color-text-subtle);
+    font-size: var(--text-label);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0.04em;
+    line-height: var(--leading-label);
+    text-transform: uppercase;
+    content: attr(data-label);
+  }
+}
+
+@media print {
+  .contents,
+  .related,
+  .download {
+    display: none;
+  }
+
+  .layout {
+    display: block;
+  }
+}

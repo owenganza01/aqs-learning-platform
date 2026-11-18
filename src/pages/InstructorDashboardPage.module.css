@@ -89,3 +89,11 @@
   font-size: 0.875rem;
   color: var(--color-text-muted);
 }
+
+/* Phase C (C.4): sample-data chart previews. */
+.charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+  gap: var(--space-16);
+  margin-bottom: var(--space-24);
+}

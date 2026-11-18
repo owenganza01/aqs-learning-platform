@@ -58,12 +58,15 @@ test('an instructor edits a draft and proposes it; the course then locks', async
   await page.getByRole('button', { name: 'Save lesson' }).click()
   await expect(page.getByText('Lesson saved.')).toBeVisible()
 
+  // Phase B (B.3): publication is on the Publish tab, the lesson editor on Content
+  await page.getByRole('tab', { name: 'Publish' }).click()
   await page.getByRole('button', { name: 'Propose for publication' }).click()
   await expect(page.getByText('Awaiting approval', { exact: true })).toBeVisible()
-  await expect(page.getByLabel('Lesson text')).toBeDisabled()
   await expect(page.getByRole('button', { name: 'Withdraw the request' })).toBeVisible()
   // P22: the proposer is never offered approval.
   await expect(page.getByRole('button', { name: 'Approve and publish' })).toHaveCount(0)
+  await page.getByRole('tab', { name: 'Content' }).click()
+  await expect(page.getByLabel('Lesson text')).toBeDisabled()
 })
 
 test('before migration 0014 the editor still knows the proposer (transition fallback)', async ({ page }) => {
@@ -78,7 +81,7 @@ test('before migration 0014 the editor still knows the proposer (transition fall
       course_people: () => ({ status: 404, json: { code: 'PGRST202', message: 'Could not find the function public.course_people' } }),
     },
   })
-  await page.goto(`/o/abc/teach/courses/${COURSE_ID}`)
+  await page.goto(`/o/abc/teach/courses/${COURSE_ID}?tab=publish`) // Phase B: publication is on the Publish tab
   await expect(page.getByText('Awaiting approval', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Withdraw the request' })).toBeVisible()
 })

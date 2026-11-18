@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Locator } from '@playwright/test'
+import { settleAnimations } from './settle-animations.js'
 
 // Button colours approved by the owner on 10 November 2026 (D41): blue primary, white secondary with a grey
 // outline, and inverse styles on navy surfaces (.on-dark). Checked on the design-system page (development
@@ -86,6 +87,7 @@ test('design-system page: every variant and state, on white and on navy', async 
   await expectColours(navy.getByRole('button', { name: 'View syllabus' }), 'rgba(0, 0, 0, 0)', WHITE, WHITE)
   await expectColours(navy.getByRole('button', { name: 'Not available' }), 'rgb(203, 213, 225)', 'rgb(71, 85, 105)')
 
+  await settleAnimations(page)
   const result = await new AxeBuilder({ page }).include('#buttons').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
   expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
 })
