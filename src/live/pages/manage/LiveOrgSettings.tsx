@@ -46,9 +46,9 @@ export default function LiveOrgSettings() {
           </dl>
           <p className={styles.signInNote}>To change these details, contact AQS support.</p>
         </Card>
-        <Card as="section" padding="lg" aria-label="Organisation profile" className={styles.card}>
-          <CardHeader title="Organisation profile" subtitle="What AQS holds about your organisation." headingLevel="h2" size="md" />
-          <Loaded resource={profile} label="Loading the organisation profile" loading="form">
+        <Card as="section" padding="lg" aria-label="Organization profile" className={styles.card}>
+          <CardHeader title="Organization profile" subtitle="What AQS holds about your organization." headingLevel="h2" size="md" />
+          <Loaded resource={profile} label="Loading the organization profile" loading="form">
             {(p) =>
               p ? (
                 <dl className={styles.fields}>

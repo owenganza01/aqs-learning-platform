@@ -378,9 +378,11 @@ test.describe('the draft organisation after approval', () => {
       rpc: { organization_profile: () => ({ json: [PROFILE] }) },
     })
     await page.goto('/o/zz-test-training-co/manage/settings')
-    const card = page.getByRole('region', { name: 'Organisation profile' })
+    const card = page.getByRole('region', { name: 'Organization profile' })
     await expect(card).toContainText('Kenya')
     await expect(card).toContainText('Test Contact · contact@zz-test.example')
+    // 1-9 finding 6: one spelling on this page ("Organization", as in the page title)
+    await expect(page.locator('#main-content').getByText(/Organisation/)).toHaveCount(0)
     await expect(card.getByRole('button')).toHaveCount(0)
     await expect(card.getByRole('textbox')).toHaveCount(0)
     expect(mock.calls.find((c) => c.name === 'organization_profile')?.body).toEqual({ p_org: ORG.id })
