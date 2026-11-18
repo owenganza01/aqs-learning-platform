@@ -267,6 +267,21 @@ test('Platform tables are denser than Organization Workspace tables at 1440 px',
   expect(compact).toBeLessThan(comfortable)
 })
 
+for (const width of [1440, 768]) {
+  // 1-9 finding 2: the four status filters sit in one row, not an uneven 2x2 grid
+  test(`the Organizations status filters sit in one row at ${width} px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 })
+    await setup(page)
+    await page.goto('/admin/organizations')
+    await ready(page, 'Organizations')
+    const tops = await page.getByRole('group', { name: 'Filter by status' }).getByRole('button').evaluateAll((buttons) =>
+      buttons.map((b) => Math.round(b.getBoundingClientRect().top)),
+    )
+    expect(tops).toHaveLength(4)
+    expect(new Set(tops).size).toBe(1)
+  })
+}
+
 for (const width of [768, 390]) {
   test(`below 1024 px (${width} px) a compact Platform table is the same cards as any other`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })

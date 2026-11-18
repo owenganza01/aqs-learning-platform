@@ -114,7 +114,7 @@ export default function LivePlatformOrganizations() {
         }
       />
       <section className={styles.panel} aria-label="Organization list">
-        <div className={styles.toolbar} role="group" aria-label="Filter by status">
+        <div className={styles.filters} role="group" aria-label="Filter by status">
           {(['all', 'draft', 'active', 'suspended'] as const).map((s) => (
             <Button key={s} size="sm" variant={status === s ? 'secondary' : 'neutral'} aria-pressed={status === s} onClick={() => setStatus(s)}>
               {s === 'all' ? 'All' : ORG_STATUS[s].label}
