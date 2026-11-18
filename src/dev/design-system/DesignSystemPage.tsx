@@ -34,8 +34,7 @@ import {
   Tabs,
   TextArea,
   TextField,
-  type TableColumn,
-} from '../../components/ui'
+  type TableColumn, BarChart } from '../../components/ui'
 import { contrastRatio } from './contrast'
 import styles from './DesignSystemPage.module.css'
 
@@ -247,6 +246,7 @@ const sections = [
   { id: 'feedback', label: 'Empty states & banners' },
   { id: 'table', label: 'Table' },
   { id: 'tabs', label: 'Tabs' },
+  { id: 'charts', label: 'Charts' },
   { id: 'layouts', label: 'Layouts' },
 ]
 
@@ -821,6 +821,33 @@ export default function DesignSystemPage() {
                 />
               </div>
             </Card>
+          </Section>
+
+          {/* Handoff 2, Phase C (C.2, task 7-2): the bar chart in each state it has to handle. */}
+          <Section id="charts" title="Charts" note="Horizontal bars drawn as SVG, values on the bars, a table with the same numbers for screen readers and on request. No motion with reduced motion.">
+            <div className={styles.chartGrid}>
+              <Card padding="lg">
+                <BarChart title="With values" description="Completion by course" unit="percent" labelHeading="Course" valueHeading="Completion"
+                  data={[{ label: 'Introduction to Regression', value: 71 }, { label: 'Data analytics fundamentals', value: 54 }, { label: 'Statistics for decision makers', value: 33 }]} />
+              </Card>
+              <Card padding="lg">
+                <BarChart title="All zero" description="Nothing completed yet" labelHeading="Course" valueHeading="Learners"
+                  data={[{ label: 'Course A', value: 0 }, { label: 'Course B', value: 0 }, { label: 'Course C', value: 0 }]} />
+              </Card>
+              <Card padding="lg">
+                <BarChart title="One item" labelHeading="Status" valueHeading="Organizations" data={[{ label: 'Active', value: 12 }]} />
+              </Card>
+              <Card padding="lg">
+                <BarChart title="Long labels" description="Labels wrap; nothing is cut" labelHeading="Course" valueHeading="Learners"
+                  data={[{ label: 'Data protection and information security for every team member, including contractors', value: 128 }, { label: 'Leading hybrid and distributed teams through organisational change', value: 64 }]} />
+              </Card>
+              <Card padding="lg">
+                <BarChart title="Loading" data={[]} loading />
+              </Card>
+              <Card padding="lg">
+                <BarChart title="Empty" data={[]} />
+              </Card>
+            </div>
           </Section>
 
           {/* 12 Layouts */}

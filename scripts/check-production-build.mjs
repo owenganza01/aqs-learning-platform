@@ -21,6 +21,8 @@ const FORBIDDEN = [
   { name: 'mock sign-in screens', pattern: /Demo only\. Sign-in is not available yet/ },
   // Development sample data (src/dev): every sample person uses a *-sample.test address.
   { name: 'sample data', pattern: /[a-z0-9.-]+-sample\.test\b/ },
+  // Handoff 2, Phase C (C.6): sample chart data from src/dev/sample-chart-data.ts (chart previews, 7-3 to 7-5).
+  { name: 'sample chart data', pattern: /Sample chart data/ },
   // CM3-7 (G10, G11; PB): invented content presented as real never ships. Identifiers are minified,
   // so the content itself is matched as well: the placeholders and the invented featured courses.
   { name: 'invented featured courses', pattern: /MOCK_FEATURED_COURSES|Maya Chen|Daniel Park|Sofia Alvarez|Noah Reed|Priya Shah|Elena Brooks/ },

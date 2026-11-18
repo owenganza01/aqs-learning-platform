@@ -519,3 +519,10 @@
   font-size: var(--text-caption);
   font-weight: var(--weight-semibold);
 }
+
+/* Phase C (C.2): the Charts section's six examples. */
+.chartGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: var(--space-16);
+}
