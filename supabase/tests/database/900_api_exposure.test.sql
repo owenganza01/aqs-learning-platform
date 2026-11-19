@@ -279,6 +279,8 @@ select set_eq(
             ('public.organization_domains(uuid)'),  -- 0022 (D40), Platform Admins and that organisation's Org Admins
             ('public.set_domain_admission_paused(uuid, boolean)'),  -- 0022 (D40), that organisation's Org Admins and Platform Admins
             ('public.claim_domain_membership()'),  -- 0022 (D40), any signed-in person; eligibility checked inside
+            ('public.org_learning_summary(uuid)'),  -- 0023 (P5, 7-1), own Org Admins only
+            ('public.course_learning_summary(uuid[])'),  -- 0023 (P5, 7-1), course staff and own Org Admins
             ('authz.can_write_course_object(text, text, boolean)'),
             ('authz.can_read_course_object(text)'),
             ('public.platform_report(uuid, organization_status)'),
@@ -386,6 +388,8 @@ select set_eq(
             ('public.organization_domains(uuid)'),  -- 0022 (D40)
             ('public.set_domain_admission_paused(uuid, boolean)'),  -- 0022 (D40)
             ('public.claim_domain_membership()'),  -- 0022 (D40)
+            ('public.org_learning_summary(uuid)'),  -- 0023 (P5, 7-1)
+            ('public.course_learning_summary(uuid[])'),  -- 0023 (P5, 7-1)
             ('authz.can_view_learner_record(uuid, uuid)'),
             ('public.set_quiz_settings(uuid, integer, integer, boolean, quiz_reveal_policy)'),
             ('public.add_quiz_question(uuid, text, quiz_question_type)'),
