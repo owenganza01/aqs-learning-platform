@@ -14,7 +14,7 @@ export function youtubeEmbedUrl(youtubeId: string, spokenLanguage: string | null
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 
-/** Per learner and lesson; browser storage only (no server change, package part 5). */
+/** Per learner and lesson; kept in memory for the visit only (task 5-6, Cookie Policy). */
 export function positionKey(userId: string, lessonId: string): string {
   return `aqs:video-position:${userId}:${lessonId}`
 }
@@ -47,11 +47,24 @@ export function savePosition(storage: StorageLike | null | undefined, key: strin
   }
 }
 
-/** Browser storage when it can be used, otherwise null (never throws). */
-export function browserStorage(): StorageLike | null {
-  try {
-    return typeof window !== 'undefined' ? window.localStorage : null
-  } catch {
-    return null
-  }
+/**
+ * Where the position is kept (task 5-6, 19 November 2026): in memory, for the visit only. The Cookie
+ * Policy says the site uses no functional browser storage, so nothing is written to localStorage or
+ * sessionStorage. The position survives moving between pages of the app and is gone when the tab is
+ * closed or reloaded. One store per page load, shared by every player.
+ */
+const visitPositions = new Map<string, string>()
+const visitStore: StorageLike = {
+  getItem: (key) => visitPositions.get(key) ?? null,
+  setItem: (key, value) => {
+    visitPositions.set(key, String(value))
+  },
+  removeItem: (key) => {
+    visitPositions.delete(key)
+  },
+}
+
+/** The visit-only position store (never browser storage; never throws). */
+export function visitStorage(): StorageLike {
+  return visitStore
 }

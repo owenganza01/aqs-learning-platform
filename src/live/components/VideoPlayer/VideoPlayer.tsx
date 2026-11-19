@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '../../../components/ui'
 import { callFunction, rpc } from '../../api'
-import { browserStorage, positionKey, readPosition, savePosition, youtubeEmbedUrl } from './player-model'
+import { positionKey, readPosition, savePosition, visitStorage, youtubeEmbedUrl } from './player-model'
 import styles from './VideoPlayer.module.css'
 
 /*
@@ -12,7 +12,8 @@ import styles from './VideoPlayer.module.css'
  *   Stored video (organisation-only courses): a 15-minute signed URL (media-url, refreshed a
  *     minute before it expires) with the timed caption track, also signed and refreshed with it;
  *     Retry instead of "reload the page"; the browser's own controls (speed included); the
- *     position is saved per learner in browser storage and restored on return.
+ *     position is kept per learner for the visit only (in memory, never browser storage; task 5-6)
+ *     and restored when the learner comes back to the lesson during that visit.
  * Unchanged: "Mark as done" (P8) stays on the lesson page.
  */
 
@@ -34,7 +35,7 @@ export function VideoPlayer({
   youtubeId: string | null
   /** The approved 16:9 frame (LessonPage.module.css .video). */
   className: string
-  /** False in the staff preview (CM3-3): nothing is kept, not even in browser storage. */
+  /** False in the staff preview (CM3-3): no position is kept, not even for the visit. */
   keepPosition?: boolean
 }) {
   const [language, setLanguage] = useState<{ lessonId: string; value: string | null } | null>(null)
@@ -124,7 +125,7 @@ function StoredVideo({ lessonId, userId, title, spoken, className, keepPosition 
   const [attempt, setAttempt] = useState(0)
   const videoRef = useRef<HTMLVideoElement>(null)
   const key = positionKey(userId, lessonId)
-  const storage = () => (keepPosition ? browserStorage() : null)
+  const storage = () => (keepPosition ? visitStorage() : null)
   // Where to continue after a URL refresh, and whether the video was playing.
   // (A first load reads the saved position when the media is ready: the learner's ID may arrive after the first render.)
   const resume = useRef<{ time: number; playing: boolean }>({ time: 0, playing: false })
