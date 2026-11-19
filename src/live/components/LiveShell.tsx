@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { RoleShell } from '../../components/layout/RoleShell'
+import { Banner, Button } from '../../components/ui'
 import type { ShellDefinition } from '../../lib/navigation'
 import { useAuth } from '../../lib/auth-context'
 import { useSession, workspacesFor } from '../session-context'
@@ -9,7 +10,7 @@ import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 
 /** The role shell for live pages: the signed-in person, real sign-out and the workspace switcher. */
 export function LiveShell({ shell, banner, children }: { shell: ShellDefinition; banner?: ReactNode; children: ReactNode }) {
-  const { me } = useSession()
+  const { me, joinedOrg, dismissJoined } = useSession()
   const { signOut } = useAuth()
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -24,6 +25,18 @@ export function LiveShell({ shell, banner, children }: { shell: ShellDefinition;
       banner={
         <>
           <OfflineNotice />
+          {joinedOrg ? (
+            <Banner
+              tone="success"
+              action={
+                <Button variant="text" size="sm" onClick={dismissJoined}>
+                  Dismiss
+                </Button>
+              }
+            >
+              You've joined {joinedOrg} as a learner. It's now in your workspaces.
+            </Banner>
+          ) : null}
           {banner}
         </>
       }

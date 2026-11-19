@@ -35,10 +35,10 @@ export function instructorShell(orgSlug: string, orgName: string): ShellDefiniti
 
 export function orgAdminShell(orgSlug: string, orgName: string): ShellDefinition {
   const shell = getOrgAdminShell(orgSlug)
-  // WP1 task 1-4: the page has invitations only until domain admission (WP4, D40) is built; WP4 restores
-  // the design's "Invitations and domains" label. Design previews keep the design label.
+  // Task 4-6 (P4): domain admission is built, so the design's "Invitations and domains" label is back
+  // (WP1 task 1-4 had shortened it to "Invitations" until then).
   // Assignment 2.7: the page is read-only, so the live menu says "Organization details".
-  const LIVE_LABEL: Record<string, string> = { 'Invitations and domains': 'Invitations', 'Organization settings': 'Organization details' }
+  const LIVE_LABEL: Record<string, string> = { 'Organization settings': 'Organization details' }
   const navItems = shell.navItems.map((item) => (LIVE_LABEL[item.label] ? { ...item, label: LIVE_LABEL[item.label] } : item))
   // Phase 2: the Organization Workspace is named after the organization, with its initials as a badge.
   return { ...shell, navItems, workspace: { title: orgName, subtitle: 'Organization workspace', mark: workspaceInitials(orgName) } }
