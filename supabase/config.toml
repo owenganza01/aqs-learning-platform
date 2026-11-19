@@ -419,6 +419,11 @@ verify_jwt = false
 [functions.organisation-request]
 verify_jwt = false
 
+# 0022 (D40, task 4-3): Platform Admins check an organisation domain's DNS TXT record. Prepared only,
+# not deployed. Checks the session itself (http.ts); stores results with the service key only.
+[functions.domain-verify]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
