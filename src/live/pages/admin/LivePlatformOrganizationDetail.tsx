@@ -6,6 +6,7 @@ import { ORGANIZATION_TYPE_OPTIONS, organizationTypeLabel } from '../../../lib/w
 import styles from '../../../pages/PlatformAdminOrganizationDetailPage.module.css'
 import { NotFound } from '../../../pages/NotFound'
 import { ActionFeedback, ErrorBanner, LoadingBlock } from '../../components/States'
+import { DomainsCard } from '../../components/DomainsCard'
 import { LiveShell } from '../../components/LiveShell'
 import { invitationActions, type InvitationSent } from '../../data/orgAdmin'
 import { organizationProfile, originRequest, setOrganizationProfile, type OrganizationProfile } from '../../data/onboarding'
@@ -301,6 +302,9 @@ export default function LivePlatformOrganizationDetail() {
           onSave={(next) => act.run(() => setOrganizationProfile(org.id, next), 'The organisation profile was saved.')}
         />
       ) : null}
+
+      {/* Task 4-5 (P4, D40): company-email domains of this organisation. */}
+      <DomainsCard orgId={orgId} mode="platform" className={styles.panel} />
 
       <section aria-label="Invitations" className={styles.panel}>
         <div className={styles.tableWrap}>

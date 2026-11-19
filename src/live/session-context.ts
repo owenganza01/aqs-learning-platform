@@ -70,7 +70,13 @@ export async function loadMe(userId: string): Promise<Me | null> {
   }
 }
 
-export type SessionValue = { me: Resource<Me | null>; userId: string | null }
+export type SessionValue = {
+  me: Resource<Me | null>
+  userId: string | null
+  /** 4-4: the organisation this person was just admitted to by company email, until dismissed. */
+  joinedOrg?: string | null
+  dismissJoined?: () => void
+}
 
 export const SessionContext = createContext<SessionValue | null>(null)
 

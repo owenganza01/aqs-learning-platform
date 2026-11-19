@@ -3,6 +3,7 @@ import { PageHeader } from '../../../components/layout/PageHeader'
 import { Badge, Banner, Button, Card, CardHeader, EmptyState, Select, Table, TextField, revokeInvitation, useConfirm, type BadgeTone, type TableColumn } from '../../../components/ui'
 import styles from '../../../pages/OrgInvitationsPage.module.css'
 import { ActionFeedback, Loaded } from '../../components/States'
+import { DomainsCard } from '../../components/DomainsCard'
 import { LiveShell } from '../../components/LiveShell'
 import { invitationActions, listInvitations, type Invitation, type InvitationSent } from '../../data/orgAdmin'
 import { formatDate } from '../../learner-model'
@@ -225,12 +226,7 @@ export default function LiveOrgInvitations() {
         </Loaded>
       </section>
 
-      <Card as="section" padding="lg" aria-label="Email domains" className={styles.panel}>
-        <CardHeader title="Email domains" subtitle="Verifying your organization's domains is coming later." headingLevel="h2" size="md" />
-        <p className={styles.muted}>
-          Until then, people join only through an invitation. An email domain alone never gives access to your organization.
-        </p>
-      </Card>
+      <DomainsCard orgId={org.id} mode="org_admin" className={styles.panel} />
     </LiveShell>
   )
 }

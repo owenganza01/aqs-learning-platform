@@ -57,7 +57,7 @@ const CASES = [
     who: 'organization admin',
     path: `/o/${ORG.slug}/manage`,
     admin: false,
-    items: ['Dashboard', 'Members', 'Invitations', 'Organization details'],
+    items: ['Dashboard', 'Members', 'Invitations and domains', 'Organization details'],
   },
   {
     who: 'platform admin',

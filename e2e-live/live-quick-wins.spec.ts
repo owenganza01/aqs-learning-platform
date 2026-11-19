@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { COURSE, mockSupabase, sessionTables, signIn } from './mock-supabase.js'
 
 // WP1 quick wins (tasks 1-1 to 1-5, 9 November 2026): no decision codes or placeholder captions on screen,
-// no help card or notification bell until they exist, "Invitations" as the menu label, one date format and a
+// no help card or notification bell until they exist, "Invitations" as the menu label (restored to "Invitations and domains" by 4-6), one date format and a
 // learner overdue badge. Screenshots for the evidence folder are written only when WP1_SCREENSHOTS=1.
 
 const ORG = { id: '00000000-0000-4000-8000-0000000000b1', name: 'ABC Corporation', slug: 'abc', status: 'active' }
@@ -30,20 +30,22 @@ function orgAdmin() {
   }
 }
 
-test('1-3 and 1-4: workspace pages have no help card or bell, and the menu says "Invitations"', async ({ page }) => {
+test('1-3 and 1-4/4-6: workspace pages have no help card or bell, and the menu says "Invitations and domains" (4-6 restores the design label)', async ({ page }) => {
   await signIn(page)
   await mockSupabase(page, orgAdmin())
   await page.goto('/o/abc/manage/invitations')
   await expect(page.getByRole('heading', { level: 1, name: 'Invitations' })).toBeVisible()
   const nav = page.getByRole('navigation', { name: 'Workspace' })
-  await expect(nav.getByRole('link', { name: 'Invitations', exact: true })).toBeVisible()
-  await expect(page.getByText('Invitations and domains')).toHaveCount(0)
+  // Task 4-6 (P4): domain admission exists, so the design's label is back (1-4 shortened it until then).
+  await expect(nav.getByRole('link', { name: 'Invitations and domains', exact: true })).toBeVisible()
   await expect(page.getByText('Visit help center')).toHaveCount(0)
   await expect(page.getByText('Find answers or get support from our learning team.')).toHaveCount(0)
   await expect(page.getByRole('button', { name: /Notifications/ })).toHaveCount(0)
-  // No inactive controls: the domains note stays, its disabled "Add domain" button is gone.
+  // No inactive controls. Since 4-6 the domains card is the real Org Admin view: no "Add domain" (Platform
+  // Admins add domains), and the placeholder "coming later" note is gone.
   await expect(page.getByRole('button', { name: /Add domain/ })).toHaveCount(0)
-  await expect(page.getByText(/Verifying your organization's domains is coming later/)).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Email domains' })).toBeVisible()
+  await expect(page.getByText(/Verifying your organization's domains is coming later/)).toHaveCount(0)
   // 1-5: invitation dates use the fixed format.
   const sent = await page.getByRole('row', { name: /new.person@example.test/ }).getByRole('cell').allTextContents()
   expect(sent.filter((t) => DATE.test(t.trim())).length).toBeGreaterThanOrEqual(1)
@@ -56,7 +58,7 @@ test('1-3: on a narrow screen the menu drawer has no help card either', async ({
   await mockSupabase(page, orgAdmin())
   await page.goto('/o/abc/manage/invitations')
   await page.getByRole('button', { name: 'Open menu' }).click()
-  await expect(page.getByRole('navigation', { name: 'Workspace' }).getByRole('link', { name: 'Invitations', exact: true })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Workspace' }).getByRole('link', { name: 'Invitations and domains', exact: true })).toBeVisible()
   await expect(page.getByText('Visit help center')).toHaveCount(0)
 })
 
