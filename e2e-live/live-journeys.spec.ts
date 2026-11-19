@@ -278,7 +278,7 @@ for (const width of WIDTHS) {
         },
       })
       await page.goto(`/o/${ORG.slug}/manage`)
-      await workspaceMenu(page, 'Invitations')
+      await workspaceMenu(page, 'Invitations and domains') // 4-6 restored the design label
       await noSidewaysScroll(page)
       await page.getByLabel('Email address').fill('new.person@example.test')
       await tap(page, page.getByRole('button', { name: 'Send invitation' }))
