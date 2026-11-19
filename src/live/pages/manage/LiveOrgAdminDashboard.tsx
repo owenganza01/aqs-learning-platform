@@ -1,10 +1,12 @@
 import { PageHeader } from '../../../components/layout/PageHeader'
-import { Badge, ButtonLink, Card, CardHeader, EmptyState, StatCard, Table, type TableColumn } from '../../../components/ui'
+import { Badge, BarChart, ButtonLink, Card, CardHeader, EmptyState, StatCard, Table, type TableColumn } from '../../../components/ui'
 import styles from '../../../pages/OrgAdminDashboardPage.module.css'
 import { Loaded } from '../../components/States'
 import { LiveShell } from '../../components/LiveShell'
 import { listOrgCourses, type OrgCourse } from '../../data/authoring'
 import { listInvitations, listMembers } from '../../data/orgAdmin'
+import { orgLearningSummary } from '../../data/summaries'
+import { completionByCourse, invitationsByStatus, overdueByCourse } from '../../summary-charts'
 import { orgAdminShell } from '../../navigation'
 import { useCurrentOrg } from '../../org-context'
 import { useResource } from '../../useResource'
@@ -16,12 +18,20 @@ import { courseStatus } from '../teach/teach-data'
  * the first release (P14), so the design's "domains needing action" is not shown.
  * Task 8-1: only figures that have something to count are shown as cards (active members always),
  * and the "Your people" card gives the role counts with the next step when a role is missing.
+ * Task 7-3 (P5): charts of completion and overdue assignments by course (org_learning_summary,
+ * migration 0023: active members only, public learners excluded) and invitations by status.
+ * If the summary cannot be loaded the charts say so; the rest of the dashboard still works.
  */
 export default function LiveOrgAdminDashboard() {
   const org = useCurrentOrg()
   const data = useResource(async () => {
-    const [members, invitations, courses] = await Promise.all([listMembers(org.id), listInvitations(org.id), listOrgCourses(org.id)])
-    return { members, invitations, courses, loadedAt: Date.now() }
+    const [members, invitations, courses, summary] = await Promise.all([
+      listMembers(org.id),
+      listInvitations(org.id),
+      listOrgCourses(org.id),
+      orgLearningSummary(org.id).catch(() => null),
+    ])
+    return { members, invitations, courses, summary, loadedAt: Date.now() }
   }, org.id)
   const base = `/o/${org.slug}`
 
@@ -63,7 +73,7 @@ export default function LiveOrgAdminDashboard() {
         </p>
       ) : null}
       <Loaded resource={data} label="Loading your organization" loading="dashboard">
-        {({ members, invitations, courses, loadedAt }) => {
+        {({ members, invitations, courses, summary, loadedAt }) => {
           const pending = invitations.filter((i) => i.status === 'pending' && Date.parse(i.expiresAt) > loadedAt)
           const awaiting = courses.filter((c) => c.status === 'draft' && c.publicationRequestedAt)
           const count = (role: string) => members.filter((m) => m.roles.includes(role as never)).length
@@ -83,6 +93,25 @@ export default function LiveOrgAdminDashboard() {
                 ) : null}
                 {published > 0 ? <StatCard label="Published courses" value={published} /> : null}
               </div>
+              <section className={styles.charts} aria-label="Charts">
+                <Card padding="lg">
+                  {summary ? (
+                    <BarChart title="Course completion" description="Members who completed each course, as of now." unit="percent" labelHeading="Course" valueHeading="Completion" data={completionByCourse(summary)} emptyMessage="No learners in your courses yet." />
+                  ) : (
+                    <p className={styles.muted}>Course figures are not available right now.</p>
+                  )}
+                </Card>
+                <Card padding="lg">
+                  {summary ? (
+                    <BarChart title="Overdue assignments by course" description="Assignments past their due date, as of now." labelHeading="Course" valueHeading="Overdue" data={overdueByCourse(summary)} emptyMessage="No learners in your courses yet." />
+                  ) : (
+                    <p className={styles.muted}>Course figures are not available right now.</p>
+                  )}
+                </Card>
+                <Card padding="lg">
+                  <BarChart title="Invitations by status" description="All invitations sent by this organization." labelHeading="Status" valueHeading="Invitations" data={invitationsByStatus(invitations, loadedAt)} emptyMessage="No invitations sent yet." />
+                </Card>
+              </section>
               <div className={styles.main}>
                 <Card padding="none" as="section" aria-label="Courses">
                   <div className={styles.cardPad}>
