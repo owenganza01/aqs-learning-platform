@@ -1,11 +1,11 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
-import { COURSE, mockSupabase, sessionTables, signIn, USER, type Handler } from './mock-supabase.js'
+import { COURSE, mockSupabase, sessionTables, signIn, type Handler } from './mock-supabase.js'
 import { settleAnimations } from '../e2e/settle-animations.js'
 
 // CM2-4 (D39; package part 5): the learner players against the MOCKED Supabase API. YouTube embed
 // parameters, title, placeholder and note; stored video with its caption track (served with CORS,
-// as the staging test must confirm for real Supabase signed URLs), Retry, and the saved position.
+// as the staging test must confirm for real Supabase signed URLs), Retry, and the position kept for the visit (5-6).
 // The YouTube frame and the signed media are served by test routes; nothing leaves the machine.
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
@@ -96,8 +96,7 @@ test('YouTube: without a known language the captions still load, with no languag
   expect(src.searchParams.has('cc_lang_pref')).toBe(false)
 })
 
-test('stored video: signed video and caption track (CORS), restored position, saved position', async ({ page }) => {
-  await page.addInitScript(([key]) => localStorage.setItem(key, '2'), [`aqs:video-position:${USER.id}:${VIDEO_LESSON.id}`])
+test('stored video: signed video and caption track (CORS); position kept for the visit only, never in browser storage (5-6)', async ({ page }) => {
   const mock = await openLesson(page, { video_path: `${COURSE.id}/${VIDEO_LESSON.id}/0000-org.mp4`, youtube_id: null })
   const video = page.locator('video')
   await expect(video).toHaveAttribute('crossorigin', 'anonymous')
@@ -108,16 +107,29 @@ test('stored video: signed video and caption track (CORS), restored position, sa
   await expect(track).toHaveAttribute('src', SIGNED_CAPTIONS)
   // Both files come from media-url (each request audited by the database); development mode may ask twice.
   expect([...new Set(mock.calls.filter((c) => c.name === 'media-url').map((c) => (c.body as { kind: string }).kind))].sort()).toEqual(['lesson-captions', 'video'])
-  // The saved position (2 s) is restored once the media has loaded.
-  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => Math.round(v.currentTime))).toBe(2)
   // The caption track loaded cross-origin.
   await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.textTracks[0]?.cues?.length ?? 0)).toBe(1)
-  // Pausing saves the position for this learner and lesson.
+  // Pausing keeps the position for this learner and lesson, in memory for the visit.
+  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.readyState)).toBeGreaterThan(0)
   await video.evaluate((v: HTMLVideoElement) => {
     v.currentTime = 1.5
     v.dispatchEvent(new Event('pause'))
   })
-  expect(await page.evaluate((key) => localStorage.getItem(key), `aqs:video-position:${USER.id}:${VIDEO_LESSON.id}`)).toBe('1')
+  // Task 5-6 (Cookie Policy: no functional storage): nothing about the video is in browser storage.
+  const stored = await page.evaluate(() => [...Object.keys(localStorage), ...Object.keys(sessionStorage)].filter((k) => k.includes('video-position')))
+  expect(stored, 'no video position in localStorage or sessionStorage').toEqual([])
+  // Leaving the lesson and coming back during the same visit restores the position (1 s).
+  const other = page.getByRole('link').filter({ hasText: /./ }).and(page.locator('a[href*="/lessons/"]')).filter({ hasNotText: VIDEO_LESSON.title }).first()
+  await other.click()
+  await expect(page.getByRole('heading', { name: VIDEO_LESSON.title })).toHaveCount(0)
+  await page.locator(`a[href$="/lessons/${VIDEO_LESSON.id}"]`).first().click()
+  await expect(page.getByRole('heading', { name: VIDEO_LESSON.title })).toBeVisible()
+  await expect.poll(() => page.locator('video').evaluate((v: HTMLVideoElement) => Math.round(v.currentTime))).toBe(1)
+  // A reload is a new visit: the position is gone.
+  await page.reload()
+  await expect(page.getByRole('heading', { name: VIDEO_LESSON.title })).toBeVisible()
+  await expect.poll(() => page.locator('video').evaluate((v: HTMLVideoElement) => v.readyState)).toBeGreaterThan(0)
+  expect(await page.locator('video').evaluate((v: HTMLVideoElement) => Math.round(v.currentTime))).toBe(0)
   await expect(page.getByText('If the video does not play, tell your course team.')).toBeVisible()
 })
 

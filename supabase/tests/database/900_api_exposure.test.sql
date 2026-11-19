@@ -13,7 +13,7 @@
 -- lists in the same pull request, so any unplanned exposure fails here.
 -- Per-migration test files check their own objects; this file checks the whole.
 --
--- Last updated for: migration 0004 (lists kept current through 0021).
+-- Last updated for: migration 0004 (lists kept current through 0022).
 -- =============================================================================
 begin;
 create extension if not exists pgtap with schema extensions;
@@ -272,6 +272,13 @@ select set_eq(
             ('public.approve_organization_request(uuid, text, text, text)'),  -- 0021 (WP3), Platform Admin only
             ('public.organization_profile(uuid)'),  -- 0021 (WP3), own Org Admins and Platform Admins
             ('public.set_organization_profile(uuid, text, text, text, text, text)'),  -- 0021 (WP3), Platform Admin only
+            ('public.add_organization_domain(uuid, text)'),  -- 0022 (D40), Platform Admin only
+            ('public.remove_organization_domain(uuid)'),  -- 0022 (D40), Platform Admin only
+            ('public.disable_domain_admission(uuid)'),  -- 0022 (D40), Platform Admin only
+            ('public.domain_verification_target(uuid)'),  -- 0022 (D40), Platform Admin only (read by domain-verify as the caller)
+            ('public.organization_domains(uuid)'),  -- 0022 (D40), Platform Admins and that organisation's Org Admins
+            ('public.set_domain_admission_paused(uuid, boolean)'),  -- 0022 (D40), that organisation's Org Admins and Platform Admins
+            ('public.claim_domain_membership()'),  -- 0022 (D40), any signed-in person; eligibility checked inside
             ('public.org_learning_summary(uuid)'),  -- 0023 (P5, 7-1), own Org Admins only
             ('public.course_learning_summary(uuid[])'),  -- 0023 (P5, 7-1), course staff and own Org Admins
             ('authz.can_write_course_object(text, text, boolean)'),
@@ -373,6 +380,14 @@ select set_eq(
             ('public.approve_organization_request(uuid, text, text, text)'),  -- 0021 (WP3)
             ('public.organization_profile(uuid)'),  -- 0021 (WP3)
             ('public.set_organization_profile(uuid, text, text, text, text, text)'),  -- 0021 (WP3)
+            ('public.add_organization_domain(uuid, text)'),  -- 0022 (D40)
+            ('public.remove_organization_domain(uuid)'),  -- 0022 (D40)
+            ('public.disable_domain_admission(uuid)'),  -- 0022 (D40)
+            ('public.domain_verification_target(uuid)'),  -- 0022 (D40)
+            ('public.record_domain_verification(uuid, uuid, text, boolean, jsonb)'),  -- 0022 (D40), service_role only (domain-verify)
+            ('public.organization_domains(uuid)'),  -- 0022 (D40)
+            ('public.set_domain_admission_paused(uuid, boolean)'),  -- 0022 (D40)
+            ('public.claim_domain_membership()'),  -- 0022 (D40)
             ('public.org_learning_summary(uuid)'),  -- 0023 (P5, 7-1)
             ('public.course_learning_summary(uuid[])'),  -- 0023 (P5, 7-1)
             ('authz.can_view_learner_record(uuid, uuid)'),
