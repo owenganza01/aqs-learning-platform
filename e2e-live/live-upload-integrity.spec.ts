@@ -130,6 +130,7 @@ test('a failed thumbnail upload cancels the pending path and leaves the course u
     },
     { 'course-files': () => ({ status: 500, json: { statusCode: '500', error: 'Internal', message: 'storage unavailable' } }) },
   )
+  await page.getByRole('tab', { name: 'Details' }).click() // Phase B (B.3): the thumbnail is on the Details tab
   await page.locator('#thumbnail-file').setInputFiles({ name: 'cover.png', mimeType: 'image/png', buffer: Buffer.from('png') })
   await expect(page.getByText(/the upload failed/i)).toBeVisible()
   await expect.poll(() => mock.calls.some((c) => c.name === 'cancel_pending_upload')).toBe(true)

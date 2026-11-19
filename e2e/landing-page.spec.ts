@@ -1,138 +1,176 @@
 import { expect, test } from '@playwright/test'
 
-// Public landing page: one page built from frame 1 (learner hero, decision D3 Option A).
-// Header navigation for Courses and the mobile menu are covered in public-nav.spec.ts.
-// CM3-7 (owner, 4 November 2026): no invented content. The hero image placeholder, the partner logo
-// strip and the mock featured courses are removed; the design preview has no course data, so the
-// featured section is not rendered and Courses leads to the catalog.
+// Public landing page, Concept C "Two doors, one platform" (approved by the owner on 10 November 2026).
+// Header and mobile menu: public-nav.spec.ts. Live data (featured courses, signed-in header): e2e-live.
+// Owner restrictions checked here: no unverified claims, no certificates, no ownership statement or
+// dummy company details, the approved blue primary buttons (D41), and no invented content (CM3-7).
 
-const HERO_HEADING = 'Build the skills that move your career forward.'
-const HERO_LEAD = 'Practical courses, expert instruction, and flexible pathways help you build capability that lasts.'
-const COURSES_HEADING = 'Start with the courses learners are taking right now.'
+const HERO_HEADING = 'Training for your organization. Courses for everyone.'
 
-test.describe('landing page single-page content', () => {
-  test('renders the learner hero and the sections in order, with no organizations view', async ({ page }) => {
+test.describe('landing page content', () => {
+  test('renders the hero and the sections in order', async ({ page }) => {
     await page.goto('/')
 
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(HERO_HEADING)
-    await expect(page.getByText(HERO_LEAD, { exact: true })).toBeVisible()
-    await expect(page.getByText(/Hero image placeholder|Partner 1|Thumbnail placeholder/)).toHaveCount(0)
-    await expect(page.getByRole('region', { name: /Partner logos/ })).toHaveCount(0)
-
-    // One page-level heading, then the three content sections in document order
     await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
-    // Limited to <main>: the footer has its own h2 column headings
-    const sectionHeadings = await page.getByRole('main').getByRole('heading', { level: 2 }).allTextContents()
-    // No featured section without real published courses (CM3-7)
-    expect(sectionHeadings).toEqual(['From sign-in to completion.', 'Support at every step.'])
-
-    // Frame 2 copy must not appear on this page
-    await expect(page.getByText('Build stronger teams through learning.', { exact: true })).toHaveCount(0)
+    const headings = await page.getByRole('main').getByRole('heading', { level: 2 }).allTextContents()
+    // The two door titles, then the sections. "Private organization workspaces" waits for its checks
+    // (statements C1 and C3). The About AQS block was removed at the client's request (11 November 2026).
+    expect(headings).toEqual([
+      'I want to learn',
+      "I'm training a team",
+      'Build the skills that move your career forward.',
+      "Train your staff in your organization's own workspace.",
+      'What a course on AQS includes.',
+      'Ready when you are.',
+    ])
   })
 
-  test('does not show hero actions that are not built yet', async ({ page }) => {
+  test('the two doors lead to the catalog and to the organizations section', async ({ page }) => {
     await page.goto('/')
+    const doors = page.getByRole('main').getByRole('list').first()
+    await expect(doors.getByRole('link', { name: 'Find a course' })).toHaveAttribute('href', '/catalog')
 
+    await doors.getByRole('link', { name: 'Set up training' }).click()
+    await expect(page).toHaveURL(/\/#organizations$/)
+    await expect(page.locator('#organizations')).toBeFocused()
+    await expect(page.getByRole('heading', { level: 2, name: "Train your staff in your organization's own workspace." })).toBeInViewport()
+  })
+
+  test('tells invited staff which address to sign in with', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByText(/Invited by your organization\? Sign in with the email address the invitation was sent to\./)).toBeVisible()
+  })
+
+  test('the hero shows the office team photo, with alternative text, cropped to the hero frame', async ({ page }) => {
+    await page.goto('/')
+    const image = page.getByRole('img', { name: 'Four colleagues wearing headsets work together at laptops and a monitor in an office.' })
+    await expect(image).toBeVisible()
+    await expect(image).toHaveAttribute('src', '/images/landing/team-working-office.jpg')
+    expect(await image.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth)).toBe(1600)
+    await expect(image).toHaveCSS('object-fit', 'cover')
+    await expect(image).toHaveCSS('border-radius', '0px')
+    await expect(page.getByText('The learner dashboard, shown with sample data.')).toHaveCount(0)
+  })
+
+  for (const width of [1440, 1920]) {
+    test(`at ${width}px the photo runs from the header to the screen's right edge, beside the text`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto('/')
+      const image = page.locator('img[src="/images/landing/team-working-office.jpg"]')
+      const text = page.getByRole('heading', { level: 1 }).locator('xpath=..')
+      const [photo, column, header] = [await image.boundingBox(), await text.boundingBox(), await page.getByRole('banner').boundingBox()]
+      const pageWidth = await page.evaluate(() => document.documentElement.clientWidth)
+      expect(Math.abs(photo!.y - (header!.y + header!.height))).toBeLessThanOrEqual(1)
+      expect(Math.abs(photo!.x + photo!.width - pageWidth)).toBeLessThanOrEqual(1)
+      expect(photo!.x).toBeGreaterThan(column!.x + column!.width)
+      // The photo reaches at least the bottom of the text, and the page never scrolls sideways
+      expect(photo!.y + photo!.height).toBeGreaterThanOrEqual(column!.y + column!.height - 1)
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false)
+    })
+  }
+
+  test('below 1024px the photo keeps the wide 1200 : 505 frame under the text', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/')
+    const image = page.locator('img[src="/images/landing/team-working-office.jpg"]')
+    const box = await image.boundingBox()
+    expect(box && Math.abs(box.width / box.height - 1200 / 505)).toBeLessThan(0.02)
+    await expect(image).toHaveCSS('border-radius', '0px')
+  })
+
+  test('without published public courses the Courses block shows a neutral empty state', async ({ page }) => {
+    await page.goto('/')
+    const courses = page.locator('#courses')
+    await expect(courses.getByRole('heading', { level: 3, name: 'No courses yet' })).toBeVisible()
+    await expect(courses.getByText('New courses will appear here when they are published.', { exact: true })).toBeVisible()
+    // No launch date or promise
+    await expect(courses.getByText(/soon|coming/i)).toHaveCount(0)
+  })
+
+  test('shows only cleared statements', async ({ page }) => {
+    await page.goto('/')
+    const organizations = page.locator('#organizations')
+    // C4 is cleared; C2 (publishing approval) and C5 (assign and track) wait for their checks.
+    await expect(organizations.getByRole('heading', { level: 3, name: 'Invite your people' })).toBeVisible()
+    await expect(organizations.getByText('Invite instructors and staff by link. Invitations expire after seven days and can be withdrawn.')).toBeVisible()
+    await expect(page.getByText('Publish your own courses')).toHaveCount(0)
+    await expect(page.getByText('Assign and track')).toHaveCount(0)
+    await expect(organizations.getByRole('listitem')).toHaveCount(1 + 4)
+    // C1 and C3 are not cleared, so the whole "Private organization workspaces" block is absent.
+    await expect(page.getByText('Private organization workspaces')).toHaveCount(0)
+    await expect(page.getByText(/checked on the server/)).toHaveCount(0)
+    // C6 and C5 are not cleared either.
+    await expect(page.getByText('Due dates', { exact: true })).toHaveCount(0)
+    await expect(page.getByText(/Marked on the server/)).toHaveCount(0)
+    const learning = page.getByRole('heading', { level: 3 }).filter({ hasText: /^(Lessons|Quizzes|Progress)$/ })
+    await expect(learning).toHaveText(['Lessons', 'Quizzes', 'Progress'])
+  })
+
+  test('mentions no certificates, messaging, company-email joining or unbuilt actions', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByText(/certificate/i)).toHaveCount(0)
+    await expect(page.getByText(/messag/i)).toHaveCount(0)
+    await expect(page.getByText(/company email|domain/i)).toHaveCount(0)
     await expect(page.getByRole('link', { name: 'Continue with Google' })).toHaveCount(0)
-    await expect(page.getByRole('button', { name: 'Continue with Google' })).toHaveCount(0)
-    await expect(page.getByRole('link', { name: 'Request a demo' })).toHaveCount(0)
-    await expect(page.getByRole('button', { name: 'Request a demo' })).toHaveCount(0)
+    await expect(page.getByRole('list', { name: 'Audiences' })).toHaveCount(0)
+    await expect(page.getByText(/Hero image placeholder|Partner 1|Thumbnail placeholder/)).toHaveCount(0)
+  })
+
+  test('the organizations section ends with Request a workspace, styled for the light band (WP3)', async ({ page }) => {
+    await page.goto('/')
+    const section = page.locator('#organizations')
+    const request = section.getByRole('link', { name: 'Request a workspace' })
+    await expect(request).toHaveAttribute('href', '/request-workspace')
+    await expect(section.getByText('AQS reviews every request. Nothing is set up until we have checked it with you.')).toBeVisible()
+    await section.screenshot({ path: 'test-results/wp3-screens/landing-organizations-section-1440.png' })
+    // The band is light (client request, 11 November 2026), so the standard action-blue primary
+    // applies (D41), and the note uses the readable secondary text colour.
+    await expect(request).toHaveCSS('background-color', 'rgb(29, 78, 216)')
+    await expect(section.getByText('AQS reviews every request.', { exact: false })).toHaveCSS('color', 'rgb(71, 85, 105)')
+    await request.click()
+    await expect(page).toHaveURL(/\/request-workspace$/)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  })
+
+  test('uses the approved blue primary button: default, hover and pressed, with white text', async ({ page }) => {
+    await page.goto('/')
+    const primary = page.getByRole('link', { name: 'Set up training', exact: true })
+    await expect(primary).toHaveCSS('background-color', 'rgb(29, 78, 216)') // #1D4ED8
+    await expect(primary).toHaveCSS('color', 'rgb(255, 255, 255)')
+    await primary.hover()
+    await expect(primary).toHaveCSS('background-color', 'rgb(30, 64, 175)') // #1E40AF
+    await page.mouse.down()
+    await expect(primary).toHaveCSS('background-color', 'rgb(30, 58, 138)') // #1E3A8A
+    await page.mouse.up()
+  })
+
+  test('has no About AQS block (client request, 11 November 2026)', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.locator('#about')).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: 'About AQS' })).toHaveCount(0)
+    await expect(page.getByText('Placeholder · Introduction · AQS to supply')).toHaveCount(0)
+    await expect(page.getByText(/owned and operated/i)).toHaveCount(0)
+  })
+
+  test('the For organizations band uses the light page palette, not a navy block', async ({ page }) => {
+    await page.goto('/')
+    const band = page.locator('#organizations')
+    await expect(band).toHaveCSS('background-color', 'rgb(239, 246, 255)') // --color-blue-50, as in the hero
+    await expect(band.getByRole('heading', { level: 2 })).toHaveCSS('color', 'rgb(15, 23, 42)') // --color-text
+    await expect(band.getByText('For organizations', { exact: true })).toHaveCSS('color', 'rgb(194, 65, 12)') // eyebrow
   })
 })
 
-test.describe('landing page audience pills', () => {
-  test('are static labels, not buttons or links', async ({ page }) => {
-    await page.goto('/')
-
-    const pills = page.getByRole('list', { name: 'Audiences' })
-    await expect(pills.getByRole('listitem')).toHaveText(['For learners', 'For organizations'])
-    await expect(pills.locator('button, a, [role="button"], [aria-pressed]')).toHaveCount(0)
-    await expect(page.getByRole('button', { name: /For (learners|organizations)/ })).toHaveCount(0)
-    await expect(page.getByRole('link', { name: /For (learners|organizations)/ })).toHaveCount(0)
-  })
-
-  test('clicking a pill changes nothing on the page', async ({ page }) => {
-    await page.goto('/')
-
-    await page.getByRole('list', { name: 'Audiences' }).getByText('For organizations', { exact: true }).click()
-
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(HERO_HEADING)
-    await expect(page).toHaveURL(/\/$/)
-  })
-})
-
-test.describe('landing page header and hero navigation', () => {
-  test('For Organizations stays visible in the header and scrolls back to the top of this page', async ({ page }) => {
-    await page.goto('/')
-
-    const forOrganizations = page
-      .getByRole('navigation', { name: 'Main' })
-      .getByRole('link', { name: 'For Organizations', exact: true })
-    await expect(forOrganizations).toBeVisible()
-
-    // Move down the page first, so the scroll back to the top is visible
-    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-
-    await forOrganizations.click()
-
-    await expect(page).toHaveURL(/\/#for-organizations$/)
-    // Back at the top of the page. The hero lands within 2px of y=0 (sub-pixel layout), not exactly 0.
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(2)
-    await expect(page.locator('#for-organizations')).toBeFocused()
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(HERO_HEADING)
-  })
-
-  test('Browse courses goes to the catalog when there are no featured courses (CM3-7)', async ({ page }) => {
-    await page.goto('/')
-
-    await page.getByRole('link', { name: 'Browse courses' }).click()
-
-    await expect(page).toHaveURL(/\/catalog$/)
-    await expect(page.getByRole('heading', { level: 2, name: COURSES_HEADING })).toHaveCount(0)
-  })
-
-  test('Sign in and Get started are unavailable, not links or working buttons', async ({ page }) => {
-    await page.goto('/')
-
-    const header = page.getByRole('banner')
-    await expect(header.getByRole('link', { name: 'Sign in' })).toHaveCount(0)
-    await expect(header.locator('[aria-disabled="true"]', { hasText: 'Sign in' })).toBeVisible()
-    await expect(header.getByRole('button', { name: 'Get started (not available yet)' })).toBeDisabled()
-    await expect(header.getByRole('link', { name: 'Get started' })).toHaveCount(0)
-  })
-})
-
-test.describe('landing page at mobile width', () => {
-  test.use({ viewport: { width: 375, height: 812 } })
-
-  test('has no horizontal overflow at 375px', async ({ page }) => {
+for (const [label, viewport] of [
+  ['tablet', { width: 820, height: 1180 }],
+  ['mobile', { width: 375, height: 812 }],
+] as const) {
+  test(`has no horizontal overflow on ${label}`, async ({ page }) => {
+    await page.setViewportSize(viewport)
     await page.goto('/')
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(HERO_HEADING)
-
-    const overflows = await page.evaluate(
-      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-    )
+    const overflows = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)
     expect(overflows).toBe(false)
   })
-})
-
-test('P23: approved wording; certificates and messaging are labelled "Coming later" in the same layout', async ({ page }) => {
-  await page.goto('/')
-  await expect(page.getByRole('heading', { level: 3, name: 'Learn and track your progress' })).toBeVisible()
-  await expect(page.getByText("Complete lessons and quizzes and see how far you've come.", { exact: true })).toBeVisible()
-  await expect(page.getByText('Learn and earn a certificate')).toHaveCount(0)
-  await expect(page.getByText('Complete lessons and earn your certificate.')).toHaveCount(0)
-
-  const features = page.getByRole('list').filter({ has: page.getByRole('heading', { name: 'Certificates' }) })
-  const card = (title: string) => features.getByRole('listitem').filter({ has: page.getByRole('heading', { name: title, exact: true }) })
-  await expect(features.getByRole('listitem')).toHaveCount(4)
-  await expect(card('Certificates').getByText('Coming later', { exact: true })).toBeVisible()
-  await expect(card('Certificates').getByText('Certificates for completed courses are coming in a later release.', { exact: true })).toBeVisible()
-  await expect(card('Messaging with instructors').getByText('Coming later', { exact: true })).toBeVisible()
-  await expect(card('Messaging with instructors').getByText('Messaging with instructors is coming in a later release.', { exact: true })).toBeVisible()
-  await expect(card('Progress tracking').getByText('Coming later')).toHaveCount(0)
-  await expect(card('Quizzes').getByText('Coming later')).toHaveCount(0)
-  await expect(page.getByText('Earn a certificate when you complete a course.')).toHaveCount(0)
-  await expect(page.getByText('Ask questions and get guidance from your instructor.')).toHaveCount(0)
-})
+}

@@ -4,6 +4,7 @@ import { RoleShell } from '../../components/layout/RoleShell'
 import type { ShellDefinition } from '../../lib/navigation'
 import { useAuth } from '../../lib/auth-context'
 import { useSession, workspacesFor } from '../session-context'
+import { OfflineNotice } from './Connection'
 import { WorkspaceSwitcher } from './WorkspaceSwitcher'
 
 /** The role shell for live pages: the signed-in person, real sign-out and the workspace switcher. */
@@ -20,10 +21,16 @@ export function LiveShell({ shell, banner, children }: { shell: ShellDefinition;
     <RoleShell
       shell={shell}
       user={{ name: person?.fullName || person?.email || '', roleLabel: shell.roleLabel }}
-      banner={banner}
+      banner={
+        <>
+          <OfflineNotice />
+          {banner}
+        </>
+      }
       hideUnbuilt
       onSignOut={async () => {
-        // Leave the protected page first, so its guard does not send the person to sign-in.
+        // Leave the protected page first, then end the session. In the other order the page guard
+        // sees the session end and sends the person to sign-in before this navigation runs.
         navigate('/', { replace: true })
         await signOut()
       }}

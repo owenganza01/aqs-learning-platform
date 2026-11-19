@@ -1,9 +1,10 @@
 import { useId } from 'react'
 import { Link } from 'react-router'
-import { AuthLayout } from '../components/layout/AuthLayout'
+import { AuthLayout, AuthPhotoImage } from '../components/layout/AuthLayout'
+import { AUTH_PHOTOS } from '../components/layout/auth-photos'
 import { Button } from '../components/ui'
 import { cx } from '../lib/cx'
-import { HERO_PLACEHOLDER, MockAuthFooter, MockAuthNotice } from './MockAuthParts'
+import { MockAuthFooter, MockAuthNotice } from './MockAuthParts'
 import styles from './MockAuth.module.css'
 
 /*
@@ -16,7 +17,7 @@ export default function SignInErrorPage() {
   const noticeId = useId()
 
   return (
-    <AuthLayout illustration={<div className={styles.placeholder}>{HERO_PLACEHOLDER}</div>}>
+    <AuthLayout illustration={<AuthPhotoImage photo={AUTH_PHOTOS.learnerVideoCall} />}>
       <MockAuthNotice id={noticeId} />
 
       <h1 className={cx('text-h2', styles.heading)}>We couldn't sign you in</h1>

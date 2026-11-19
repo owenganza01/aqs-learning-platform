@@ -9,6 +9,8 @@ import { Loaded } from '../../components/States'
 import { CATALOG_PAGE_SIZE, listCatalogPage } from '../../data/learning'
 import { learnerShell } from '../../navigation'
 import { useResource } from '../../useResource'
+import { PLATFORM_TUTORIALS } from '../../../content/public-site'
+import { PlatformTutorials, TutorialsComingNotice } from '../../../pages/catalog/PlatformTutorials'
 
 /*
  * Course catalog at /catalog. Signed-out visitors see the public courses (F1, L8) in the public
@@ -17,7 +19,12 @@ import { useResource } from '../../useResource'
  * I7: title search (case-insensitive, on the courses already allowed by the row rules).
  * CM3-2 (G30): the database pages the list (12 per page, `count: 'exact'`) and runs the search,
  * so only one page is fetched; a new search starts again at page 1. Categories come later (OD6).
+ * Client request (11 November 2026): the page is called Courses and starts with the public platform
+ * tutorials, kept apart from the course list under its own heading.
  */
+/** A.3: the full tutorial cards show once any tutorial has an approved video; until then, one line below the courses. */
+const TUTORIAL_VIDEOS = PLATFORM_TUTORIALS.some((tutorial) => Boolean(tutorial.youtubeId))
+
 export default function LiveCatalog() {
   const { session } = useAuth()
   const [search, setSearch] = useState('')
@@ -34,11 +41,17 @@ export default function LiveCatalog() {
   const body: ReactNode = (
     <>
       <header className={styles.header}>
-        <h1 className={styles.title}>Course catalog</h1>
+        <h1 className={styles.title}>Courses</h1>
         <p className={styles.intro}>
-          {session ? 'Courses open to you, from your organizations and the public catalog.' : 'Browse our public courses.'}
+          {session
+            ? 'The courses open to you from your organizations and the public catalog.'
+            : 'Browse the public courses. You only need to sign in to enroll.'}
         </p>
       </header>
+      {TUTORIAL_VIDEOS ? <PlatformTutorials /> : null}
+      <h2 className={styles.sectionTitle} id="catalog-courses-heading">
+        {session ? 'Courses open to you' : 'Public courses'}
+      </h2>
       {/* CM3-8: course-card-shaped skeletons while a page of the catalog loads. */}
       {catalog.state === 'loading' ? (
         <CatalogSkeleton />
@@ -68,11 +81,11 @@ export default function LiveCatalog() {
                 <EmptyState title="No matching courses" description={`No course title contains "${term}". Try another word.`} />
               ) : (
                 <>
-                  <ul className={styles.grid} aria-label="Courses">
+                  <ul className={styles.grid} aria-labelledby="catalog-courses-heading">
                     {courses.map((course) => (
                       <li key={course.id}>
                         <Card as="article" className={styles.card}>
-                          <h2 className={styles.courseTitle}>{course.title}</h2>
+                          <h3 className={styles.courseTitle}>{course.title}</h3>
                           <p className={styles.meta}>
                             {countOf(course.moduleCount, 'module')} · {countOf(course.lessonCount, 'lesson')}
                           </p>
@@ -110,13 +123,14 @@ export default function LiveCatalog() {
         }}
       </Loaded>
       )}
+      {TUTORIAL_VIDEOS ? null : <TutorialsComingNotice />}
     </>
   )
 
   if (!session) {
     return (
       <PublicLayout>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>{body}</div>
+        <div className={styles.page}>{body}</div>
       </PublicLayout>
     )
   }

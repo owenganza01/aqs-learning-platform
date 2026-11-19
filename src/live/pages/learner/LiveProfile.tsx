@@ -54,7 +54,7 @@ export default function LiveProfile() {
       <div className={styles.grid}>
         <Card padding="lg" className={styles.card}>
           <h2 className={styles.heading}>{person.fullName || person.email}</h2>
-          <p>Signed in with Google as {person.email}</p>
+          <p>Signed in as {person.email}</p>
           <form
             onSubmit={async (event) => {
               event.preventDefault()
@@ -64,7 +64,7 @@ export default function LiveProfile() {
                 me.reload()
               }
             }}
-            style={{ display: 'grid', gap: 12, marginTop: 16 }}
+            style={{ display: 'grid', gap: 'var(--space-12)', marginTop: 'var(--space-16)' }}
           >
             <TextField id="profile-name" label="Display name" value={name} maxLength={200} onChange={(e) => setName(e.target.value)} />
             <ActionFeedback error={save.error} success={saved ? 'Your name was saved.' : null} />
@@ -74,7 +74,7 @@ export default function LiveProfile() {
               </Button>
             </div>
           </form>
-          <p className={styles.muted}>Your email comes from your Google account and can't be changed here.</p>
+          <p className={styles.muted}>Your email comes from the account you signed in with and can't be changed here.</p>
         </Card>
 
         <Card padding="lg" className={styles.card}>

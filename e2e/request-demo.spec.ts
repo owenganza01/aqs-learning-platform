@@ -71,11 +71,11 @@ test.describe('request a demo form (development only)', () => {
     await expect(page.locator('a[href="/request-demo"]')).toHaveCount(0)
   })
 
-  test('the header keeps its unavailable actions on this page', async ({ page }) => {
+  test('the header provides working Sign in and Get started links', async ({ page }) => {
     await page.goto(PATH)
     const header = page.getByRole('banner')
-    await expect(header.getByRole('link', { name: 'Sign in' })).toHaveCount(0)
-    await expect(header.getByRole('link', { name: 'Get started' })).toHaveCount(0)
+    await expect(header.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/sign-in')
+    await expect(header.getByRole('link', { name: 'Get started' })).toHaveAttribute('href', '/get-started')
   })
 })
 

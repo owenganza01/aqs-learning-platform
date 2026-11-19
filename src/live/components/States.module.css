@@ -1,0 +1,92 @@
+/* Loading shapes (task 6-1): placeholders laid out like the content they stand for. */
+
+.loading {
+  padding: 8px 0;
+}
+
+.shapes {
+  display: grid;
+  gap: var(--space-16);
+}
+
+.panel {
+  display: grid;
+  gap: var(--space-12);
+  padding: var(--space-16);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
+}
+
+.stats,
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-16);
+}
+
+.cards {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.tableHead,
+.tableRow {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr;
+  gap: var(--space-16);
+  align-items: center;
+}
+
+.tableHead {
+  padding-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tableRow {
+  padding: var(--space-8) 0;
+}
+
+.editor {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) minmax(0, 2.5fr);
+  gap: var(--space-16);
+}
+
+.column {
+  display: grid;
+  gap: var(--space-12);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-8);
+}
+
+/*
+ * Below 1024 px a live table shows one card per row (Table.module.css, refinement Phase 3), so the
+ * table placeholder does too: no header row, the first line stands for the card's title and the
+ * others for its label and value lines. Nothing is wider than the screen while loading, and the
+ * layout does not jump when the cards arrive.
+ */
+@media (max-width: 1023px) {
+  .tableHead {
+    display: none;
+  }
+
+  .tableRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+    padding: var(--space-16) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .tableRow:last-child {
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,6 +1,7 @@
 import { useParams } from 'react-router'
 import { FocusLayout } from '../../../components/layout/FocusLayout'
 import { Banner, ButtonLink, Icon, ProgressBar } from '../../../components/ui'
+import { formatDate } from '../../learner-model'
 import styles from '../../../pages/CourseCompletionPage.module.css'
 import { NotFound } from '../../../pages/NotFound'
 import { ErrorBanner, LoadingBlock } from '../../components/States'
@@ -11,6 +12,8 @@ import { useResource } from '../../useResource'
 /*
  * Course completion at /learn/courses/:courseId/complete (D30): the Congratulations layout,
  * without certificate features (P21). Shown only when the server has recorded the completion.
+ * A.9: a short summary from what the page already loads (course title, "Completed" with the date the
+ * enrolment holds, Back to dashboard). A.2: the course title is the one h1 in both states.
  */
 export default function LiveCompletion() {
   const { courseId = '' } = useParams()
@@ -24,10 +27,11 @@ export default function LiveCompletion() {
   )
   const user = { name: me.state === 'ready' && me.data ? me.data.fullName || me.data.email : '', roleLabel: 'Learner' }
 
-  if (data.state === 'loading') return <LoadingBlock label="Loading" />
+  if (data.state === 'loading') return <LoadingBlock label="Loading your result" shape="detail" />
   if (data.state === 'error') return <ErrorBanner error={data.error} onRetry={data.reload} />
   if (!data.data) return <NotFound />
   const completed = data.data.enrollment?.status === 'completed'
+  const completedAt = data.data.enrollment?.completedAt ?? null
 
   return (
     <FocusLayout back={{ label: 'My courses', to: '/my-courses' }} title={data.data.title} titleLevel="h2" user={user}>
@@ -37,10 +41,13 @@ export default function LiveCompletion() {
             <span className={styles.badge} aria-hidden="true">
               <Icon name="check" size={36} />
             </span>
+            <p className={styles.lead}>Congratulations!</p>
             <h1 id="completion-heading" className={styles.heading}>
-              Congratulations!
+              {data.data.title}
             </h1>
-            <p className={styles.courseTitle}>{data.data.title}</p>
+            <p className={styles.courseTitle}>
+              {completedAt ? `Completed ${formatDate(completedAt)}` : 'Completed'}
+            </p>
             <p className={styles.lead}>You completed every lesson in this course.</p>
             <div className={styles.summary}>
               <ProgressBar label="Course completed" value={100} />
@@ -51,6 +58,7 @@ export default function LiveCompletion() {
           </section>
         ) : (
           <>
+            <h1 className={styles.heading}>{data.data.title}</h1>
             <Banner tone="info">This course isn't complete yet. Finish every lesson and quiz to complete it.</Banner>
             <ButtonLink variant="text" to={`/courses/${courseId}`} className={styles.backLink}>
               Back to the course

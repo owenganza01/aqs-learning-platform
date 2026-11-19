@@ -80,6 +80,14 @@ export function useSession(): SessionValue {
   return value
 }
 
+/**
+ * The session when inside SessionProvider, otherwise null. The public layout uses it, because the
+ * design previews render public pages without a SessionProvider.
+ */
+export function useOptionalSession(): SessionValue | null {
+  return useContext(SessionContext)
+}
+
 /** Active memberships in organizations the person can currently see. */
 export function activeMemberships(me: Me): Array<Membership & { org: NonNullable<Membership['org']> }> {
   return me.memberships.filter(
@@ -99,14 +107,14 @@ export type Workspace =
 /** Every workspace this person can open, in the order the switcher lists them. */
 export function workspacesFor(me: Me): Workspace[] {
   const list: Workspace[] = []
-  if (me.isPlatformAdmin) list.push({ kind: 'platform', to: '/admin', label: 'Platform console' })
+  if (me.isPlatformAdmin) list.push({ kind: 'platform', to: '/admin', label: 'AQS Platform · Control Center' })
   for (const m of activeMemberships(me)) {
     if (m.roles.includes('org_admin')) {
-      list.push({ kind: 'manage', to: `/o/${m.org.slug}/manage`, label: `${m.org.name} · Organization admin`, orgSlug: m.org.slug, orgName: m.org.name })
+      list.push({ kind: 'manage', to: `/o/${m.org.slug}/manage`, label: `${m.org.name} · Organization workspace`, orgSlug: m.org.slug, orgName: m.org.name })
     }
     if (m.roles.includes('instructor') || m.roles.includes('org_admin')) {
       // P3: Organization Admins create and author courses as well as Instructors.
-      list.push({ kind: 'teach', to: `/o/${m.org.slug}/teach`, label: `${m.org.name} · Teaching`, orgSlug: m.org.slug, orgName: m.org.name })
+      list.push({ kind: 'teach', to: `/o/${m.org.slug}/teach`, label: `${m.org.name} · Teaching Studio`, orgSlug: m.org.slug, orgName: m.org.name })
     }
   }
   // F1, P13: every signed-in person has a learner space (their courses and the catalog).

@@ -5,9 +5,9 @@ There are two workbooks. Each has two tabs.
 | Workbook | Who it is for | Tabs |
 |---|---|---|
 | **`progress-tracker.xlsx`** | Supervisors and anyone who wants the big picture in two minutes | **Progress**: key dates, overall progress, the ten work areas, checkpoints, open decisions, and what the status words mean. **Updates**: a dated log of what happened and what's next |
-| **`task-sheet.xlsx`** | Owen and the developer, for day-to-day work | **Tasks**: one row per task (71) with who, due date, status and a short note. **Details**: the full wording, when each task counts as done, the proof needed, the history of changes, and links to proof |
+| **`task-sheet.xlsx`** | Owen and the developer, for day-to-day work | **Tasks**: one row per task (73) with who, due date, status and a short note. **Details**: the full wording, when each task counts as done, the proof needed, the history of changes, and links to proof |
 
-Both also exist as Google Sheets in Owen's Drive folder "AQS Learning Platform - Progress (Nov 2026)". Share the **AQS Progress Tracker** Google Sheet with supervisors as view-only.
+The live copies are the Google Sheets "AQS Task List (working detail)" and "AQS Progress Tracker (for supervisors)" in Owen's Drive folder "AQS Learning Platform - Progress (Nov 2026)". The two `.xlsx` files here are snapshots exported from them when Owen commits; if a snapshot and its Google Sheet disagree, the Google Sheet is newer. Share the **AQS Progress Tracker** Google Sheet with supervisors as view-only.
 
 ## Status words
 
@@ -24,7 +24,7 @@ Built but unreviewed work is never Complete.
 
 ## Who updates what
 
-Excel files can't be merged in Git, so only Owen changes them.
+Excel files can't be merged in Git, so only Owen changes them: he updates the Google Sheets, then exports both as `.xlsx` into this folder when he commits.
 
 | Who | What they do |
 |---|---|

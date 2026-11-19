@@ -7,7 +7,7 @@
   padding: 0;
   border: 0;
   border-radius: var(--radius) var(--radius) 0 0;
-  background: var(--color-surface);
+  background: var(--color-white); /* --color-surface is not a token: the sheet was see-through (F1) */
   color: var(--color-text);
   box-shadow: var(--shadow-2);
 }

@@ -1,143 +1,230 @@
 /*
- * About and Contact (development only). No design exists for either page, so they reuse the landing
- * page grid: a 1296px content column with 72px side padding, 32px below 1024px and 16px below 768px.
+ * About AQS and Contact (landing page Concept C amendment, approved 10 November 2026).
+ * Same grid as the landing page: 1296px content column with 72px side padding at 1440px,
+ * 32px on tablet (768–1023px) and 16px on mobile.
  */
-
-.page {
-  padding: var(--space-64) 0 var(--space-64);
-  background: var(--color-canvas);
-}
 
 .container {
   width: 100%;
   max-width: calc(var(--content-max-width) + 2 * 72px);
   margin: 0 auto;
   padding: 0 72px;
-  display: grid;
-  gap: var(--space-32);
-}
-
-@media (max-width: 1023px) {
-  .container {
-    padding: 0 var(--space-32);
-  }
-}
-
-@media (max-width: 767px) {
-  .page {
-    padding: var(--space-40) 0 var(--space-48);
-  }
-
-  .container {
-    padding: 0 var(--space-16);
-    gap: var(--space-24);
-  }
 }
 
 .intro {
-  max-width: 760px;
+  padding: 80px 0 48px;
+  background: linear-gradient(180deg, var(--color-blue-50) 0, var(--color-white) 100%);
 }
 
 .title {
+  max-width: 900px;
   margin: var(--space-8) 0 0;
-  font-size: var(--text-h2);
-  line-height: var(--leading-h2);
-  font-weight: var(--weight-bold);
   color: var(--color-text);
 }
 
-@media (max-width: 767px) {
-  .title {
-    font-size: 32px;
-    line-height: 40px;
-  }
+.introBody {
+  display: grid;
+  gap: var(--space-16);
+  max-width: 760px;
+  margin-top: var(--space-24);
 }
 
 .lead {
+  max-width: 760px;
   margin: var(--space-16) 0 0;
-  font-size: 1.125rem;
-  color: var(--color-text-muted);
+  color: var(--color-text-subtle);
+  font-size: var(--text-lead);
+  line-height: var(--leading-lead);
 }
 
-.grid {
+.introBody .lead {
+  margin: 0;
+}
+
+.section {
+  padding: 64px 0;
+}
+
+.muted {
+  background: var(--color-canvas);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.closing {
+  text-align: center;
+}
+
+.twoColumns {
   display: grid;
-  gap: var(--space-24);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-32);
 }
 
-@media (min-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-.card {
+.block {
   display: grid;
   align-content: start;
   gap: var(--space-12);
-  min-width: 0;
 }
 
-.card p {
+.block p,
+.route p {
   margin: 0;
-  color: var(--color-text);
+  color: var(--color-text-subtle);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
 }
 
 .heading {
   margin: 0;
+  color: var(--color-text);
   font-size: var(--text-h3);
   line-height: var(--leading-h3);
   font-weight: var(--weight-semibold);
+}
+
+.sectionTitle {
+  margin: var(--space-8) 0 0;
   color: var(--color-text);
 }
 
-.list {
-  margin: 0;
-  padding-left: var(--space-24);
-  display: grid;
-  gap: var(--space-8);
+.sectionLead {
+  max-width: 720px;
+  margin: var(--space-16) 0 0;
+  color: var(--color-text-subtle);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
 }
 
-.placeholderSection {
-  display: grid;
-  gap: var(--space-12);
-}
-
-.ctaRow {
+.actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-12);
+  justify-content: center;
+  gap: var(--space-16);
+  margin-top: var(--space-32);
 }
 
-.details {
-  margin: 0;
+/* ---- Contact ---- */
+
+.contactGrid {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-24);
+}
+
+.contactCard {
+  display: grid;
+  align-content: start;
+  justify-items: start;
   gap: var(--space-12);
+  padding: var(--space-24);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-white);
 }
 
-.detailRow {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-8);
-  padding-bottom: var(--space-12);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.detailRow:last-child {
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-
-.detailRow dt {
-  font-weight: 600;
+.cardTitle {
+  margin: 0;
   color: var(--color-text);
+  font-size: var(--text-card-sm);
+  line-height: var(--leading-card-sm);
+  font-weight: var(--weight-semibold);
 }
 
-.detailRow dd {
+.contactValue {
   margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-body);
+  overflow-wrap: anywhere;
 }
 
-.card > a {
-  justify-self: start;
+.contactValue a,
+.route a {
+  color: var(--color-blue);
+  font-weight: var(--weight-medium);
+}
+
+.cardNote {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-hint);
+  line-height: var(--leading-hint);
+}
+
+.replyTimes {
+  margin: var(--space-24) 0 0;
+  color: var(--color-text-subtle);
+  font-size: var(--text-caption);
+}
+
+.routes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-32);
+  margin: var(--space-32) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.route {
+  display: grid;
+  align-content: start;
+  gap: var(--space-8);
+  padding-left: var(--space-16);
+  border-left: 3px solid var(--color-blue);
+}
+
+.routeTitle {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-card-sm);
+  line-height: var(--leading-card-sm);
+  font-weight: var(--weight-semibold);
+}
+
+/* ---- Tablet ---- */
+@media (max-width: 1023px) {
+  .container {
+    padding: 0 var(--space-32);
+  }
+
+  .intro {
+    padding: var(--space-48) 0 var(--space-40);
+  }
+
+  .contactGrid,
+  .routes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 767px) {
+  .container {
+    padding: 0 var(--space-16);
+  }
+
+  .intro {
+    padding: var(--space-32) 0;
+  }
+
+  .title {
+    font-size: var(--text-h1-mobile);
+    line-height: 42px;
+  }
+
+  .section {
+    padding: var(--space-48) 0;
+  }
+
+  .twoColumns,
+  .contactGrid,
+  .routes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

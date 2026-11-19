@@ -1,91 +1,89 @@
 import { PublicLayout } from '../components/layout/PublicLayout'
-import { Banner, ButtonLink, Card } from '../components/ui'
+import { ButtonLink } from '../components/ui'
+import { cx } from '../lib/cx'
 import { publicHeaderNav } from '../lib/public-navigation'
+import { ABOUT_AND_CONTACT_APPROVED, ABOUT_CONTENT } from '../content/public-site'
+import { SAMPLE_ABOUT_CONTENT } from '../content/public-site.sample'
+import { SampleContentBanner, SampleNote } from './info/SampleNote'
 import styles from './PublicInfoPages.module.css'
 
 /*
- * About page at /about — DEVELOPMENT ONLY (D27; authorised for the application 26 October 2026).
+ * About AQS at /about (landing page Concept C amendment, approved by the owner on 10 November 2026).
  *
- * No design exists for this page (design audit: "no About or Contact page"), so it uses the public
- * layout, type scale and card style of the landing page.
- *
- * Content rule: only information AQS has already given the project is stated as fact. That is the
- * product description in the Project (who the platform serves and how organizations are kept apart)
- * and the approved landing copy. The company description, history, full legal name and location
- * are not supplied, so they are a labelled placeholder. The project documents spell the company name
- * two ways ("Africa" and "African" Quantitative Sciences), so the page uses "AQS" until AQS confirms.
- * No certificate, messaging or offline claim is made, because those features are deferred.
+ * Owner decisions: production builds do not register the route until the owner approves the content
+ * (content/public-site.ts). Until then, development builds show the page with SAMPLE CONTENT, each
+ * piece under a "Sample" mark (owner instruction, 15 November 2026; content/public-site.sample.ts), so
+ * the design can be reviewed. Approved text set in ABOUT_CONTENT replaces a sample at once. "What the
+ * platform offers" repeats the landing page's approved description of the product.
  */
 export default function AboutPage() {
   return (
     <PublicLayout navItems={publicHeaderNav()}>
-      <div className={styles.page}>
+      <section className={styles.intro} aria-labelledby="about-title">
         <div className={styles.container}>
-          <header className={styles.intro}>
-            <p className="eyebrow">About</p>
-            <h1 className={styles.title}>About AQS E-Learning</h1>
-            <p className={styles.lead}>
-              Practical courses, expert instruction, and flexible pathways for individuals and teams.
-            </p>
-          </header>
-
-          <div className={styles.grid}>
-            <Card padding="lg" as="section" aria-labelledby="about-platform" className={styles.card}>
-              <h2 id="about-platform" className={styles.heading}>
-                One platform, two ways to learn
-              </h2>
-              <p>AQS E-Learning is a learning platform owned and operated by AQS. It serves:</p>
-              <ul className={styles.list}>
-                <li>organizations that need a private training environment for their employees;</li>
-                <li>individuals who want to take courses that are open to the public.</li>
-              </ul>
-            </Card>
-
-            <Card padding="lg" as="section" aria-labelledby="about-organizations" className={styles.card}>
-              <h2 id="about-organizations" className={styles.heading}>
-                For organizations
-              </h2>
-              <p>
-                Each organization has its own learning environment. Its courses, learners, administrators and learning
-                records are kept separate from every other organization's.
-              </p>
-              <p>
-                AQS sets up an organization's environment with the administrators the organization nominates. They then
-                invite the instructors who prepare its courses.
-              </p>
-            </Card>
-
-            <Card padding="lg" as="section" aria-labelledby="about-learners" className={styles.card}>
-              <h2 id="about-learners" className={styles.heading}>
-                For learners
-              </h2>
-              <p>
-                Choose a course, work through its lessons, check what you have learned with short quizzes, and pick up
-                where you left off.
-              </p>
-              <ButtonLink to="/#courses" variant="text" iconEnd="arrowRight">
-                See the courses
-              </ButtonLink>
-            </Card>
+          <p className="eyebrow">About AQS</p>
+          <h1 className={cx('text-h1', styles.title)} id="about-title">
+            About AQS
+          </h1>
+          <div className={styles.introBody}>
+            {ABOUT_CONTENT.ownershipLine ? <p className={styles.lead}>{ABOUT_CONTENT.ownershipLine}</p> : null}
+            {ABOUT_CONTENT.introduction ? (
+              <p className={styles.lead}>{ABOUT_CONTENT.introduction}</p>
+            ) : (
+              <SampleNote className={styles.lead}>{SAMPLE_ABOUT_CONTENT.introduction}</SampleNote>
+            )}
+            {ABOUT_AND_CONTACT_APPROVED ? null : <SampleContentBanner />}
           </div>
+        </div>
+      </section>
 
-          <section aria-labelledby="about-company" className={styles.placeholderSection}>
-            <h2 id="about-company" className={styles.heading}>
-              About AQS
-            </h2>
-            <Banner tone="warning">
-              Development placeholder: AQS has not supplied its company description, history, full legal name or
-              location yet. They will be added here once AQS confirms them.
-            </Banner>
-          </section>
+      <section className={styles.section} aria-label="Mission and purpose">
+        <div className={cx(styles.container, styles.twoColumns)}>
+          <div className={styles.block}>
+            <h2 className={styles.heading}>Our mission</h2>
+            {ABOUT_CONTENT.mission ? (
+              <p>{ABOUT_CONTENT.mission}</p>
+            ) : (
+              <SampleNote>{SAMPLE_ABOUT_CONTENT.mission}</SampleNote>
+            )}
+          </div>
+          <div className={styles.block}>
+            <h2 className={styles.heading}>Why we built AQS E-Learning</h2>
+            {ABOUT_CONTENT.purpose ? (
+              <p>{ABOUT_CONTENT.purpose}</p>
+            ) : (
+              <SampleNote>{SAMPLE_ABOUT_CONTENT.purpose}</SampleNote>
+            )}
+          </div>
+        </div>
+      </section>
 
-          <div className={styles.ctaRow}>
-            <ButtonLink to="/contact" variant="secondary">
-              Contact AQS
+      <section className={cx(styles.section, styles.muted)} aria-labelledby="about-offers">
+        <div className={styles.container}>
+          <p className="eyebrow">What the platform offers</p>
+          <h2 className={cx('text-h2', styles.sectionTitle)} id="about-offers">
+            Training for your organization. Courses for everyone.
+          </h2>
+          <p className={styles.sectionLead}>
+            AQS E-Learning gives each organization its own workspace to train its staff, and gives anyone open courses to
+            learn from, with one account.
+          </p>
+        </div>
+      </section>
+
+      <section className={cx(styles.section, styles.closing)} aria-labelledby="about-questions">
+        <div className={styles.container}>
+          <h2 className={cx('text-h2', styles.sectionTitle)} id="about-questions">
+            Questions about AQS?
+          </h2>
+          <div className={styles.actions}>
+            <ButtonLink to="/contact">Contact AQS</ButtonLink>
+            <ButtonLink to="/catalog" variant="secondary">
+              Find a course
             </ButtonLink>
           </div>
         </div>
-      </div>
+      </section>
     </PublicLayout>
   )
 }

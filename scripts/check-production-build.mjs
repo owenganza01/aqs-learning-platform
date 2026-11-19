@@ -21,13 +21,23 @@ const FORBIDDEN = [
   { name: 'mock sign-in screens', pattern: /Demo only\. Sign-in is not available yet/ },
   // Development sample data (src/dev): every sample person uses a *-sample.test address.
   { name: 'sample data', pattern: /[a-z0-9.-]+-sample\.test\b/ },
+  // Handoff 2, Phase C (C.6): sample chart data from src/dev/sample-chart-data.ts (chart previews, 7-3 to 7-5).
+  { name: 'sample chart data', pattern: /Sample chart data/ },
   // CM3-7 (G10, G11; PB): invented content presented as real never ships. Identifiers are minified,
   // so the content itself is matched as well: the placeholders and the invented featured courses.
   { name: 'invented featured courses', pattern: /MOCK_FEATURED_COURSES|Maya Chen|Daniel Park|Sofia Alvarez|Noah Reed|Priya Shah|Elena Brooks/ },
   { name: 'hero image placeholder', pattern: /Hero image placeholder/ },
+  // Landing hero (15 November 2026): the placeholder card that reached integration with the PR #32 merge never ships again.
+  { name: 'landing image placeholder card', pattern: /Image placeholder|asset selection pending/i },
   { name: 'sign-in photo placeholder caption', pattern: /Hero photo placeholder/ },
   { name: 'partner logo placeholders', pattern: /Partner logos \(placeholders|PARTNER_PLACEHOLDERS/ },
   { name: 'thumbnail placeholder text', pattern: /Thumbnail placeholder/ },
+  // Landing page Concept C (owner, 10 November 2026): placeholder and dummy company content never ships.
+  { name: 'About/Contact placeholder', pattern: /AQS to supply|Placeholder · |\[AQS (?:email address|phone number|physical or postal address)/ },
+  // About AQS and Contact sample content (15 November 2026): illustrative text for design review never ships.
+  { name: 'About/Contact sample content', pattern: /Sample content · not approved|aqs-elearning\.example|KG 000 St|Kigali-based team that helps/ },
+  // WP3 (10 November 2026): the request form's preview sends nothing, so it never ships.
+  { name: 'request form preview', pattern: /requests are not sent or saved here|REQ-SAMPLE/ },
   // Secrets (T6). The publishable key (sb_publishable_…) is public by design and allowed.
   { name: 'Supabase secret key', pattern: /sb_secret_[A-Za-z0-9_-]{10,}/ },
   { name: 'service-role key name', pattern: /SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEYS/ },
@@ -73,6 +83,18 @@ export function decisionCodesIn(text) {
   return found
 }
 
+// About AQS and Contact stay out of production until the owner approves their content
+// (src/content/public-site.ts). While the gate is closed, the pages themselves must not ship.
+const infoGateOpen = /ABOUT_AND_CONTACT_APPROVED\s*=\s*true/.test(readFileSync('src/content/public-site.ts', 'utf8'))
+if (!infoGateOpen) {
+  FORBIDDEN.push(
+    { name: 'About AQS page before approval', pattern: /Why we built AQS E-Learning|Questions about AQS\?/ },
+    { name: 'Contact page before approval', pattern: /Choose the route that fits your question|Help with an assigned course/ },
+    // A link to a page the build does not have leads to Not Found (header, footer or any button).
+    { name: 'link to /about or /contact before approval', pattern: /["'`]\/(about|contact)["'`]/ },
+  )
+}
+
 const problems = []
 for (const file of all) {
   const text = readFileSync(file, 'utf8')
@@ -85,4 +107,4 @@ if (problems.length) {
   console.error('Production build check FAILED:\n' + problems.map((p) => `  - ${p}`).join('\n'))
   process.exit(1)
 }
-console.log(`Production build check passed: ${all.length} files in ${dist} scanned; no development pages, sample data, secrets or decision codes.`)
+console.log(`Production build check passed: ${all.length} files in ${dist} scanned; no development pages, sample data, secrets, placeholders or decision codes.`)

@@ -15,18 +15,19 @@ const oembed = (author_url) => response(200, { title: 'ZZ Test lesson', author_n
 
 /** A fake database: the caller RPCs succeed for a Platform Admin; record_youtube_check is captured. */
 function fakeDb({ platformAdmin = true, canSee = true, recordError = null } = {}) {
-  const calls = { caller: [], service: [] }
+  const calls = { caller: [], record: null }
   return {
     calls,
     callerRpc: async (fn, args) => {
       calls.caller.push(fn)
       if (fn === 'video_review_queue' && !platformAdmin) return { data: null, error: { code: '42501', message: 'AQS: not permitted' } }
       if (fn === 'video_submission_detail' && !canSee) return { data: null, error: { code: '42501', message: 'AQS: not permitted' } }
+      if (fn === 'record_youtube_check') {
+        // 0020 (Q-1): recorded as the caller, so the row names the Platform Admin who ran it.
+        calls.record = { fn, args }
+        return recordError ? { data: null, error: recordError } : { data: '00000000-0000-4000-8000-0000000000c1', error: null }
+      }
       return { data: fn === 'video_review_queue' ? [] : { submission: { id: args.p_submission } }, error: null }
-    },
-    serviceRpc: async (fn, args) => {
-      calls.service.push({ fn, args })
-      return recordError ? { data: null, error: recordError } : { data: '00000000-0000-4000-8000-0000000000c1', error: null }
     },
   }
 }
@@ -34,16 +35,15 @@ function fakeDb({ platformAdmin = true, canSee = true, recordError = null } = {}
 const run = (fetch, db = fakeDb(), extra = {}) =>
   v.verify({ submissionId: SUB, youtubeId: YT }, { ...db, fetch, channelUrl: CHANNEL, ...extra })
 
-test('found, same channel: channel_match true, recorded through record_youtube_check', async () => {
+test('found, same channel: channel_match true, recorded through record_youtube_check as the caller', async () => {
   const db = fakeDb()
   const r = await run(oembed(CHANNEL), db)
   assert.equal(r.outcome, 'found')
   assert.equal(r.channelMatch, true)
   assert.equal(r.signalOnly, true)
   assert.equal(r.checkId, '00000000-0000-4000-8000-0000000000c1')
-  assert.deepEqual(db.calls.caller, ['video_review_queue', 'video_submission_detail'])
-  assert.equal(db.calls.service.length, 1)
-  const { fn, args } = db.calls.service[0]
+  assert.deepEqual(db.calls.caller, ['video_review_queue', 'video_submission_detail', 'record_youtube_check'])
+  const { fn, args } = db.calls.record
   assert.equal(fn, 'record_youtube_check')
   assert.equal(args.p_submission, SUB)
   assert.equal(args.p_youtube_id, YT)
@@ -76,7 +76,7 @@ test('404 and 400 are not_found; 401 and "Unauthorized" are not_embeddable; chan
     const r = await run(response(status, body), db)
     assert.equal(r.outcome, outcome, `HTTP ${status}`)
     assert.equal(r.channelMatch, null)
-    assert.equal(db.calls.service[0].args.p_outcome, outcome)
+    assert.equal(db.calls.record.args.p_outcome, outcome)
   }
 })
 
@@ -101,7 +101,7 @@ test('timeout: the lookup is aborted and recorded as error "timeout"', async () 
   assert.equal(r.outcome, 'error')
   assert.equal(r.reason, 'timeout')
   assert.ok(Date.now() - started < 2000)
-  assert.equal(db.calls.service[0].args.p_outcome, 'error')
+  assert.equal(db.calls.record.args.p_outcome, 'error')
   assert.equal(v.LOOKUP_TIMEOUT_MS, 5000)
 })
 
@@ -116,7 +116,7 @@ test('non-Platform-Admin refused before any lookup or record', async () => {
     (e) => e instanceof FunctionError && e.status === 403,
   )
   assert.equal(fetched, false)
-  assert.equal(db.calls.service.length, 0)
+  assert.equal(db.calls.record, null)
 })
 
 test('submission the Platform Admin may not see (e.g. organisation-only course) refused before any lookup', async () => {
@@ -130,7 +130,7 @@ test('submission the Platform Admin may not see (e.g. organisation-only course) 
     (e) => e instanceof FunctionError && e.status === 403,
   )
   assert.equal(fetched, false)
-  assert.equal(db.calls.service.length, 0)
+  assert.equal(db.calls.record, null)
 })
 
 test('no session refused with 401 before any lookup or record', async () => {
@@ -147,7 +147,7 @@ test('no session refused with 401 before any lookup or record', async () => {
     (e) => e instanceof FunctionError && e.status === 401,
   )
   assert.equal(fetched, false)
-  assert.equal(db.calls.service.length, 0)
+  assert.equal(db.calls.record, null)
 })
 
 test('database refusal of the record (e.g. not waiting for publication) is passed on', async () => {

@@ -145,3 +145,103 @@
 .moduleRow > :first-child > :last-child {
   white-space: nowrap;
 }
+
+/* ---- Handoff 2, B.8: rules that were inline style attributes (same values, no visual change) ---- */
+.spacedTop {
+  margin-top: var(--space-24);
+}
+
+.plainList {
+  padding: 0;
+  list-style: none;
+}
+
+.staticModule {
+  cursor: default;
+}
+
+.captionVideo {
+  width: 100%;
+  max-width: 720px;
+}
+
+.checkLabel {
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+.createForm {
+  display: grid;
+  gap: var(--space-12);
+  max-width: 560px;
+}
+
+.courseSelect {
+  max-width: 420px;
+  margin-bottom: var(--space-24);
+}
+
+.learnerGrid {
+  display: grid;
+  gap: var(--space-24);
+}
+
+.cardPad {
+  padding: var(--space-24);
+}
+
+/* B.4: the archive area, set apart from routine publication actions. */
+.dangerZone {
+  border-color: var(--color-danger);
+}
+
+/* B.3: the Content tab stacks the builder and the captions panel. */
+.tabBody {
+  display: grid;
+  gap: var(--space-24);
+  margin-top: var(--space-24);
+}
+
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+}
+
+/* B.1: the dashboard's course cards (instructor dashboard frame). */
+.courseCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: var(--space-16);
+  margin: var(--space-24) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.courseCard {
+  display: grid;
+  gap: var(--space-12);
+  height: 100%;
+}
+
+.courseCardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+/* B.6: Learners search and Overdue only, above the table. */
+.learnerFilters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-16);
+  padding: 0 var(--space-24) var(--space-16);
+}
+
+.learnerFilters > :first-child {
+  flex: 1 1 260px;
+  max-width: 420px;
+}

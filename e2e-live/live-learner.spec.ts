@@ -24,7 +24,8 @@ test.describe('live mode, signed out', () => {
   test('the header offers sign-in and private pages redirect to it', async ({ page }) => {
     await mockSupabase(page, { tables: learnerTables({ enrolled: false, done: [] }) })
     await page.goto('/')
-    await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible()
+    // Scoped to the header: the landing page also links "Sign in" for invited staff (Concept C).
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Sign in', exact: true })).toBeVisible()
     await page.goto('/learn')
     await expect(page).toHaveURL(/\/sign-in\?next=%2Flearn/)
     await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeEnabled()
@@ -52,6 +53,25 @@ test.describe('live mode, signed-in learner', () => {
     await expect(page.getByRole('heading', { name: 'Welcome back, Ada' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Start your first course' }).first()).toBeVisible()
     await expect(page.getByText('Ada Learner', { exact: true })).toBeVisible()
+  })
+
+  // WP1 1-7 and 1-8: the removed filler copy stays gone, and certificates have one signal only
+  // (the dimmed sidebar item). See docs/review-artifacts/wp1/.
+  test('the dashboard shows no filler copy and no certificate stat card', async ({ page }) => {
+    await signIn(page)
+    await mockSupabase(page, { tables: learnerTables({ enrolled: true, done: [] }) })
+    await page.goto('/learn')
+    await expect(page.getByRole('heading', { name: 'Welcome back, Ada' })).toBeVisible()
+    for (const gone of [
+      'A little progress, every day.',
+      'Keep your momentum going',
+      'Every lesson is a step forward',
+      'Your learning, all in one place.',
+      'Certificates earned',
+      'Certificates are coming later',
+    ]) {
+      await expect(page.getByText(gone)).toHaveCount(0)
+    }
   })
 
   test('enrolling calls enrol_in_course and then offers to start', async ({ page }) => {
@@ -156,7 +176,11 @@ test.describe('live mode, signed-in learner', () => {
     await page.goto('/learn')
     await page.getByRole('button', { name: 'Sign out' }).click()
     await expect(page).toHaveURL('/')
-    expect(await page.evaluate(() => localStorage.getItem('sb-127-auth-token'))).toBeNull()
+    // The session ends just after the page changes: wait for the stored token to go
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('sb-127-auth-token'))).toBeNull()
+    // and the person stays on the home page, not sent to sign-in
+    await page.waitForTimeout(500)
+    await expect(page).toHaveURL('/')
   })
 
   test('the profile saves the display name only', async ({ page }) => {

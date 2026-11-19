@@ -68,7 +68,7 @@
 
 .statValue {
   margin-top: var(--space-4);
-  font-size: 32px;
+  font-size: var(--text-title);
   line-height: 40px;
   font-weight: var(--weight-bold);
   color: var(--color-navy);

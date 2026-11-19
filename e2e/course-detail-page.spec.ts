@@ -1,17 +1,35 @@
 import { expect, test } from '@playwright/test'
 
-// The course detail demo (development only, D27). Enrolment is not built, so Enroll is disabled.
+// The course detail demo (development only, D27). Visitors can read a public course's details, and
+// enrolling needs sign-in; sign-in is not connected in the preview, so "Sign in to enroll" is disabled.
 // The lessons are plain text for now, and the header's Sign in and Get started stay unavailable (D24).
 
 const COURSE = '/courses/sample-regression'
 const SAMPLE_NOTICE = 'Preview with sample course data. Enrolment is not connected yet.'
 
 test.describe('course detail page (development only)', () => {
-  test('shows the course heading, the sample notice and a disabled Enroll', async ({ page }) => {
+  test('shows the course heading, the sample notice and that enrolling needs sign-in', async ({ page }) => {
     await page.goto(COURSE)
     await expect(page.getByRole('heading', { level: 1, name: 'Introduction to Regression' })).toBeVisible()
     await expect(page.getByText(SAMPLE_NOTICE, { exact: true })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Enroll' })).toBeDisabled()
+    await expect(page.getByText("Sign in or create a free account to enroll.", { exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Sign in to enroll (not available yet)' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: /^Enroll/ })).toHaveCount(0)
+  })
+
+  test('another public sample course opens its own details without sign-in', async ({ page }) => {
+    await page.goto('/courses/sample-project-planning')
+    await expect(page.getByRole('heading', { level: 1, name: 'Project planning basics' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Sign in to enroll (not available yet)' })).toBeDisabled()
+    // Lessons are listed, not openable, before enrolment
+    await expect(page.getByText('What is in scope?', { exact: true })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'What is in scope?' })).toHaveCount(0)
+  })
+
+  test('an organization-only course is not shown to visitors (Not found)', async ({ page }) => {
+    await page.goto('/courses/sample-org-onboarding')
+    await expect(page.getByRole('heading', { level: 1, name: /Sample organization/ })).toHaveCount(0)
+    await expect(page.getByText(/not found/i).first()).toBeVisible()
   })
 
   test('the module accordion opens and closes, and module 2 starts open', async ({ page }) => {
@@ -39,11 +57,10 @@ test.describe('course detail page (development only)', () => {
     await expect(module1).toHaveAttribute('aria-expanded', 'true')
   })
 
-  test('the header Sign in and Get started are not links', async ({ page }) => {
+  test('the header provides working Sign in and Get started links', async ({ page }) => {
     await page.goto(COURSE)
-    await expect(page.getByRole('link', { name: 'Sign in' })).toHaveCount(0)
-    await expect(page.getByRole('link', { name: 'Get started' })).toHaveCount(0)
-    await expect(page.getByRole('banner').locator('[aria-disabled="true"]', { hasText: 'Sign in' })).toBeVisible()
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/sign-in')
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Get started' })).toHaveAttribute('href', '/get-started')
   })
 })
 

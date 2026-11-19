@@ -1,11 +1,12 @@
 /* CM3-1: the confirmation dialog, in the existing card language (tokens only). */
 .dialog {
+  animation: state-in var(--transition-enter) both;
   width: min(480px, calc(100vw - 2 * var(--space-16)));
   max-width: none;
   padding: 0;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  background: var(--color-surface);
+  background: var(--color-white); /* --color-surface is not a token: the dialog was see-through */
   color: var(--color-text);
   box-shadow: var(--shadow-2);
 }
@@ -36,4 +37,26 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--space-8);
+}
+
+/* Task 8-3: short entrance after a state change; reduced motion stops it (global rule). */
+@keyframes state-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Assignment 2.1: what happens, what is kept, whether it can be undone, one paragraph each. */
+.parts {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.parts p {
+  margin: 0;
 }

@@ -75,9 +75,14 @@ $$;
 create function pg_temp.reattach_count(p_lesson uuid) returns int language sql security definer as $$
   select count(*)::int from private.video_master_reattachments where lesson_id = p_lesson;
 $$;
--- The youtube-verify Edge Function's write, with the service key (as record_youtube_check's owner).
+-- The youtube-verify Edge Function's write. From 0020 (Q-1) it runs as the signed-in Platform
+-- Admin (security definer here only so the fixture can act as that person).
 create function pg_temp.check(p_sub uuid, p_id text, p_outcome text, p_match boolean) returns void language sql security definer as $$
   select public.record_youtube_check(p_sub, p_id, p_outcome, jsonb_build_object('channel_match', p_match));
+$$;
+-- 0020 (Q-1): who the latest check of a submission names.
+create function pg_temp.checker(p_sub uuid) returns uuid language sql security definer as $$
+  select checked_by from private.youtube_checks where submission_id = p_sub order by seq desc limit 1;
 $$;
 create function pg_temp.age_checks(p_sub uuid) returns void language sql security definer as $$
   update private.youtube_checks set checked_at = checked_at - interval '11 minutes' where submission_id = p_sub;
@@ -95,7 +100,7 @@ begin
 end $$;
 grant execute on function pg_temp.st(uuid), pg_temp.sf(uuid, text), pg_temp.sub_of(uuid, int), pg_temp.yt(uuid),
   pg_temp.vid(uuid), pg_temp.track(uuid, text), pg_temp.audits(text), pg_temp.reattach_count(uuid),
-  pg_temp.check(uuid, text, text, boolean), pg_temp.age_checks(uuid), pg_temp.mode(text) to authenticated;
+  pg_temp.check(uuid, text, text, boolean), pg_temp.checker(uuid), pg_temp.age_checks(uuid), pg_temp.mode(text) to authenticated;
 -- Storage deletes through the row rules (as in 080), and test-owner helpers to plant and find objects.
 create function pg_temp.del(p_bucket text, p_name text) returns int language sql as $$
   select set_config('storage.allow_delete_query', 'true', true);
@@ -134,7 +139,7 @@ create function pg_temp.conf_master(p_lang text) returns jsonb language sql immu
 $$;
 grant execute on function pg_temp.req(), pg_temp.conf(text), pg_temp.conf_master(text) to authenticated, service_role;
 
-select plan(223);
+select plan(229);
 
 -- Setup ------------------------------------------------------------------------------------------------
 insert into auth.users (id, email, raw_user_meta_data) values
@@ -365,12 +370,10 @@ select throws_ok($$ select public.attach_verified_youtube(pg_temp.id('s2'), 'AAA
   'AQS: run the technical check for this video first (it must be less than 10 minutes old)', 'attach needs a technical check');
 
 -- 80-103. Technical check and gate 2 (publication verification) --------------------------------------------------------
-select throws_ok($$ select public.record_youtube_check(pg_temp.id('s2'), 'AAAAAAAAAAA', 'found', '{"channel_match": true}') $$,
-  '42501', null, 'signed-in people cannot record a lookup result; only youtube-verify can');
-reset role;
-set local role service_role;
 select lives_ok($$ select public.record_youtube_check(pg_temp.id('s2'), 'AAAAAAAAAAA', 'found', '{"channel_match": true}') $$,
-  'youtube-verify records a lookup with the service key');
+  'a Platform Admin records a lookup result');
+select is(pg_temp.checker(pg_temp.id('s2')), pg_temp.u('9e1'),
+  'the lookup names the Platform Admin who recorded it (0020)');
 select throws_ok($$ select public.record_youtube_check(pg_temp.id('s2'), 'AAAAAAAAAAA', 'maybe', '{}') $$, '22023', null,
   'an unknown lookup outcome is refused');
 select throws_ok($$ select public.record_youtube_check(pg_temp.id('s2'), 'not-an-id', 'found', '{}') $$, '22023', null,
@@ -379,6 +382,10 @@ select throws_ok($$ select public.record_youtube_check(gen_random_uuid(), 'AAAAA
   'a lookup for an unknown submission is refused (ids from a request are checked in the database)');
 select throws_ok($$ select public.record_youtube_check(pg_temp.id('s2'), 'AAAAAAAAAAA', 'found', '{"channel_match": "yes"}') $$,
   '22023', null, 'channel_match is true, false or null');
+reset role;
+set local role service_role;
+select throws_ok($$ select public.record_youtube_check(pg_temp.id('s2'), 'AAAAAAAAAAA', 'found', '{"channel_match": true}') $$,
+  '42501', null, 'the secret key cannot record a lookup: a check needs a person behind it (0020)');
 reset role;
 set local role authenticated;
 select pg_temp.act_as(pg_temp.u('9e1'));
@@ -821,8 +828,8 @@ select ok(not exists (select 1 from (values ('public.video_submissions'), ('publ
                        cross join (values ('SELECT'), ('INSERT'), ('UPDATE'), ('DELETE')) p(priv)
                        where has_table_privilege(r.rol, t.tbl, p.priv)),
   'no client role (service_role included) has any privilege on the 0019 tables');
-select ok(has_function_privilege('service_role', 'public.record_youtube_check(uuid, text, text, jsonb)', 'EXECUTE')
-          and not has_function_privilege('authenticated', 'public.record_youtube_check(uuid, text, text, jsonb)', 'EXECUTE')
+select ok(has_function_privilege('authenticated', 'public.record_youtube_check(uuid, text, text, jsonb)', 'EXECUTE')
+          and not has_function_privilege('service_role', 'public.record_youtube_check(uuid, text, text, jsonb)', 'EXECUTE')
           and not has_function_privilege('anon', 'public.record_youtube_check(uuid, text, text, jsonb)', 'EXECUTE')
           and not exists (select 1 from pg_proc p
                            where p.pronamespace = 'private'::regnamespace
@@ -831,7 +838,28 @@ select ok(has_function_privilege('service_role', 'public.record_youtube_check(uu
                                                'admin_submission', 'require_youtube_check', 'caller_opened', 'video_settings_audit')
                              and (has_function_privilege('authenticated', p.oid, 'EXECUTE')
                                   or has_function_privilege('service_role', p.oid, 'EXECUTE'))),
-  'the lookup recorder is service_role only, and no client role runs the 0019 private helpers');
+  'from 0020 the lookup recorder runs only as the signed-in person (never the secret key), and no client role runs the 0019 private helpers');
+
+-- 204-209. 0020 (Q-1): the check names the Platform Admin who ran it ----------------------------------------------------------
+set local role authenticated;
+select pg_temp.act_as(pg_temp.u('9e1'));
+select pg_temp.check(pg_temp.id('s2'), 'KKKKKKKKKKK', 'found', true);
+select is(pg_temp.checker(pg_temp.id('s2')), pg_temp.u('9e1'),
+  'the latest check names the Platform Admin who ran it');
+select pg_temp.act_as(pg_temp.u('9e0'));
+select pg_temp.check(pg_temp.id('s2'), 'LLLLLLLLLLL', 'found', true);
+select is(pg_temp.checker(pg_temp.id('s2')), pg_temp.u('9e0'),
+  'a second Platform Admin''s check names them, not the first');
+select pg_temp.act_as(pg_temp.u('9e6'));
+select throws_ok($$ select pg_temp.check(pg_temp.id('s2'), 'MMMMMMMMMMM', 'found', true) $$, '42501', 'AQS: not permitted',
+  'a learner cannot record a check');
+select pg_temp.act_as(pg_temp.u('9e2'));
+select throws_ok($$ select pg_temp.check(pg_temp.id('s2'), 'NNNNNNNNNNN', 'found', true) $$, '42501', 'AQS: not permitted',
+  'an Organization Admin cannot record a check');
+set local role anon;
+select throws_ok($$ select public.record_youtube_check(pg_temp.id('s2'), 'OOOOOOOOOOO', 'found', '{}'::jsonb) $$, '42501', null,
+  'signed-out visitors cannot record a check');
+reset role;
 
 select * from finish();
 rollback;

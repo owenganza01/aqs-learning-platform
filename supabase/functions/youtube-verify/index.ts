@@ -1,5 +1,5 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.117.3'
-import { adminClient, callerClient, env, serve } from '../_shared/http.ts'
+import { callerClient, env, serve } from '../_shared/http.ts'
 import { verify } from './verify.ts'
 
 /*
@@ -14,13 +14,13 @@ import { verify } from './verify.ts'
  *
  * - Session checked here (verify_jwt = false in supabase/config.toml), as media-url does.
  * - Public oEmbed lookup with a 5-second timeout; no key or credential is used or stored.
- * - The outcome is stored through public.record_youtube_check with the secret key, which never
- *   leaves this function; the database decides, in its lookup mode, whether attachment is blocked.
+ * - The outcome is stored through public.record_youtube_check as the caller (migration 0020, Q-1),
+ *   so the record names the Platform Admin who ran it; the database decides, in its lookup mode,
+ *   whether attachment is blocked. The secret key is not used for this write any more.
  * - A technical signal, never proof: it never claims a video is Unlisted or AQS-owned.
  *
  * Environment variables read (names only): SUPABASE_URL, SUPABASE_PUBLISHABLE_KEYS or
- * SUPABASE_ANON_KEY, SUPABASE_SECRET_KEYS or SUPABASE_SERVICE_ROLE_KEY, ALLOWED_ORIGINS,
- * AQS_YOUTUBE_CHANNEL_URL.
+ * SUPABASE_ANON_KEY, ALLOWED_ORIGINS, AQS_YOUTUBE_CHANNEL_URL.
  */
 
 serve(async (req, body) => {
@@ -28,10 +28,6 @@ serve(async (req, body) => {
   return verify(body, {
     callerRpc: async (fn, args) => {
       const { data, error } = await (caller ??= await callerClient(req)).rpc(fn, args)
-      return { data, error }
-    },
-    serviceRpc: async (fn, args) => {
-      const { data, error } = await adminClient().rpc(fn, args)
       return { data, error }
     },
     fetch: (url, init) => fetch(url, init),

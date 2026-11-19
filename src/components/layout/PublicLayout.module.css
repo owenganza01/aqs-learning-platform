@@ -93,8 +93,21 @@
   color: var(--color-blue);
 }
 
-.menuButton {
+.mobileBar,
+.mobileAccount {
   display: none;
+}
+
+/* Signed-in desktop actions: "My workspace" next to the account menu */
+.workspaceLink {
+  min-height: 40px;
+}
+
+/* Holds the actions' place while the session loads, so the header does not flicker */
+.actionsPending {
+  display: block;
+  width: 180px;
+  height: 48px;
 }
 
 .main {
@@ -115,7 +128,7 @@
 
 .footerGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr));
   gap: var(--space-32);
 }
 
@@ -150,7 +163,7 @@
 
 .footerLink {
   color: var(--color-text);
-  font-size: 15px;
+  font-size: var(--text-body-sm);
   text-decoration: none;
 }
 
@@ -183,13 +196,20 @@
     gap: var(--space-16);
   }
 
+  /* Mobile and tablet: the primary action stays in the bar next to the menu button */
+  .mobileBar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    margin-left: auto;
+  }
+
   .menuButton {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 44px;
     height: 44px;
-    margin-left: auto;
     border: 1px solid var(--color-border-strong);
     border-radius: var(--radius);
     background: var(--color-white);
@@ -215,7 +235,42 @@
   }
 
   .header[data-open='true'] .nav {
+    flex-direction: column;
     justify-content: flex-start;
+  }
+
+  /* The bar already shows Get started or My workspace; the open menu adds the rest */
+  .actions .cta,
+  .actions[data-account='signed-in'],
+  .actions[data-account='loading'] {
+    display: none !important;
+  }
+
+  .header[data-open='true'] .mobileAccount {
+    display: block;
+    width: 100%;
+    margin-top: var(--space-8);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .mobileGroupLabel {
+    margin: var(--space-8) var(--space-8) var(--space-4);
+    color: var(--color-text-muted);
+    font-size: var(--text-label);
+    line-height: var(--leading-label);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .mobileSignOut {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+    color: var(--color-text-subtle);
+    cursor: pointer;
   }
 
   .header[data-open='true'] .navList {
@@ -245,6 +300,10 @@
 
   .footerGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mobileCta {
+    min-height: 40px;
   }
 
   .footerAbout {

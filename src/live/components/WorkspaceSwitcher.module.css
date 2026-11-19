@@ -4,13 +4,15 @@
  */
 .root {
   position: relative;
-  margin-left: var(--space-12);
+  margin-left: var(--switcher-margin, var(--space-12));
 }
 
 .button {
   display: inline-flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-4);
+  width: var(--switcher-button-width, auto);
   min-height: 36px;
   padding: 0 var(--space-12);
   border: 1px solid var(--color-border-strong);
@@ -33,12 +35,13 @@
 }
 
 .menu {
-  position: absolute;
+  /* In the drawer (below 1024px) the list opens in place; in the header it floats under the button. */
+  position: var(--switcher-menu-position, absolute);
   top: calc(100% + var(--space-4));
   left: 0;
   z-index: 20;
-  min-width: 260px;
-  margin: 0;
+  min-width: var(--switcher-menu-min, 280px);
+  margin: var(--space-4) 0 0;
   padding: var(--space-8);
   list-style: none;
   border: 1px solid var(--color-border);
@@ -48,7 +51,10 @@
 }
 
 .item {
-  display: block;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-12);
   padding: var(--space-8) var(--space-12);
   border-radius: var(--radius-sm);
   color: var(--color-text);
@@ -68,4 +74,19 @@
 .item[aria-current='true'] {
   font-weight: var(--weight-semibold);
   background: var(--color-blue-50);
+}
+
+.kind {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--text-hint);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-hint);
+}
+
+.current {
+  flex: none;
+  color: var(--color-text-subtle);
+  font-size: var(--text-hint);
+  font-weight: var(--weight-medium);
 }

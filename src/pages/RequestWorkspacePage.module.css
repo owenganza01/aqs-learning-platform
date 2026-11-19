@@ -1,0 +1,282 @@
+/*
+ * "Request a workspace" (WP3, 3-3). Layout follows the request-a-demo frame of
+ * `Admin [Pending backend].png` (frame 3): a centred card on a pale background, eyebrow and heading
+ * centred, the form in one column. Wider than the 560 px demo card because the form has four groups.
+ */
+
+.page {
+  padding: var(--space-48) 0 var(--space-64);
+  background: var(--color-canvas);
+}
+
+.container {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 var(--space-16);
+}
+
+.notice {
+  margin-bottom: var(--space-24);
+}
+
+.card {
+  padding-top: var(--space-32);
+}
+
+.eyebrow {
+  margin: 0;
+  text-align: center;
+  color: var(--color-accent-text);
+}
+
+.heading {
+  margin: var(--space-8) 0 0;
+  text-align: center;
+  color: var(--color-text);
+}
+
+.lead {
+  margin: var(--space-12) 0 var(--space-32);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.summary {
+  margin-bottom: var(--space-24);
+  padding: var(--space-16) var(--space-24);
+  border: 2px solid var(--color-danger);
+  border-radius: var(--radius);
+  background: var(--color-danger-bg);
+}
+
+.summary:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.summaryTitle {
+  margin: 0 0 var(--space-8);
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+}
+
+.summary ul {
+  margin: 0;
+  padding-left: var(--space-24);
+}
+
+.summary a {
+  color: var(--color-danger);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-32);
+}
+
+.requiredNote {
+  margin: 0;
+  color: var(--color-text-subtle);
+  font-size: var(--text-caption);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.groupTitle {
+  margin: 0;
+  padding-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: var(--text-card-sm);
+  line-height: var(--leading-card-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.groupBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-16);
+}
+
+.admins,
+.choice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.legend {
+  padding: 0;
+  color: var(--color-text);
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.optional {
+  margin-left: var(--space-4);
+  color: var(--color-text-muted);
+  font-weight: var(--weight-regular);
+}
+
+.hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+}
+
+.radios {
+  display: flex;
+  gap: var(--space-24);
+}
+
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: 44px;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.radio input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--color-action);
+}
+
+.google {
+  margin: 0;
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius);
+  background: var(--color-blue-50);
+  color: var(--color-text-subtle);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+/* Off-screen, not display: none, so form-filling bots still see it. */
+.trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.note {
+  margin: 0;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* Confirmation */
+.done {
+  margin-top: var(--space-24);
+}
+
+.doneTitle {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: var(--weight-semibold);
+}
+
+.doneTitle:focus {
+  outline: none;
+}
+
+.reference {
+  margin: var(--space-12) 0 0;
+  color: var(--color-text);
+}
+
+.doneLead {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.nextTitle {
+  margin: var(--space-24) 0 var(--space-8);
+  color: var(--color-text);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+}
+
+.next {
+  margin: 0;
+  padding-left: var(--space-24);
+  color: var(--color-text-subtle);
+}
+
+.next li + li {
+  margin-top: var(--space-8);
+}
+
+.doneNote {
+  margin: var(--space-24) 0 0;
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius);
+  background: var(--color-blue-50);
+  color: var(--color-text-subtle);
+}
+
+.doneActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-24);
+  margin-top: var(--space-24);
+}
+
+.homeLink {
+  color: var(--color-blue);
+  font-weight: var(--weight-medium);
+}
+
+@media (max-width: 767px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .page {
+    padding: var(--space-24) 0 var(--space-48);
+  }
+}
+
+/* Keep "AQS E-Learning" together rather than breaking after the hyphen */
+.name {
+  white-space: nowrap;
+}

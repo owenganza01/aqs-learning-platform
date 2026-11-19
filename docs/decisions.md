@@ -955,6 +955,36 @@ No approval decision has changed. D1 colours, D24 unavailable navigation and the
 
 *Effect on earlier entries:* P14 is superseded as above. D4, D31, D33, P10, P12, F4 and T9 are unchanged. T1: the domain migration takes the next free number after 0019. D31's open DNS-timeout item: no automatic expiry in the first release; verification is re-checked when admission is enabled.
 
+## D41 — Primary button colour and the landing-page network (owner decisions, 10 November 2026)
+
+**Decision (owner, 10 November 2026)**
+- Primary buttons use **action blue** on every page: default **`#1D4ED8`**, hover **`#1E40AF`**, pressed **`#1E3A8A`**, white text. White text contrast: 6.70:1, 8.72:1 and 10.36:1. This supersedes D1's orange primary fill (`#C2410C`, hover `#9A3412`) and the earlier instruction of the same day to keep orange.
+- The colours live in the shared tokens `--color-action`, `--color-action-hover` and `--color-action-pressed` (`src/styles/tokens.css`), so every primary `Button` and `ButtonLink` changes together.
+- Orange stays an **accent**: `#F97316` for decoration and `#C2410C` (`--color-accent-text`) for orange-looking text, eyebrows, the current page in pagination and the orange course-thumbnail tint.
+- **Secondary buttons** (owner, 10 November 2026, 18:06): white with a grey outline `#8391A7` (the form-control border, 3.19:1) and a navy label (11.5:1). Hover `#F1F5F9` with a navy outline; pressed `#E2E8F0`. They stay below the blue primary and above Neutral (lighter `#CBD5E1` outline).
+- **On navy surfaces** (elements marked `.on-dark`; owner, 10 November 2026, 18:06): the primary turns white with a navy label (11.5:1; hover `#EFF6FF`, pressed `#DBEAFE`) and stays the strongest action. The secondary becomes a white outline with a white label, so the two never look the same. The focus ring switches to light blue `#93C5FD` with a navy gap (6.38:1).
+- **Neutral buttons** are quieter than Secondary (owner, 10 November 2026, 20:54): a 1px `#CBD5E1` outline and a slate `#475569` label at medium weight (7.58:1), turning navy on hover. Secondary keeps the 1.5px `#8391A7` outline and the navy semibold label.
+- On mobile (up to 767px) the network fades behind the hero heading and lead (a quiet zone over roughly the top third of the hero) and shows fully around the door cards. The animation keeps running.
+- Text and Danger buttons, the disabled and loading states (`#CBD5E1` with `#475569`, 5.10:1), and the focus rings on light surfaces are unchanged.
+- The connected-dots network behind the landing hero is kept and animated: each dot drifts on its own slow path and every line follows its two dots. It stands still for people whose device asks for reduced motion, pauses while the hero is off screen, and is hidden from assistive technology.
+
+**Why:** the owner approved the blue proposed in the landing page proposal (Revision 2, section 12), with its rules for secondary buttons and navy surfaces, and asked for the network animation to work. A blue fill is only 1.72:1 against navy, hence the inverse style there. The earlier animation moved the whole drawing as one block by 32px over 28 seconds, so no movement was visible.
+
+## D42 — Sign-in and sign-up with Google, Apple, Facebook and email (reported owner approval, 12 November 2026)
+
+*Recorded 12 November 2026 on the developer's report that the owner approved the client requirement "Authentication & Onboarding" (support for email and password, Apple and Facebook besides Google). The owner's written confirmation is still to be added here. This entry authorises frontend work only; it changes no hosted setting.*
+
+**Decision (as reported)**
+- People may sign up and sign in with Google, Apple, Facebook, or an email address and password, through Supabase Auth. This amends D26 (Google-only for the first release) and D15's 23 October limits (email and password sign-in and password sign-up disabled) for these four methods only. Magic links, email OTP, phone and anonymous sign-in stay disabled.
+- Every new account is a learner account with no organization membership and no privileged role (F1). A sign-in alone never grants an administrator or organization role.
+- **Staff access stays Google-only.** Invitations and domain admission accept only a verified Google identity (D33, D40; migrations 0006 and 0015 are unchanged), so an Apple, Facebook or email account can learn public courses but cannot accept an invitation or be admitted by domain. Onboarding explains this to organizations.
+- Passwords are handled by Supabase Auth only: the application never stores, logs or sends them anywhere else. New passwords need at least 8 characters in the form; the project's Supabase Auth password rules still apply. Email accounts confirm their address through the link Supabase sends before they get a session, where the project requires confirmation.
+- A method is offered only when it is switched on for the deployment (`VITE_AUTH_PROVIDERS`) after its provider is enabled and configured in Supabase Auth, so no button appears that cannot complete its flow. Setup per provider: `docs/auth-providers.md`.
+
+**Not authorised by this entry:** enabling or configuring any provider on a hosted project (Apple and Facebook developer apps, secrets, Supabase Auth settings, redirect allow-lists, email templates or SMTP), migrations, and deployments. Each needs its own owner authorisation. Until a provider is configured and verified on the test website, it is reported as not verified.
+
+**Open:** the owner's written confirmation; Apple and Facebook developer accounts (owner); whether email confirmation is required (recommended: yes); the password policy in Supabase Auth; password reset (not built; needs its own design and approval); the sign-in and sign-up designs for the new options (built in the existing layout and components).
+
 ## Amendment index
 
 The older entries listed here keep their original text. This index records how later entries relate to them.
@@ -998,10 +1028,12 @@ The older entries listed here keep their original text. This index records how l
 | D31 | D32, D34 | D31's open list is settled by D32 and D34 (see D32, "Effect on D31's open list"). Domain verification and admission are deferred (P14); D31's rules apply when they are built. D31's text is unchanged. |
 | Owner confirmations — 22 October 2026 | D33, D34 | "Invitation email verification": the mechanism is D33, planned for migration 0006 (not yet written, applied or tested; blocked until Google sign-in evidence exists and its tests have run). "Platform Admin invitation visibility": production visibility is settled by P15 (D34): pending Organization Admin invitations in any organization and invitations the Platform Admin sent, plus the audited support lookup. The 22 October wording is unchanged. |
 | D18 | D36 | For staging only, D36 records the owner-approved procedure for the initial Platform Admin (D18-B's open note: "still to be written down") and the owner's report of the first grant on 27 October 2026. Production's procedure remains open. D18's text is unchanged. |
+| D1 | D41 | Primary buttons changed from orange `#C2410C` to action blue `#1D4ED8` (hover `#1E40AF`, pressed `#1E3A8A`) by the owner on 10 November 2026; secondary buttons become white with a grey outline, and buttons on navy surfaces use inverse styles. D1's accent and text rules for orange, and its focus-ring rules, are unchanged. D1's text is unchanged. |
 | D33, D34 (T1, P15), D35 | — | Status on 2 November 2026: migrations 0005a–0013 exist in the repository, pass the sandbox suite and were applied to staging (0012 and 0013 on 1 November 2026, reported in the A5 record). D33's and T1's "planned, not yet written" wording and D35's file facts describe 26 October 2026 and are kept unchanged. Real Google identity evidence on staging is recorded outside this file (A8). |
 | D19, D20, D32, D34, D37 | D38 | D38 confirms the working defaults built into migrations 0006–0011 and their review answers (Q-06…Q-10, Q-P4, Q-P12-1), with two changes (Q-07-12, Q-08-1) to be implemented in M2 and M3. Earlier entries' text is unchanged. |
 | D5, D20, D34 (P5, P16, L11 P3), D38 (Q-07-2, Q-07-5, #6) | D39 | Public-course video through the AQS-owned YouTube channel after two-gate AQS review; organisation-only video stays in private Storage with required, confirmed timed captions; narrow audited exceptions to L11 P3 (review of public-course submissions) and P5 (re-attaching the same reviewed master); retention periods deferred to R4. P16's boundary and D20 stand. Earlier entries' text is unchanged. |
 | D34 (P14) | D40 | Superseded 8 November 2026: domain verification and automatic domain admission are in the first release under D4 and D31's rules. Organisation Admins view, pause and resume admission for their own verified domains; Platform Admins add, verify and remove domains. P14's text is unchanged as the historical record. |
+| D15, D26 | D42 | Reported owner approval, 12 November 2026: Google, Apple, Facebook and email with a password for sign-up and sign-in; staff access (invitations, domain admission) stays Google-only through D33; no hosted setting changed. Owner's written confirmation pending. D15's and D26's text is unchanged. |
 
 ### Owner confirmations — 22 October 2026
 

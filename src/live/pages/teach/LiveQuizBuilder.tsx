@@ -18,6 +18,7 @@ import { instructorShell, platformShell } from '../../navigation'
 import { useCurrentOrgOptional } from '../../org-context'
 import { useSession } from '../../session-context'
 import { useAction, useResource } from '../../useResource'
+import editor from './CourseEditor.module.css'
 
 /*
  * Quiz builder at .../courses/:courseId/quizzes/:lessonId, from the approved quiz builder
@@ -45,7 +46,7 @@ export default function LiveQuizBuilder() {
 
   return (
     <LiveShell shell={shell}>
-      {data.state === 'loading' ? <LoadingBlock label="Loading quiz" rows={4} /> : null}
+      {data.state === 'loading' ? <LoadingBlock label="Loading quiz" shape="editor" /> : null}
       {data.state === 'error' ? <ErrorBanner error={data.error} onRetry={data.reload} /> : null}
       {data.state === 'ready' && !data.data ? <NotFound /> : null}
       {data.state === 'ready' && data.data ? (
@@ -161,7 +162,7 @@ function Builder({
                 { value: 'never', label: 'Never' },
               ]}
             />
-            <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <label className={editor.checkLabel}>
               <input type="checkbox" checked={retake} disabled={!editable} onChange={(e) => setRetake(e.target.checked)} />
               <span>Allow retakes after passing</span>
             </label>
@@ -267,7 +268,7 @@ function QuestionEditor({
               <Button variant="text" size="sm" disabled={index === count - 1} onClick={() => onMove(1)}>
                 Move down<span className="visually-hidden"> {label}</span>
               </Button>
-              <Button variant="text" size="sm" onClick={onDelete}>
+              <Button needsConnection variant="text" size="sm" onClick={onDelete}>
                 Delete<span className="visually-hidden"> {label}</span>
               </Button>
             </>

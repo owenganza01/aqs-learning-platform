@@ -9,7 +9,7 @@ const NEW_PAGES: Array<{ path: string; heading: string }> = [
   { path: '/messages', heading: 'Messages' },
   { path: '/o/sample-org/teach/courses', heading: 'Courses' },
   { path: '/o/sample-org/manage', heading: 'Welcome back, Mary' },
-  { path: '/about', heading: 'About AQS E-Learning' },
+  { path: '/about', heading: 'About AQS' },
   { path: '/contact', heading: 'Contact AQS' },
 ]
 
@@ -156,17 +156,20 @@ test.describe('organization admin dashboard (development only)', () => {
   })
 })
 
+// Rebuilt to the approved Concept C layouts on 10 November 2026 (see also public-nav.spec.ts).
 test.describe('About and Contact (development only)', () => {
-  test('About states the company details as a placeholder', async ({ page }) => {
+  test('About shows sample content, marked as sample', async ({ page }) => {
     await page.goto('/about')
-    await expect(page.getByText('Development placeholder: AQS has not supplied its company description', { exact: false })).toBeVisible()
+    await expect(page.getByText('Sample content · not approved.')).toBeVisible()
+    await expect(page.locator('[data-sample-content="true"]')).toHaveCount(3)
     await page.getByRole('link', { name: 'Contact AQS' }).click()
     await expect(page).toHaveURL(/\/contact$/)
   })
 
-  test('Contact shows no invented details and has no form', async ({ page }) => {
+  test('Contact shows sample details, marked as sample, with no working links and no form', async ({ page }) => {
     await page.goto('/contact')
-    await expect(page.getByText('To be confirmed by AQS')).toHaveCount(4)
+    await expect(page.getByText('Sample content · not approved.')).toBeVisible()
+    await expect(page.locator('[data-sample-content="true"]')).toHaveCount(4)
     await expect(page.getByRole('textbox')).toHaveCount(0)
     await expect(page.locator('form')).toHaveCount(0)
     await expect(page.locator('a[href^="mailto:"], a[href^="tel:"]')).toHaveCount(0)

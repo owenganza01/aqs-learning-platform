@@ -1,17 +1,18 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router'
-import { Button, ButtonLink, Icon } from '../ui'
+import { ButtonLink, Icon } from '../ui'
 import type { NavItem } from './types'
 import { Wordmark } from './Wordmark'
-import { PUBLIC_FOOTER_COLUMNS, publicHeaderNav } from '../../lib/public-navigation'
+import { GET_STARTED_PATH, HOME_PATH, publicFooterColumns, publicHeaderNav } from '../../lib/public-navigation'
 import styles from './PublicLayout.module.css'
-import { LIVE_MODE } from '../../live/mode'
+import { useAuth } from '../../lib/auth-context'
+import { useOptionalSession, workspacesFor } from '../../live/session-context'
+import { PublicAccountMenu, type PublicWorkspaceLink } from './PublicAccountMenu'
 
-// Navigation labels from the Landing design. Courses and For Organizations link to sections of the
-// landing page, because their own routes are not built yet. Destinations that are not available are
-// shown as dimmed text, not links (D24). The lists live in lib/public-navigation.ts.
+// Navigation (landing page Concept C, approved 10 November 2026).
+// The header knows whether someone is signed in: signed-in people get
+// "My workspace" and an account menu instead of Sign in and Get started.
 const defaultNav: NavItem[] = publicHeaderNav()
-const footerColumns = PUBLIC_FOOTER_COLUMNS
 
 type PublicLayoutProps = {
   children: ReactNode
@@ -25,8 +26,29 @@ type PublicLayoutProps = {
   mainId?: string
 }
 
-// Live mode (Supabase configured) has real Google sign-in; the previews keep both actions unavailable.
-const SIGN_IN_AVAILABLE = LIVE_MODE
+const footerColumns = publicFooterColumns()
+
+type HeaderAccount =
+  | { state: 'unavailable' }
+  | { state: 'loading' }
+  | { state: 'signed-out' }
+  | { state: 'signed-in'; name: string; email: string; workspaces: PublicWorkspaceLink[] }
+
+/** Who the header is for. Reads the session only; it never signs anyone in or changes access. */
+function useHeaderAccount(): HeaderAccount {
+  const auth = useAuth()
+  const session = useOptionalSession()
+  if (auth.loading) return { state: 'loading' }
+  if (!auth.session) return { state: 'signed-out' }
+  const fallbackEmail = auth.session.user.email ?? ''
+  if (!session || session.me.state === 'error') return { state: 'signed-in', name: '', email: fallbackEmail, workspaces: [] }
+  if (session.me.state === 'loading') return { state: 'loading' }
+  const me = session.me.data
+  if (!me) return { state: 'signed-in', name: '', email: fallbackEmail, workspaces: [] }
+  // A deactivated account is offered no workspaces; the pages themselves refuse it anyway.
+  const workspaces = me.status === 'active' ? workspacesFor(me).map(({ label, to }) => ({ label, to })) : []
+  return { state: 'signed-in', name: me.fullName, email: me.email, workspaces }
+}
 
 export function PublicLayout({
   children,
@@ -35,7 +57,9 @@ export function PublicLayout({
   mainId = 'main-content',
 }: PublicLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const { pathname } = useLocation()
+  const { pathname, hash } = useLocation()
+  const account = useHeaderAccount()
+  const { signOut } = useAuth()
   const menuId = useId()
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   // The element that last had focus. When the layout changes, focus can fall to <body>
@@ -100,16 +124,23 @@ export function PublicLayout({
       <header className={styles.header} data-open={menuOpen}>
         <div className={styles.headerInner}>
           <Wordmark />
-          <button
-            ref={menuButtonRef}
-            type="button"
-            className={styles.menuButton}
-            aria-expanded={menuOpen}
-            aria-controls={menuId}
-            onClick={() => setMenuOpen((open) => !open)}
-          >
-            <Icon name={menuOpen ? 'close' : 'menu'} size={22} label={menuOpen ? 'Close menu' : 'Open menu'} />
-          </button>
+          <div className={styles.mobileBar}>
+            {account.state === 'signed-in' ? (
+              <ButtonLink to="/home" size="sm" variant="secondary" className={styles.mobileCta} onClick={closeMenu}>
+                My workspace
+              </ButtonLink>
+            ) : null}
+            <button
+              ref={menuButtonRef}
+              type="button"
+              className={styles.menuButton}
+              aria-expanded={menuOpen}
+              aria-controls={menuId}
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              <Icon name={menuOpen ? 'close' : 'menu'} size={22} label={menuOpen ? 'Close menu' : 'Open menu'} />
+            </button>
+          </div>
           <nav className={styles.nav} aria-label="Main" id={menuId}>
             <ul className={styles.navList}>
               {navItems.map((item) => (
@@ -125,6 +156,11 @@ export function PublicLayout({
                       className={styles.navLink}
                       onClick={closeMenu}
                       aria-current={(item.active ?? pathname === item.to) ? 'page' : undefined}
+                      // Home always opens the landing page at its top: smoothly when already on it
+                      // (LandingPage reads this state). Re-choosing Home there adds no history entry.
+                      {...(item.to === HOME_PATH
+                        ? { state: { homeTop: pathname === HOME_PATH }, replace: pathname === HOME_PATH && !hash }
+                        : {})}
                     >
                       {item.label}
                     </Link>
@@ -132,30 +168,61 @@ export function PublicLayout({
                 </li>
               ))}
             </ul>
+            {account.state === 'signed-in' ? (
+              // Mobile menu only (hidden at desktop width, where the account menu shows the same list).
+              <div className={styles.mobileAccount}>
+                {account.workspaces.length > 0 ? (
+                  <>
+                    <p className={styles.mobileGroupLabel}>Your workspaces</p>
+                    <ul className={styles.navList}>
+                      {account.workspaces.map((workspace) => (
+                        <li key={workspace.to}>
+                          <Link to={workspace.to} className={styles.navLink} onClick={closeMenu}>
+                            {workspace.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : null}
+                <button
+                  type="button"
+                  className={`${styles.navLink} ${styles.mobileSignOut}`}
+                  onClick={() => {
+                    closeMenu()
+                    void signOut()
+                  }}
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : null}
           </nav>
-          <div className={styles.actions}>
-            {SIGN_IN_AVAILABLE ? (
+          <div className={styles.actions} data-account={account.state}>
+            {account.state === 'signed-out' || account.state === 'unavailable' ? (
               <>
-                <Link to="/sign-in" className={styles.signIn}>
+                <Link to="/sign-in" className={styles.signIn} onClick={closeMenu}>
                   Sign in
                 </Link>
-                <ButtonLink to="/sign-in" className={styles.cta}>
+                <ButtonLink to={GET_STARTED_PATH} className={styles.cta}>
                   Get started
                 </ButtonLink>
               </>
-            ) : (
+            ) : null}
+            {account.state === 'signed-in' ? (
               <>
-                {/* Previews without sign-in (D11, D15): both actions are shown as unavailable. */}
-                <span className={`${styles.signIn} ${styles.unavailable}`} aria-disabled="true">
-                  Sign in
-                  <span className="visually-hidden"> (not available yet)</span>
-                </span>
-                <Button disabled className={styles.cta}>
-                  Get started
-                  <span className="visually-hidden"> (not available yet)</span>
-                </Button>
+                <ButtonLink to="/home" variant="secondary" size="sm" className={styles.workspaceLink}>
+                  My workspace
+                </ButtonLink>
+                <PublicAccountMenu
+                  name={account.name}
+                  email={account.email}
+                  workspaces={account.workspaces}
+                  onSignOut={() => void signOut()}
+                />
               </>
-            )}
+            ) : null}
+            {account.state === 'loading' ? <span className={styles.actionsPending} aria-hidden="true" /> : null}
           </div>
         </div>
       </header>
@@ -169,7 +236,7 @@ export function PublicLayout({
           <div className={styles.footerGrid}>
             <div className={styles.footerAbout}>
               <Wordmark />
-              <p>Practical courses, expert instruction, and flexible pathways for individuals and teams.</p>
+              <p>Training for organizations and courses for everyone.</p>
               {contactLines.map((line) => (
                 <span key={line}>{line}</span>
               ))}

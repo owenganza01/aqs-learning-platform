@@ -1,6 +1,8 @@
 # Continuous integration for the AQS Learning Platform. Runs on every push and pull request.
 # No secrets are used: database tests run in a throwaway PostgreSQL cluster (scripts/db-sandbox),
 # and live-mode UI tests run against a mocked Supabase API. Nothing here deploys anything.
+# Q-3 (18 Nov 2026): adds the production-build check, unit tests, staging-check guards, the Edge
+# Function type check and the migration rollback check. Every added step already passes locally.
 name: CI
 
 on:
@@ -23,7 +25,14 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
+      - name: Production build check (no development pages, sample data, secrets or decision codes)
+        run: npm run check:build
+      - run: npm run test:unit
       - run: npm run test:functions
+      - name: Staging-check guards (the staging script refuses to run without its safeguards)
+        run: npm run test:staging:guards
+      - name: Edge Function type check (Deno)
+        run: npm run check:functions
 
   database:
     name: Database tests (simulated PostgreSQL, not Supabase)
@@ -38,6 +47,10 @@ jobs:
         env:
           PGBIN: /usr/lib/postgresql/16/bin
         run: bash scripts/db-sandbox/run.sh
+      - name: Rollback check (each prepared rollback restores the exact earlier schema)
+        env:
+          PGBIN: /usr/lib/postgresql/16/bin
+        run: bash scripts/db-sandbox/rollback-check.sh
 
   e2e:
     name: Browser tests (design previews and live mode with a mocked API)

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Badge, Banner, Button, Card, CardHeader, Select, TextArea, TextField, useConfirm } from '../../../components/ui'
+import { Badge, Banner, Button, Card, CardHeader, Select, TextArea, TextField, highImpact, useConfirm } from '../../../components/ui'
 import { rpc } from '../../api'
 import { ActionFeedback, Loaded } from '../../components/States'
 import { authoring, slugify, type AuthoringCourse } from '../../data/authoring'
@@ -78,7 +78,7 @@ export function DetailsPanel({ course, editable, onChanged }: { course: Authorin
         ) : null}
       </form>
 
-      <div className={styles.stack} style={{ marginTop: 24 }}>
+      <div className={`${styles.stack} ${styles.spacedTop}`}>
         <h3 className="text-card-sm">Thumbnail</h3>
         {thumb ? <img src={thumb} alt="" className={styles.thumbnail} /> : null}
         <p className={styles.muted}>
@@ -101,11 +101,11 @@ export function DetailsPanel({ course, editable, onChanged }: { course: Authorin
               }}
             />
             {course.thumbnailPath ? (
-              <Button
+              <Button needsConnection
                 variant="text"
                 size="sm"
                 onClick={async () => {
-                  if (await confirm({ title: 'Remove the thumbnail?', message: 'The course shows no image until a new one is added.', confirmLabel: 'Remove thumbnail' }))
+                  if (await confirm(highImpact({ title: `Remove the thumbnail of “${course.title}”?`, happens: 'The course shows no image until a new one is added.', kept: 'The course and its content are kept.', canUndo: false, undo: "This can't be undone, but you can add an image again.", confirmLabel: 'Remove thumbnail' })))
                     void run.run(() => authoring.clearThumbnail(course.id), 'Thumbnail removed.')
                 }}
               >
@@ -149,13 +149,13 @@ export function StaffPanel({
     <Card as="section" padding="md" aria-label="Course staff">
       <CardHeader title="Course staff" subtitle="People who may edit this course while it is a draft." headingLevel="h2" size="md" />
       <ActionFeedback error={run.error} />
-      <Loaded resource={members} label="Loading staff">
+      <Loaded resource={members} label="Loading staff" loading="table">
         {(list) => {
           const names = new Map(list.map((m) => [m.user_id, m.full_name || m.email]))
           const candidates = list.filter((m) => !staffIds.has(m.user_id) && (m.roles.includes('instructor') || m.roles.includes('org_admin')))
           return (
             <div className={styles.stack}>
-              <ul className={styles.stack} style={{ listStyle: 'none', padding: 0 }}>
+              <ul className={`${styles.stack} ${styles.plainList}`}>
                 {course.staff.map((s) => (
                   <li key={s.userId} className={styles.rowSpread}>
                     <span>{names.get(s.userId) ?? 'Course staff member'}</span>
@@ -206,7 +206,6 @@ export function PublicationPanel({
   userId,
   isStaff,
   canApprove,
-  canArchive,
   teachBase,
   onChanged,
 }: {
@@ -214,7 +213,6 @@ export function PublicationPanel({
   userId: string
   isStaff: boolean
   canApprove: boolean
-  canArchive: boolean
   teachBase: string
   onChanged: () => void
 }) {
@@ -325,17 +323,56 @@ export function PublicationPanel({
           </form>
         ) : null}
 
-        {course.status === 'published' && canArchive ? (
-          <div className={styles.stack}>
-            <TextField id="archive-reason" label="Reason for archiving" value={reason} maxLength={1000} onChange={(e) => setReason(e.target.value)} />
-            <div>
-              <Button variant="danger" disabled={!reason.trim()} onClick={() => run.run(() => authoring.archive(course.id, reason.trim()), 'Course archived.')}>
-                Archive course
-              </Button>
-            </div>
-          </div>
-        ) : null}
         {course.status === 'archived' ? <Badge>Archived</Badge> : null}
+      </div>
+    </Card>
+  )
+}
+
+/*
+ * B.4 (Revision 2 Phase 4): archiving is set apart at the end of the Publish tab, in its own danger area, and
+ * asks through the high-impact confirmation. Who is offered it is unchanged (Q-07-10, canArchive); the call is
+ * the same authoring.archive with the typed reason.
+ */
+export function ArchivePanel({ course, onChanged }: { course: AuthoringCourse; onChanged: () => void }) {
+  const [reason, setReason] = useState('')
+  const [message, setMessage] = useState<string | null>(null)
+  const { confirm, dialog } = useConfirm()
+  const run = useAction(async () => {
+    await authoring.archive(course.id, reason.trim())
+    setMessage('Course archived.')
+    onChanged()
+  })
+  return (
+    <Card as="section" padding="md" aria-label="Archive this course" className={styles.dangerZone}>
+      {dialog}
+      <CardHeader title="Archive this course" subtitle="Closes the course to new learners. Use it when a course is replaced or no longer taught." headingLevel="h2" size="md" />
+      <ActionFeedback error={run.error} success={message} />
+      <div className={styles.stack}>
+        <TextField id="archive-reason" label="Reason for archiving" value={reason} maxLength={1000} onChange={(e) => setReason(e.target.value)} />
+        <div>
+          <Button
+            variant="danger"
+            needsConnection
+            disabled={!reason.trim()}
+            loading={run.busy}
+            onClick={async () => {
+              const ok = await confirm(
+                highImpact({
+                  title: `Archive “${course.title}”?`,
+                  happens: 'The course closes to new learners and can no longer be changed or assigned.',
+                  kept: 'Enrolled learners keep read-only access, and their progress and results are kept.',
+                  canUndo: false,
+                  undo: "This can't be undone here. To teach it again, clone it into a new draft before archiving.",
+                  confirmLabel: 'Archive course',
+                }),
+              )
+              if (ok) void run.run()
+            }}
+          >
+            Archive course
+          </Button>
+        </div>
       </div>
     </Card>
   )
@@ -360,7 +397,7 @@ export function AssignPanel({ course }: { course: AuthoringCourse }) {
     <Card as="section" padding="md" aria-label="Assign to members">
       <CardHeader title="Assign to members" subtitle="Members you assign see the course in My courses." headingLevel="h2" size="md" />
       <ActionFeedback error={assign.error} success={message} />
-      <Loaded resource={data} label="Loading members">
+      <Loaded resource={data} label="Loading members" loading="table">
         {({ candidates, enrolledCount }) => (
           <form
             className={styles.stack}

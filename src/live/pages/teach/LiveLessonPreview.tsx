@@ -31,7 +31,7 @@ export default function LiveLessonPreview() {
   const base = org ? `/o/${org.slug}/teach/courses/${courseId}` : `/admin/courses/${courseId}`
   const user = { name: me.state === 'ready' && me.data ? me.data.fullName || me.data.email : '', roleLabel: 'Preview as learner' }
 
-  if (data.state === 'loading') return <LoadingBlock label="Loading the preview" rows={4} />
+  if (data.state === 'loading') return <LoadingBlock label="Loading the preview" shape="detail" />
   if (data.state === 'error') return <ErrorBanner error={data.error} onRetry={data.reload} />
   if (!data.data) return <NotFound />
   return <Preview course={data.data} lessonId={lessonId ?? null} base={base} userId={userId ?? ''} user={user} />

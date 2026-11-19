@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useParams } from 'react-router'
 import { PageHeader } from '../components/layout/PageHeader'
 import { RoleShell } from '../components/layout/RoleShell'
-import { Avatar, Badge, Banner, Button, ButtonLink, Card, CardHeader, ProgressBar, StatCard, Table, type TableColumn } from '../components/ui'
+import { Avatar, Badge, Banner, BarChart, Button, ButtonLink, Card, CardHeader, ProgressBar, StatCard, Table, type TableColumn } from '../components/ui'
 import { previewUser } from '../dev/role-preview'
+import { INSTRUCTOR_COMPLETION_BY_COURSE, INSTRUCTOR_QUIZ_PASS_BY_COURSE, SAMPLE_CHART_NOTE } from '../dev/sample-chart-data'
 import { sampleInstructorService, type CourseSummary } from '../dev/sample-instructor-service'
 import { getInstructorShell } from '../lib/navigation'
 import { NotFound } from './NotFound'
@@ -104,6 +105,16 @@ export default function InstructorDashboardPage() {
           <StatCard key={stat.label} label={stat.label} value={stat.value} note={stat.note} />
         ))}
       </div>
+
+      {/* Phase C (C.4, task 7-4): chart designs with sample data, after the number cards as on the live dashboard (Phase B). */}
+      <section className={styles.charts} aria-label="Charts (sample data)">
+        <Card padding="lg">
+          <BarChart title="Course completion" description={SAMPLE_CHART_NOTE} unit="percent" labelHeading="Course" valueHeading="Completion" data={INSTRUCTOR_COMPLETION_BY_COURSE} />
+        </Card>
+        <Card padding="lg">
+          <BarChart title="Quiz attempts passed, by course" description={SAMPLE_CHART_NOTE} unit="percent" labelHeading="Course" valueHeading="Passed" data={INSTRUCTOR_QUIZ_PASS_BY_COURSE} />
+        </Card>
+      </section>
 
       <div className={styles.main}>
         <Card padding="none" as="section" aria-label="Course performance">

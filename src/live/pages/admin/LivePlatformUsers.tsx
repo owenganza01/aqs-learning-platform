@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { PageHeader } from '../../../components/layout/PageHeader'
-import { Badge, Banner, Button, Card, CardHeader, Table, TextField, type TableColumn } from '../../../components/ui'
+import { Badge, Banner, Button, Card, CardHeader, EmptyState, Table, TextField, revokeInvitation, useConfirm, type TableColumn } from '../../../components/ui'
 import styles from '../../../pages/PlatformAdminUsersPage.module.css'
 import { ActionFeedback } from '../../components/States'
 import { LiveShell } from '../../components/LiveShell'
@@ -11,7 +11,7 @@ import { platformShell } from '../../navigation'
 import { useAction } from '../../useResource'
 
 /*
- * Users and roles at /admin/users. In production this page is limited to L11 (P19): a
+ * Support lookup at /admin/users ("Users and roles" in the design; Assignment 3.5). In production this page is limited to L11 (P19): a
  * Platform Admin has no routine list of people. Organization Admins appear on each
  * organization's page (L11 P1); for a support case, the audited lookup below finds
  * invitations by email, organization or invitation ID. It needs a case reference and a
@@ -31,6 +31,7 @@ export default function LivePlatformUsers() {
     platformActions.findInvitations(caseRef.trim(), reason.trim(), { email: email.trim() || undefined, invitationId: invitationId.trim() || undefined }),
   )
   const revoke = useAction((id: string) => invitationActions.revoke(id))
+  const { confirm, dialog } = useConfirm()
 
   const columns: Array<TableColumn<Found>> = [
     { key: 'email', header: 'Email', render: (r) => r.email },
@@ -43,10 +44,11 @@ export default function LivePlatformUsers() {
       header: <span className="visually-hidden">Actions</span>,
       render: (r) =>
         r.status === 'pending' ? (
-          <Button
+          <Button needsConnection
             variant="text"
             size="sm"
             onClick={async () => {
+              if (!(await confirm(revokeInvitation(r.email)))) return
               if ((await revoke.run(r.id)).ok) {
                 setMessage(`The invitation for ${r.email} was revoked.`)
                 setRows((list) => list?.map((x) => (x.id === r.id ? { ...x, status: 'revoked' } : x)) ?? null)
@@ -61,12 +63,13 @@ export default function LivePlatformUsers() {
 
   return (
     <LiveShell shell={platformShell()}>
-      <PageHeader title="Users and roles" description="Support lookups for a specific case. There is no routine list of people." />
+      {dialog}
+      <PageHeader title="Support lookup" description="Support lookups for a specific case. There is no routine list of people." />
       <Banner tone="info">Every completed lookup is recorded with your case reference and reason.</Banner>
       <Card as="section" padding="lg" aria-label="Support lookup" className={styles.panel}>
         <CardHeader title="Find invitations" subtitle="Exact matches only. Give a case reference, a reason and at least one search field." headingLevel="h2" size="md" />
         <form
-          style={{ display: 'grid', gap: 12, maxWidth: 560 }}
+          style={{ display: 'grid', gap: 'var(--space-12)', maxWidth: 560 }}
           onSubmit={async (event) => {
             event.preventDefault()
             setMessage(null)
@@ -89,7 +92,7 @@ export default function LivePlatformUsers() {
       {rows ? (
         <section className={styles.panel} aria-label="Lookup results">
           <div className={styles.tableWrap}>
-            <Table caption="Lookup results" columns={columns} rows={rows} getRowKey={(r) => r.id} emptyMessage="No invitations match." />
+            <Table density="compact" caption="Lookup results" columns={columns} rows={rows} getRowKey={(r) => r.id} emptyMessage={<EmptyState title="No invitations match" description="Check the email address and search again with the full address." />} />
           </div>
         </section>
       ) : null}

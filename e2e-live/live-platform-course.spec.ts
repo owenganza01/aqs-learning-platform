@@ -41,7 +41,7 @@ async function open(page: import('@playwright/test').Page, policy: 'assigned' | 
     },
     rpc: { course_people: () => ({ json: [] }) },
   })
-  await page.goto(`/admin/courses/${COURSE}`)
+  await page.goto(`/admin/courses/${COURSE}?tab=publish`) // Phase B: publication is on the Publish tab
   await expect(page.getByRole('heading', { level: 1, name: /Data literacy/ })).toBeVisible()
 }
 

@@ -1,7 +1,7 @@
 /*
  * Button system — from the design system page:
- * 48px height, 12px radius, 16px semibold label. Orange (primary) is reserved
- * for the single clearest next step in a view.
+ * 48px height, 12px radius, 16px semibold label. The primary button (action blue,
+ * D41) is reserved for the single clearest next step in a view.
  *
  * [data-preview-state] selectors let the /design-system page show hover and
  * focus states without a mouse. Production code never sets that attribute.
@@ -48,7 +48,7 @@
   width: 100%;
 }
 
-/* ---- Primary: accessible orange (#C2410C, white text 5.18:1) ---- */
+/* ---- Primary: action blue (#1D4ED8, white text 6.70:1; D41) ---- */
 .primary {
   background: var(--color-action);
   color: var(--color-white);
@@ -60,22 +60,36 @@
   background: var(--color-action-hover);
 }
 
+.primary:active:not(:disabled),
+.primary[data-preview-state='pressed'] {
+  background: var(--color-action-pressed);
+}
+
 .primary:disabled {
   background: var(--color-disabled-bg);
   color: var(--color-disabled-text);
   box-shadow: none;
 }
 
-/* ---- Secondary: blue outline (alternative or reversible action) ---- */
+/* ---- Secondary: white with a grey outline and navy label (D41; alternative or reversible action) ----
+   Outline #8391A7 is the form-control border (3.19:1, WCAG 1.4.11); navy label 11.5:1. It sits below the
+   blue primary and above Neutral, whose outline is the lighter #CBD5E1. */
 .secondary {
   background: var(--color-white);
-  border-color: var(--color-blue);
-  color: var(--color-blue);
+  border-color: var(--color-input-border);
+  color: var(--color-navy);
 }
 
 .secondary:hover:not(:disabled),
 .secondary[data-preview-state='hover'] {
-  background: var(--color-blue-50);
+  background: var(--color-surface-muted);
+  border-color: var(--color-navy);
+}
+
+.secondary:active:not(:disabled),
+.secondary[data-preview-state='pressed'] {
+  background: var(--color-border);
+  border-color: var(--color-navy);
 }
 
 .secondary:disabled {
@@ -85,17 +99,29 @@
   background: var(--color-surface-muted);
 }
 
-/* ---- Neutral: grey outline, navy label ("Previous", "Cancel", "Try again") ---- */
+/* ---- Neutral: quiet grey outline ("Previous", "Cancel", "Try again") ----
+   Quieter than Secondary (D41): a thinner, lighter outline (1px #CBD5E1 instead of 1.5px #8391A7) and a
+   slate label at medium weight (#475569, 7.58:1) instead of navy semibold. Hover keeps its approved state
+   and darkens the label to navy, so the response stays clear. */
 .neutral {
+  border-width: 1px;
+  /* Keeps the same outer size as the 1.5px buttons beside it */
+  padding-inline: calc(var(--space-24) + 0.5px);
   background: var(--color-white);
   border-color: var(--color-border-strong);
-  color: var(--color-navy);
+  color: var(--color-text-subtle);
+  font-weight: var(--weight-medium);
+}
+
+.neutral.sm {
+  padding-inline: calc(var(--space-16) + 0.5px);
 }
 
 .neutral:hover:not(:disabled),
 .neutral[data-preview-state='hover'] {
   background: var(--color-canvas);
   border-color: var(--color-input-border);
+  color: var(--color-navy);
 }
 
 .neutral:disabled {
@@ -138,6 +164,42 @@
 .danger:disabled {
   color: var(--color-disabled-text);
   background: var(--color-surface-muted);
+}
+
+/* ---- On navy surfaces (.on-dark, global.css) — D41 ----
+   A blue fill is only 1.72:1 against navy, so the primary turns white with a navy label (11.5:1) and stays
+   the strongest action. The secondary turns into a white outline with a white label (11.5:1), so the two
+   never look the same. Disabled buttons keep the standard grey (7.75:1 against navy). The focus ring
+   switches to light blue with a navy gap through the .on-dark variables. */
+:global(.on-dark) .primary:not(:disabled) {
+  background: var(--color-white);
+  color: var(--color-navy);
+}
+
+:global(.on-dark) .primary:hover:not(:disabled),
+:global(.on-dark) .primary[data-preview-state='hover'] {
+  background: var(--color-blue-50);
+}
+
+:global(.on-dark) .primary:active:not(:disabled),
+:global(.on-dark) .primary[data-preview-state='pressed'] {
+  background: var(--color-blue-100);
+}
+
+:global(.on-dark) .secondary:not(:disabled) {
+  background: transparent;
+  border-color: var(--color-white);
+  color: var(--color-white);
+}
+
+:global(.on-dark) .secondary:hover:not(:disabled),
+:global(.on-dark) .secondary[data-preview-state='hover'] {
+  background: rgb(255 255 255 / 12%);
+}
+
+:global(.on-dark) .secondary:active:not(:disabled),
+:global(.on-dark) .secondary[data-preview-state='pressed'] {
+  background: rgb(255 255 255 / 20%);
 }
 
 /* ---- Loading spinner ---- */

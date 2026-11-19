@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Badge, Banner, ButtonLink, EmptyState, ProgressBar, StatCard, Tabs, type TabItem } from '../../../components/ui'
 import { cx } from '../../../lib/cx'
+import { CourseArtwork } from '../../components/CourseArtwork/CourseArtwork'
 import styles from '../../../pages/LearnerDashboardPage.module.css'
 import { ErrorBanner, LoadingBlock } from '../../components/States'
 import { LiveShell } from '../../components/LiveShell'
@@ -17,7 +18,7 @@ import { formatDate, isOverdue } from '../../../lib/format-date'
  * Live learner dashboard at /learn. Layout and wording from the approved learner dashboard
  * (LearnerDashboardPage.tsx, frames 1-4). Fields the approved data model does not hold
  * (category, level, duration, star ratings) are left out rather than invented; certificates
- * are outside the first release (P21) and shown as "coming later".
+ * are outside the first release (P21) and the dimmed sidebar item is their only signal (1-8).
  */
 
 const STATUS_LABEL: Record<LearningStatus, string> = {
@@ -43,12 +44,9 @@ export default function LiveLearnerDashboard() {
     <LiveShell shell={learnerShell()}>
       <header className={styles.pageHeader}>
         <h1 className="text-title">Welcome back{firstName ? `, ${firstName}` : ''}</h1>
-        <p className={styles.pageIntro}>
-          A little progress, every day. Pick up where you left off and keep building your skills.
-        </p>
       </header>
 
-      {overview.state === 'loading' ? <LoadingBlock label="Loading your dashboard" rows={4} /> : null}
+      {overview.state === 'loading' ? <LoadingBlock label="Loading your dashboard" shape="cards" /> : null}
       {overview.state === 'error' ? <ErrorBanner error={overview.error} onRetry={overview.reload} /> : null}
       {overview.state === 'ready' && overview.data.unavailable.length > 0 ? (
         <Banner tone="info">
@@ -80,27 +78,23 @@ function DashboardBody({
 }) {
   const inProgress = enrolled.filter((c) => c.status === 'in-progress')
   const featured = inProgress[0] ?? enrolled.find((c) => c.status === 'not-started') ?? null
-  const isNew = enrolled.length === 0
 
   return (
     <>
       {featured && featured.progress.next ? <ContinueHero course={featured} /> : null}
 
-      <div className={styles.statsRow}>
-        <StatCard
-          label="Courses in progress"
-          value={inProgress.length}
-          note={isNew ? 'Your next skill starts here' : 'Keep your momentum going'}
-        />
-        <StatCard label="Lessons completed" value={lessonsCompleted} note="Every lesson is a step forward" />
-        <StatCard label="Certificates earned" value="—" note="Certificates are coming later" />
-      </div>
+      {/* A.4: a number card shows only when it has something to count; a new learner sees none. */}
+      {inProgress.length > 0 || lessonsCompleted > 0 ? (
+        <div className={styles.statsRow}>
+          {inProgress.length > 0 ? <StatCard label="Courses in progress" value={inProgress.length} /> : null}
+          {lessonsCompleted > 0 ? <StatCard label="Lessons completed" value={lessonsCompleted} /> : null}
+        </div>
+      ) : null}
 
       <section className={styles.section} aria-labelledby="my-courses-heading">
         <SectionHeader
           headingId="my-courses-heading"
           title="My courses"
-          description="Your learning, all in one place."
           action={{ label: 'View all courses', to: '/my-courses' }}
         />
         <Tabs label="Filter my courses by status" variant="pill" items={courseTabs(enrolled)} />
@@ -167,7 +161,7 @@ function SectionHeader({
 }: {
   headingId: string
   title: string
-  description: string
+  description?: string
   action: { label: string; to: string }
 }) {
   return (
@@ -176,7 +170,7 @@ function SectionHeader({
         <h2 className={cx('text-h3', styles.sectionTitle)} id={headingId}>
           {title}
         </h2>
-        <p className={styles.sectionDescription}>{description}</p>
+        {description ? <p className={styles.sectionDescription}>{description}</p> : null}
       </div>
       <ButtonLink variant="text" iconEnd="arrowRight" to={action.to} className={styles.sectionAction}>
         {action.label}
@@ -195,7 +189,12 @@ export function CourseImage({ course, tint, wide = false, hero = false }: { cour
       </div>
     )
   }
-  return <div className={className} aria-hidden="true" />
+  // Task 8-2: no thumbnail yet, so the course's own artwork in AQS colours, not an empty box.
+  return (
+    <div className={className} aria-hidden="true">
+      <CourseArtwork title={course.title} />
+    </div>
+  )
 }
 
 function ContinueHero({ course }: { course: EnrolledCourse }) {

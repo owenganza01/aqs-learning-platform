@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Badge, Button, Card, CardHeader, Select, TextArea, TextField } from '../../../components/ui'
+import { Badge, Button, Card, CardHeader, EmptyState, Select, TextArea, TextField } from '../../../components/ui'
 import { rpc } from '../../api'
 import { ActionFeedback, Loaded } from '../../components/States'
 import type { AuthoringCourse, AuthoringLesson } from '../../data/authoring'
@@ -148,12 +148,12 @@ export function CorrectionsPanel({
         </form>
       ) : null}
 
-      <Loaded resource={list} label="Loading corrections">
+      <Loaded resource={list} label="Loading corrections" loading="table">
         {(rows) =>
           rows.length === 0 ? (
-            <p className={styles.muted}>No corrections yet.</p>
+            <EmptyState title="No corrections yet" description="Corrections proposed for this course appear here with their review status." />
           ) : (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
+            <ul className={styles.plainList}>
               {rows
                 .slice()
                 .reverse()

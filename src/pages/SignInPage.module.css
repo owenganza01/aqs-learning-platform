@@ -72,17 +72,8 @@
   cursor: not-allowed;
 }
 
-/* Quiet stand-in until the photo is an approved asset; same look as AuthLayout's default. */
-.placeholder {
-  display: flex;
-  align-items: flex-end;
-  width: 100%;
-  max-width: 480px;
-  min-height: 320px;
-  border-radius: 24px 24px 0 0;
-  padding: var(--space-24);
-  background: rgb(255 255 255 / 0.06);
-  font-size: var(--text-hint);
-  line-height: var(--leading-hint);
-  color: var(--color-blue-100);
+.textLink {
+  color: var(--color-navy);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }

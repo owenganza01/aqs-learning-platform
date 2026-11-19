@@ -1,0 +1,90 @@
+/* Workspace request detail (WP3, 3-4): two-up cards on desktop, definition lists, the decision forms. */
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-24);
+}
+
+.grid > * {
+  margin-top: 0;
+}
+
+.fields {
+  display: grid;
+  gap: var(--space-12);
+  margin: 0;
+}
+
+.fields > div {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: var(--space-16);
+}
+
+.fields dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.fields dd {
+  margin: 0;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.signal {
+  margin: var(--space-16) 0 0;
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius);
+  background: var(--color-surface-muted);
+  color: var(--color-text-subtle);
+  font-size: var(--text-caption);
+}
+
+.checklist {
+  margin: 0 0 var(--space-24);
+  padding-left: var(--space-24);
+  color: var(--color-text-subtle);
+}
+
+.checklist li + li {
+  margin-top: var(--space-4);
+}
+
+.decide {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--space-24);
+}
+
+.decision {
+  display: grid;
+  gap: var(--space-16);
+  align-content: start;
+  padding: var(--space-24);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.decisionTitle {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-card-sm);
+  font-weight: var(--weight-semibold);
+}
+
+@media (max-width: 1023px) {
+  .grid,
+  .decide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .fields > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+}

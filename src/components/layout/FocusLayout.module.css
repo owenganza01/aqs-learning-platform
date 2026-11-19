@@ -32,7 +32,7 @@
   padding: var(--space-8) var(--space-4);
   border-radius: var(--radius-sm);
   color: var(--color-navy);
-  font-size: 15px;
+  font-size: var(--text-body-sm);
   font-weight: var(--weight-semibold);
   text-decoration: none;
 }
@@ -46,7 +46,7 @@
 }
 
 .eyebrow {
-  font-size: 11px;
+  font-size: var(--text-badge);
   line-height: 14px;
   font-weight: var(--weight-semibold);
   letter-spacing: 0.04em;
@@ -101,6 +101,37 @@
   background: var(--color-white);
 }
 
+/*
+ * ---- Tablet (A.6, verification finding 4) ----
+ * The desktop columns (280 px back link, 240 px progress) left the course title about 30 px at 768 px, so it
+ * showed as "I…". Here the back link takes only its width, the progress bar narrows, and the title may wrap to
+ * a second line before it is cut. The full title stays in the page for screen readers.
+ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .header {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: var(--space-16);
+    padding: 0 var(--space-24);
+  }
+
+  .end {
+    gap: var(--space-16);
+  }
+
+  .progress {
+    width: 160px;
+  }
+
+  .title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: var(--text-body);
+    line-height: 22px;
+    white-space: normal;
+  }
+}
+
 /* ---- Mobile (matches the mobile course-player design) ---- */
 @media (max-width: 767px) {
   .header {
@@ -119,7 +150,7 @@
   }
 
   .title {
-    font-size: 16px; /* measured in the mobile course-player design */
+    font-size: var(--text-body); /* measured in the mobile course-player design */
     line-height: 24px;
   }
 

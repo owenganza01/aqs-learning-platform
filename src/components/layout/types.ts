@@ -23,3 +23,18 @@ export type CurrentUser = {
   /** Shown under the name, e.g. "Learner" or "General Admin". */
   roleLabel: string
 }
+
+/** Which signed-in workspace a shell belongs to (Unified Refinement Plan, Phase 2). */
+export type WorkspaceKind = 'learner' | 'studio' | 'organization' | 'platform'
+
+/** What the header's identity block shows. */
+export type WorkspaceIdentity = {
+  /** The workspace's name: the organization, "Teaching Studio" or "AQS Platform". */
+  title: string
+  /** What kind of workspace it is, or the organization it belongs to. */
+  subtitle?: string
+  /** Short text for the tile: an organization's initials, or the platform mark. */
+  mark?: string
+  /** A permanent scope tag, e.g. "Platform-wide". */
+  scope?: string
+}

@@ -5,6 +5,7 @@ import { NotFound } from '../pages/NotFound'
 import { LoadingBlock } from './components/States'
 import { HomeRedirect, RequireOrgRole, RequirePlatformAdmin, RequireSignedIn } from './guards'
 import { SessionProvider } from './SessionProvider'
+import { ConnectionProvider } from './components/Connection'
 import { LiveAccessDenied, LiveSignInRequired } from './pages/LiveNotices'
 
 /*
@@ -14,6 +15,7 @@ import { LiveAccessDenied, LiveSignInRequired } from './pages/LiveNotices'
  */
 
 const LiveSignInPage = lazy(() => import('./pages/LiveSignInPage'))
+const LiveSignUpPage = lazy(() => import('./pages/LiveSignUpPage'))
 const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage'))
 const LiveInvitePage = lazy(() => import('./pages/LiveInvitePage'))
 const LiveLearnerDashboard = lazy(() => import('./pages/learner/LiveLearnerDashboard'))
@@ -43,12 +45,27 @@ const LivePlatformUsers = lazy(() => import('./pages/admin/LivePlatformUsers'))
 const LiveVideoReviews = lazy(() => import('./pages/admin/LiveVideoReviews'))
 const LiveLessonPreview = lazy(() => import('./pages/teach/LiveLessonPreview'))
 const LiveVideoReviewDetail = lazy(() => import('./pages/admin/LiveVideoReviewDetail'))
+// WP3 and WP2 (10 November 2026): workspace requests, their review, and the Get Started chooser.
+const LiveOrganizationRequests = lazy(() => import('./pages/admin/LiveOrganizationRequests'))
+const LiveOrganizationRequestDetail = lazy(() => import('./pages/admin/LiveOrganizationRequestDetail'))
+const GetStartedPage = lazy(() => import('../pages/GetStartedPage'))
+const LiveRequestWorkspacePage = lazy(() => import('./pages/LiveRequestWorkspacePage'))
+// About AQS and Contact (Concept C, approved 10 November 2026): registered only in development builds
+// (marked placeholders) until the owner approves their content (content/public-site.ts).
+// The condition must be a build-time constant so production builds leave the pages out entirely
+// (`npm run check:build` fails otherwise). When the owner approves the content, set
+// ABOUT_AND_CONTACT_APPROVED in content/public-site.ts and change `import.meta.env.DEV` here to `true`.
+// Terms of Use, Privacy Policy and Cookie Policy (tasks 5-3 and 5-5, 15 November 2026): the owner's
+// documents, word for word. Their content is provisional until the owner replaces it (content/legal).
+const LegalPage = lazy(() => import('../pages/legal/LegalPage'))
+const AboutPage = import.meta.env.DEV ? lazy(() => import('../pages/AboutPage')) : null
+const ContactPage = import.meta.env.DEV ? lazy(() => import('../pages/ContactPage')) : null
 
 function Page({ children }: { children: ReactNode }) {
   return (
     <Suspense
       fallback={
-        <main id="main-content" style={{ maxWidth: 960, margin: '48px auto', padding: '0 16px' }}>
+        <main id="main-content" style={{ maxWidth: 960, margin: 'var(--space-48) auto', padding: '0 var(--space-16)' }}>
           <LoadingBlock label="Loading page" rows={3} />
         </main>
       }
@@ -61,16 +78,25 @@ function Page({ children }: { children: ReactNode }) {
 export function LiveApp({ extraRoutes }: { extraRoutes?: ReactNode }) {
   return (
     <SessionProvider>
+      <ConnectionProvider>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/sign-in" element={<Page><LiveSignInPage /></Page>} />
+        <Route path="/sign-up" element={<Page><LiveSignUpPage /></Page>} />
         <Route path="/auth/callback" element={<Page><AuthCallbackPage /></Page>} />
         <Route path="/invite" element={<Page><LiveInvitePage /></Page>} />
         <Route path="/invite/:token" element={<Page><LiveInvitePage /></Page>} />
         <Route path="/catalog" element={<Page><LiveCatalog /></Page>} />
+        <Route path="/get-started" element={<Page><GetStartedPage /></Page>} />
+        <Route path="/request-workspace" element={<Page><LiveRequestWorkspacePage /></Page>} />
         <Route path="/courses/:courseId" element={<Page><LiveCourseDetail /></Page>} />
         <Route path="/access-denied" element={<LiveAccessDenied />} />
         <Route path="/session-expired" element={<LiveSignInRequired />} />
+        <Route path="/terms" element={<Page><LegalPage document="terms" /></Page>} />
+        <Route path="/privacy" element={<Page><LegalPage document="privacy" /></Page>} />
+        <Route path="/cookies" element={<Page><LegalPage document="cookies" /></Page>} />
+        {AboutPage ? <Route path="/about" element={<Page><AboutPage /></Page>} /> : null}
+        {ContactPage ? <Route path="/contact" element={<Page><ContactPage /></Page>} /> : null}
 
         <Route element={<RequireSignedIn />}>
           <Route path="/home" element={<HomeRedirect />} />
@@ -102,6 +128,8 @@ export function LiveApp({ extraRoutes }: { extraRoutes?: ReactNode }) {
             <Route path="organizations/new" element={<Page><LiveOrganizationCreate /></Page>} />
             <Route path="organizations/:orgId" element={<Page><LivePlatformOrganizationDetail /></Page>} />
             <Route path="organizations/:orgId/review" element={<Page><LivePlatformOrganizationDetail /></Page>} />
+            <Route path="requests" element={<Page><LiveOrganizationRequests /></Page>} />
+            <Route path="requests/:requestId" element={<Page><LiveOrganizationRequestDetail /></Page>} />
             <Route path="users" element={<Page><LivePlatformUsers /></Page>} />
             <Route path="courses" element={<Page><LivePlatformCourses /></Page>} />
             <Route path="courses/:courseId" element={<Page><LiveCourseEditor /></Page>} />
@@ -117,6 +145,7 @@ export function LiveApp({ extraRoutes }: { extraRoutes?: ReactNode }) {
         {extraRoutes}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </ConnectionProvider>
     </SessionProvider>
   )
 }

@@ -1,7 +1,8 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router'
+import { cx } from '../../lib/cx'
 import { Avatar, Icon } from '../ui'
-import type { CurrentUser, NavItem } from './types'
+import type { CurrentUser, NavItem, WorkspaceIdentity, WorkspaceKind } from './types'
 import { Wordmark } from './Wordmark'
 import styles from './AppShell.module.css'
 
@@ -13,8 +14,17 @@ type AppShellProps = {
   /** Sidebar links for this role (learner, instructor, admin…). */
   navItems: NavItem[]
   user: CurrentUser
-  /** Organization context shown in the header, e.g. "ABC Corporation · Instructor workspace". */
-  workspace?: { title: string; subtitle?: string }
+  /**
+   * Workspace identity shown in the header at every width: the workspace name, what kind of workspace
+   * it is, an optional tile (the organization's initials or the platform mark) and an optional scope tag.
+   */
+  workspace?: WorkspaceIdentity
+  /**
+   * Which workspace this is (Unified Refinement Plan, Phase 2). It selects the shell's colours
+   * (styles/tokens.css) and nothing else: access is decided by the route guards and the database.
+   * Default 'learner', the brand baseline.
+   */
+  workspaceKind?: WorkspaceKind
   /** Placeholder for the header search box. Omit to hide search. */
   searchPlaceholder?: string
   /** Help card text, which differs per role ("Here to help you learn / teach / manage"). */
@@ -47,6 +57,7 @@ export function AppShell({
   navItems,
   user,
   workspace,
+  workspaceKind = 'learner',
   searchPlaceholder,
   helpTitle = 'Here to help you learn',
   banner,
@@ -124,7 +135,7 @@ export function AppShell({
     item.active ?? (pathname === item.to || (!item.exact && pathname.startsWith(`${item.to}/`)))
 
   return (
-    <div className={styles.shell} data-drawer={drawerOpen ? 'open' : 'closed'}>
+    <div className={styles.shell} data-drawer={drawerOpen ? 'open' : 'closed'} data-workspace={workspaceKind}>
       <a className="skip-link" href={`#${mainId}`} inert={drawerOpen}>
         Skip to content
       </a>
@@ -132,13 +143,13 @@ export function AppShell({
       <aside
         ref={sidebarRef}
         id={sidebarId}
-        className={`${styles.sidebar} on-dark`}
+        className={styles.sidebar}
         aria-label="Sidebar"
         role={drawerOpen ? 'dialog' : undefined}
         aria-modal={drawerOpen ? true : undefined}
       >
         <div className={styles.sidebarTop}>
-          <Wordmark light />
+          <Wordmark light={workspaceKind !== 'studio'} />
           <button
             ref={closeButtonRef}
             type="button"
@@ -148,6 +159,9 @@ export function AppShell({
             <Icon name="close" size={22} label="Close menu" />
           </button>
         </div>
+
+        {/* Below 1024px the workspace switcher lives in the drawer, so the header keeps the identity block. */}
+        {workspaceExtra ? <div className={styles.drawerSwitcher}>{workspaceExtra}</div> : null}
 
         <nav aria-label="Workspace">
           <ul className={styles.navList}>
@@ -223,12 +237,24 @@ export function AppShell({
           </button>
 
           {workspace ? (
-            <div className={styles.workspace}>
-              <p className={styles.workspaceTitle}>{workspace.title}</p>
-              {workspace.subtitle ? <p className={styles.workspaceSubtitle}>{workspace.subtitle}</p> : null}
+            <div className={styles.workspace} data-workspace-identity>
+              {workspace.mark ? (
+                <span className={styles.workspaceMark} aria-hidden="true">
+                  {workspace.mark}
+                </span>
+              ) : null}
+              <div className={styles.workspaceText}>
+                <p className={styles.workspaceTitle}>{workspace.title}</p>
+                {workspace.subtitle ? (
+                  <p className={cx(styles.workspaceSubtitle, workspace.scope && styles.hasScope)}>{workspace.subtitle}</p>
+                ) : null}
+                {/* On phones the scope tag takes the subtitle's place, so it is never pushed off screen. */}
+                {workspace.scope ? <p className={styles.scopeInline}>{workspace.scope}</p> : null}
+              </div>
+              {workspace.scope ? <span className={styles.scopeTag}>{workspace.scope}</span> : null}
             </div>
           ) : null}
-          {workspaceExtra}
+          {workspaceExtra ? <div className={styles.headerSwitcher}>{workspaceExtra}</div> : null}
 
           {searchPlaceholder ? (
             <form className={styles.search} role="search" onSubmit={(event) => event.preventDefault()}>

@@ -1,57 +1,71 @@
 import type { NavItem } from '../components/layout/types'
+import {
+  GET_STARTED_PAGE_AVAILABLE,
+  INFO_PAGES_AVAILABLE,
+  LEGAL_PAGES_AVAILABLE,
+  REQUEST_WORKSPACE_AVAILABLE,
+} from '../content/public-site'
 
 /*
- * Public header and footer destinations, shared by every page that uses PublicLayout.
+ * Public header and footer destinations (landing page Concept C, approved 10 November 2026).
  *
- * About and Contact were authorised for the application on 26 October 2026. Like every other demo
- * page they are registered only in the development build (see App.tsx), because D27 keeps production
- * to `/` and the Not Found page until the owner approves more. In a production build the two items
- * therefore stay unavailable (D24), so they never lead to the Not Found page.
- *
- * Privacy Policy, Terms and Cookie Policy stay unavailable: the approved legal text is not in the
- * repository or the Project, and legal wording is never written here.
+ * About AQS and Contact are included with clearly marked placeholder content for design review.
+ * Request a workspace appears with task 3-3, the legal pages with task 5-5.
  */
-export const PUBLIC_INFO_PAGES_AVAILABLE = import.meta.env.DEV
 
-const infoPagesUnavailable = !PUBLIC_INFO_PAGES_AVAILABLE
+/**
+ * Where "Get started" leads: the Get Started page once it exists (2-1), the sign-up page until then
+ * (D42, 12 November 2026: sign-up with Google, Apple, Facebook or email).
+ */
+export const GET_STARTED_PATH = GET_STARTED_PAGE_AVAILABLE ? '/get-started' : '/sign-up'
 
-/** Header navigation. `courses` and `organizations` let a page point at its own sections. */
-export function publicHeaderNav(options: { courses?: string; organizations?: string } = {}): NavItem[] {
-  return [
-    // CM3-7: the landing page's featured section exists only when real courses do; the catalog always does.
+/** The landing page. The header's Home link always opens it at the top (see PublicLayout). */
+export const HOME_PATH = '/'
+
+/**
+ * Header navigation, in the client's order (11 November 2026): Home, Courses, About, Contact;
+ * Sign in and Get started follow in the header's actions. For organizations stays in the footer
+ * and in the landing page's own buttons.
+ *
+ * About and Contact open the About AQS and Contact pages, and appear only where those pages exist.
+ */
+export function publicHeaderNav(options: { courses?: string } = {}): NavItem[] {
+  const items: NavItem[] = [
+    { label: 'Home', to: HOME_PATH },
     { label: 'Courses', to: options.courses ?? '/catalog' },
-    { label: 'For Organizations', to: options.organizations ?? '/#for-organizations' },
-    { label: 'About', to: '/about', unavailable: infoPagesUnavailable },
-    { label: 'Contact', to: '/contact', unavailable: infoPagesUnavailable },
   ]
+  // About and Contact only where their pages exist (15 November 2026): a production build registers no
+  // /about or /contact route until the owner approves the content, so it shows no link to them either.
+  if (INFO_PAGES_AVAILABLE) items.push({ label: 'About', to: '/about' }, { label: 'Contact', to: '/contact' })
+  return items
 }
 
-export const PUBLIC_FOOTER_COLUMNS: Array<{ heading: string; links: NavItem[] }> = [
-  {
-    heading: 'Platform',
-    links: [
-      { label: 'Courses', to: '/catalog' },
-      { label: 'For Organizations', to: '/#for-organizations' },
-      { label: 'About', to: '/about', unavailable: infoPagesUnavailable },
-      { label: 'Contact', to: '/contact', unavailable: infoPagesUnavailable },
-    ],
-  },
-  {
-    // These destinations need company content that AQS has not supplied, so they stay unavailable.
-    heading: 'Company',
-    links: [
-      { label: 'Our Story', to: '/our-story', unavailable: true },
-      { label: 'Instructors', to: '/instructors', unavailable: true },
-      { label: 'Careers', to: '/careers', unavailable: true },
-      { label: 'Blog', to: '/blog', unavailable: true },
-    ],
-  },
-  {
-    heading: 'Legal',
-    links: [
-      { label: 'Privacy Policy', to: '/privacy', unavailable: true },
-      { label: 'Terms', to: '/terms', unavailable: true },
-      { label: 'Cookie Policy', to: '/cookies', unavailable: true },
-    ],
-  },
-]
+export type FooterColumn = { heading: string; links: NavItem[] }
+
+/** Footer columns. */
+export function publicFooterColumns(options: { signInAvailable?: boolean } = {}): FooterColumn[] {
+  const learn: NavItem[] = [{ label: 'Courses', to: '/catalog' }]
+  if (options.signInAvailable !== false) {
+    learn.push({ label: 'Get started', to: GET_STARTED_PATH }, { label: 'Sign in', to: '/sign-in' })
+  }
+
+  const organizations: NavItem[] = [{ label: 'For organizations', to: '/#organizations' }]
+  if (REQUEST_WORKSPACE_AVAILABLE) organizations.push({ label: 'Request a workspace', to: '/request-workspace' })
+
+  const columns: FooterColumn[] = [
+    { heading: 'Learn', links: learn },
+    { heading: 'Organizations', links: organizations },
+  ]
+  if (INFO_PAGES_AVAILABLE) columns.push({ heading: 'AQS', links: [{ label: 'About AQS', to: '/about' }, { label: 'Contact', to: '/contact' }] })
+  if (LEGAL_PAGES_AVAILABLE) {
+    columns.push({
+      heading: 'Legal',
+      links: [
+        { label: 'Terms of Use', to: '/terms' },
+        { label: 'Privacy Policy', to: '/privacy' },
+        { label: 'Cookie Policy', to: '/cookies' },
+      ],
+    })
+  }
+  return columns
+}

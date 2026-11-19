@@ -48,15 +48,15 @@ export default function LivePlatformCourses() {
   return (
     <LiveShell shell={platformShell()}>
       <PageHeader title="Courses" description="Platform courses, and organization courses waiting for a decision." />
-      <Loaded resource={data} label="Loading courses">
+      <Loaded resource={data} label="Loading courses" loading="table">
         {({ platform, pending }) => (
-          <div style={{ display: 'grid', gap: 24 }}>
+          <div style={{ display: 'grid', gap: 'var(--space-24)' }}>
             <Card padding="none" as="section" aria-label="Platform courses">
               <div className={sectionStyles.cardPad}>
                 <CardHeader title="Platform courses" subtitle="Public courses owned by AQS." size="md" />
               </div>
               <div className={sectionStyles.tableWrap}>
-                <Table caption="Platform courses" columns={columns} rows={platform} getRowKey={(c) => c.id} emptyMessage={<EmptyState title="No platform courses yet" />} />
+                <Table density="compact" caption="Platform courses" columns={columns} rows={platform} getRowKey={(c) => c.id} emptyMessage={<EmptyState title="No platform courses yet" description="Courses that Platform Admins create for every organization appear here." />} />
               </div>
             </Card>
             <Card padding="lg" as="section" aria-label="New platform course">

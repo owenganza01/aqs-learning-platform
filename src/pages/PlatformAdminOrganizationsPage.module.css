@@ -24,6 +24,15 @@
   }
 }
 
+/* Status filter buttons (live Organizations page): one row that wraps, not the search-and-select grid above */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  padding: var(--space-16) var(--space-24);
+  border-bottom: 1px solid var(--color-border);
+}
+
 .tableWrap {
   overflow-x: auto;
 }

@@ -85,7 +85,7 @@ function LessonCaptions({ lesson, track, disabled, onConfirmed }: { lesson: Auth
       {track && !track.confirmed ? (
         <>
           {media ? (
-            <video controls crossOrigin="anonymous" preload="metadata" style={{ width: '100%', maxWidth: 720 }} aria-label={`Video: ${lesson.title}`}>
+            <video controls crossOrigin="anonymous" preload="metadata" className={styles.captionVideo} aria-label={`Video: ${lesson.title}`}>
               <source src={media.video} />
               <track kind="captions" src={media.captions} srcLang={track.language} label={`Captions (${track.language})`} default />
             </video>

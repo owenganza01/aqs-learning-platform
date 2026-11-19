@@ -40,8 +40,9 @@ export function FocusLayout({
       <header className={styles.header}>
         <Link to={back.to} className={styles.back}>
           <Icon name="arrowLeft" size={20} label={`Back to ${back.label}`} />
+          {/* A.7: the visible text names the destination, the same words as the accessible name. */}
           <span className={styles.backLabel} aria-hidden="true">
-            {back.label}
+            Back to {back.label}
           </span>
         </Link>
         <div className={styles.titleBlock}>

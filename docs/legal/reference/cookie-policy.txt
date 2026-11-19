@@ -1,0 +1,49 @@
+                          Cookie Policy
+Cookie Policy
+This policy explains how AQS Learning, the e-learning platform of AQS (“we”,
+“us” or “our”), uses cookies and similar technologies (collectively, “cookies”).
+It applies to all authorized internal and external users of the platform, and it
+also explains your choices regarding cookies.
+
+Please read this policy together with the AQS E-Learning Privacy Policy, which
+sets out how we handle personal data and how to exercise your rights.
+
+What are cookies?
+Cookies are small text files placed on your device by your web browser when
+you use AQS Learning. They help the platform recognize your device and
+remember information about your visit. Session cookies last only for your visit
+and are deleted when you close your browser. Persistent cookies remain on
+your device for a set period or until you delete them. Cookies set by AQS
+Learning itself are first-party cookies; those set by another organization are
+third-party cookies. Similar technologies, such as local storage and session
+storage, work in a comparable way.
+
+How do we use cookies?
+AQS Learning uses cookies only for the purposes below. To the extent that the
+data collected constitutes personal data, we process it in accordance with
+the AQS E-Learning Privacy Policy.
+
+Essential cookies. Necessary for the basic operation of AQS Learning,
+including to keep you signed in as you move between pages, to sign you out
+securely, and to protect your account and the platform against unauthorized
+access and misuse. These cookies are automatically enabled and cannot be
+turned off because the platform cannot function without them. They do not
+require your consent.
+
+AQS Learning does not use functional, analytics, third-party or advertising
+and marketing cookies, and does not use cookies to build user profiles or to
+track you across other websites. If we introduce any of these, we will update
+this policy first and will not set any cookie that requires consent until you have
+actively given it. You will then be able to accept or refuse each category
+and change your choice at any time through a cookie preference control on
+the platform.
+What are your choices regarding cookies?
+Because AQS Learning currently uses only essential cookies, there are no
+optional cookie settings to manage on the platform. You can delete cookies
+or instruct your web browser to block them through your browser’s settings.
+
+Please note that if you delete or block essential cookies, you might not be
+able to sign in, the platform might not work correctly, and your session may
+end unexpectedly. Deleting cookies does not delete the learning records we
+hold about you.
+

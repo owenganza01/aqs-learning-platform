@@ -44,7 +44,7 @@ export default function LiveVideoReviewDetail() {
           <li aria-current="page">Submission</li>
         </ol>
       </nav>
-      <Loaded resource={data} label="Loading the submission">
+      <Loaded resource={data} label="Loading the submission" loading="detail">
         {(detail) => <Detail detail={detail} onChanged={data.reload} />}
       </Loaded>
     </LiveShell>
@@ -209,7 +209,7 @@ function GateOne({ detail, disabled, onChanged }: { detail: SubmissionDetail; di
             <Button variant="neutral" size="sm" disabled={disabled || !reason.trim()} onClick={() => act.run(() => videoReview.decide(s.id, 'changes_requested', reason))}>
               Request changes
             </Button>
-            <Button variant="text" size="sm" disabled={disabled || !reason.trim()} onClick={async () => {
+            <Button needsConnection variant="text" size="sm" disabled={disabled || !reason.trim()} onClick={async () => {
                 if (await confirm({ title: 'Reject this video?', message: 'The instructor sees your reason. They must submit a new video to continue.', confirmLabel: 'Reject video' }))
                   void act.run(() => videoReview.decide(s.id, 'rejected', reason))
               }}>

@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { COURSE, mockSupabase, sessionTables, signIn, type Handler } from './mock-supabase.js'
+import { settleAnimations } from '../e2e/settle-animations.js'
 
 // CM3-2 (G30): the catalog is paged by the database (.range() with count: 'exact', 12 per page)
 // and searched there, against the MOCKED Supabase API. Synthetic course titles only.
@@ -28,7 +29,7 @@ async function openCatalog(page: Page) {
   await signIn(page)
   const mock = await mockSupabase(page, { tables: { ...sessionTables(), courses }, rpc: { my_enrolled_course_titles: () => ({ json: [] }) } })
   await page.goto('/catalog')
-  await expect(page.getByRole('heading', { level: 1, name: 'Course catalog' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Courses', exact: true })).toBeVisible()
   return mock
 }
 
@@ -37,7 +38,7 @@ const courseRequests = (mock: Awaited<ReturnType<typeof openCatalog>>) =>
 
 test('the catalog fetches one page of 12, counted by the database, and pages through the rest', async ({ page }) => {
   const mock = await openCatalog(page)
-  const cards = page.getByRole('list', { name: 'Courses' }).getByRole('listitem')
+  const cards = page.getByRole('list', { name: 'Courses open to you', exact: true }).getByRole('listitem')
   await expect(cards).toHaveCount(12)
   await expect(page.getByText('Showing 1–12 of 30 courses')).toBeVisible()
   const first = courseRequests(mock).at(-1)
@@ -70,6 +71,7 @@ for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 })
     await openCatalog(page)
     await expect(page.getByText('Showing 1–12 of 30 courses')).toBeVisible()
+    await settleAnimations(page)
     const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
     expect(result.violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true)

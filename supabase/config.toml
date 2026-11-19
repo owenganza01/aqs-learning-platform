@@ -414,6 +414,11 @@ verify_jwt = false
 [functions.storage-cleanup]
 verify_jwt = false
 
+# 0021 (WP3, task 3-2): the public "Request a workspace" submission. No session is needed;
+# the function stores requests through a service-role-only database function.
+[functions.organisation-request]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
