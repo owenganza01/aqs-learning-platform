@@ -272,6 +272,8 @@ select set_eq(
             ('public.approve_organization_request(uuid, text, text, text)'),  -- 0021 (WP3), Platform Admin only
             ('public.organization_profile(uuid)'),  -- 0021 (WP3), own Org Admins and Platform Admins
             ('public.set_organization_profile(uuid, text, text, text, text, text)'),  -- 0021 (WP3), Platform Admin only
+            ('public.org_learning_summary(uuid)'),  -- 0023 (P5, 7-1), own Org Admins only
+            ('public.course_learning_summary(uuid[])'),  -- 0023 (P5, 7-1), course staff and own Org Admins
             ('authz.can_write_course_object(text, text, boolean)'),
             ('authz.can_read_course_object(text)'),
             ('public.platform_report(uuid, organization_status)'),
@@ -371,6 +373,8 @@ select set_eq(
             ('public.approve_organization_request(uuid, text, text, text)'),  -- 0021 (WP3)
             ('public.organization_profile(uuid)'),  -- 0021 (WP3)
             ('public.set_organization_profile(uuid, text, text, text, text, text)'),  -- 0021 (WP3)
+            ('public.org_learning_summary(uuid)'),  -- 0023 (P5, 7-1)
+            ('public.course_learning_summary(uuid[])'),  -- 0023 (P5, 7-1)
             ('authz.can_view_learner_record(uuid, uuid)'),
             ('public.set_quiz_settings(uuid, integer, integer, boolean, quiz_reveal_policy)'),
             ('public.add_quiz_question(uuid, text, quiz_question_type)'),
