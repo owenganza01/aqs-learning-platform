@@ -9,7 +9,9 @@ import { settleAnimations } from '../e2e/settle-animations.js'
 
 const ORG = { id: '00000000-0000-4000-8000-0000000000b1', name: 'ZZ Training Co', slug: 'abc', status: 'active' }
 const COURSE_ID = '00000000-0000-4000-8000-0000000000d1'
-const READ_ONLY_RPC = new Set(['course_people', 'lesson_spoken_language', 'organization_members', 'my_enrolled_course_titles'])
+// claim_domain_membership: the once-per-visit company-email admission after sign-in (4-4, D40); it
+// belongs to signing in, not to the preview, and admits at most once as a Learner.
+const READ_ONLY_RPC = new Set(['course_people', 'lesson_spoken_language', 'organization_members', 'my_enrolled_course_titles', 'claim_domain_membership'])
 
 const course = {
   id: COURSE_ID, org_id: ORG.id, owner_type: 'organization', title: 'ZZ Safety basics', slug: 'zz-safety', summary: '', thumbnail_path: null,

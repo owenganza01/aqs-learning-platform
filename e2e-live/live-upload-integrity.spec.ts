@@ -114,7 +114,8 @@ test('a file that is not MP4 or WebM is refused before anything is stored', asyn
   const mock = await openEditor(page, {}, {})
   await chooseVideo(page, { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('x') })
   await expect(page.getByText('Videos must be MP4 or WebM files.')).toBeVisible()
-  expect(mock.calls.filter((c) => c.kind === 'rpc' && c.name !== 'course_people')).toEqual([])
+  // claim_domain_membership is the sign-in admission (4-4), not part of the upload.
+  expect(mock.calls.filter((c) => c.kind === 'rpc' && c.name !== 'course_people' && c.name !== 'claim_domain_membership')).toEqual([])
 })
 
 test('a failed thumbnail upload cancels the pending path and leaves the course unchanged', async ({ page }) => {
