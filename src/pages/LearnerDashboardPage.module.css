@@ -251,6 +251,13 @@
     gap: var(--space-8);
   }
 
+  /* Presentation V3: stacked under the heading, the text button's own padding and 1.5px border would
+   * indent its label; pull it back so the label lines up with the heading. */
+  .sectionAction {
+    margin-right: 0;
+    margin-left: calc(-1 * var(--space-12) - 1.5px);
+  }
+
   .gridThree,
   .gridTwo {
     grid-template-columns: minmax(0, 1fr);
@@ -268,5 +275,17 @@
 
   .statsRow {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Presentation V3: the four course filters need 435 px on one line, so below 500 px they form two
+ * aligned rows of two instead of three in a row and "Completed" alone. Scoped to this page; the shared
+ * Tabs component and its type and pill spacing are unchanged. */
+@media (max-width: 499px) {
+  .section [role='tablist'] {
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    justify-items: start;
+    column-gap: var(--space-8);
   }
 }
