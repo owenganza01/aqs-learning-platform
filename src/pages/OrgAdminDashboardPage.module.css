@@ -132,3 +132,8 @@
   gap: var(--space-16);
   margin-bottom: var(--space-24);
 }
+
+/* Presentation V4: the notice that stands in for the two course charts spans the whole chart row. */
+.chartsNotice {
+  grid-column: 1 / -1;
+}

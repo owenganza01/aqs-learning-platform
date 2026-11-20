@@ -94,20 +94,21 @@ export default function LiveOrgAdminDashboard() {
                 {published > 0 ? <StatCard label="Published courses" value={published} /> : null}
               </div>
               <section className={styles.charts} aria-label="Charts">
-                <Card padding="lg">
-                  {summary ? (
-                    <BarChart title="Course completion" description="Members who completed each course, as of now." unit="percent" labelHeading="Course" valueHeading="Completion" data={completionByCourse(summary)} emptyMessage="No learners in your courses yet." />
-                  ) : (
+                {summary ? (
+                  <>
+                    <Card padding="lg">
+                      <BarChart title="Course completion" description="Members who completed each course, as of now." unit="percent" labelHeading="Course" valueHeading="Completion" data={completionByCourse(summary)} emptyMessage="No learners in your courses yet." />
+                    </Card>
+                    <Card padding="lg">
+                      <BarChart title="Overdue assignments by course" description="Assignments past their due date, as of now." labelHeading="Course" valueHeading="Overdue" data={overdueByCourse(summary)} emptyMessage="No learners in your courses yet." />
+                    </Card>
+                  </>
+                ) : (
+                  /* Presentation V4: one short notice across the row, not two empty cards as tall as the invitations chart. */
+                  <Card className={styles.chartsNotice}>
                     <p className={styles.muted}>Course figures are not available right now.</p>
-                  )}
-                </Card>
-                <Card padding="lg">
-                  {summary ? (
-                    <BarChart title="Overdue assignments by course" description="Assignments past their due date, as of now." labelHeading="Course" valueHeading="Overdue" data={overdueByCourse(summary)} emptyMessage="No learners in your courses yet." />
-                  ) : (
-                    <p className={styles.muted}>Course figures are not available right now.</p>
-                  )}
-                </Card>
+                  </Card>
+                )}
                 <Card padding="lg">
                   <BarChart title="Invitations by status" description="All invitations sent by this organization." labelHeading="Status" valueHeading="Invitations" data={invitationsByStatus(invitations, loadedAt)} emptyMessage="No invitations sent yet." />
                 </Card>

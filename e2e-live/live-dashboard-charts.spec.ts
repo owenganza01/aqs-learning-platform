@@ -66,10 +66,44 @@ test('7-3 Org Admin: when the summary is refused, the charts say so and the dash
   await setup(page, 'org_admin', { org_learning_summary: () => ({ status: 403, json: { code: '42501', message: 'AQS: not permitted' } }) })
   await page.goto('/o/abc/manage')
   await expect(page.getByRole('heading', { level: 1, name: 'ZZ Training Co overview' })).toBeVisible()
-  await expect(page.getByText('Course figures are not available right now.')).toHaveCount(2)
+  // Presentation V4 (owner approval, 20 November 2026): one notice for the two course charts, not two cards.
+  await expect(page.getByText('Course figures are not available right now.')).toHaveCount(1)
   await expect(page.getByRole('figure', { name: 'Invitations by status' })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Courses' })).toBeVisible()
 })
+
+// Presentation V4: without the summary, one short notice spans the chart row instead of two empty cards
+// stretched to the height of the invitations chart; the invitations chart stays, below the notice.
+for (const width of [1440, 768, 390]) {
+  test(`V4 at ${width} px: a refused summary shows one short notice across the chart row`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 })
+    await setup(page, 'org_admin', { org_learning_summary: () => ({ status: 403, json: { code: '42501', message: 'AQS: not permitted' } }) })
+    await page.goto('/o/abc/manage')
+    const notice = page.getByText('Course figures are not available right now.')
+    await expect(notice).toHaveCount(1)
+    const invitations = page.getByRole('figure', { name: 'Invitations by status' })
+    await expect(invitations).toBeVisible()
+    const boxes = await page.evaluate(() => {
+      const charts = document.querySelector('section[aria-label="Charts"]') as HTMLElement
+      const r = (el: Element) => el.getBoundingClientRect()
+      const cards = [...charts.children]
+      const noticeCard = cards.find((c) => c.textContent?.includes('Course figures are not available right now.')) as HTMLElement
+      const invitationsCard = cards.find((c) => c.querySelector('figure')) as HTMLElement
+      return {
+        cards: cards.length,
+        charts: { left: r(charts).left, right: r(charts).right },
+        notice: { left: r(noticeCard).left, right: r(noticeCard).right, top: r(noticeCard).top, bottom: r(noticeCard).bottom },
+        invitationsTop: r(invitationsCard).top,
+      }
+    })
+    expect(boxes.cards).toBe(2)
+    expect(Math.abs(boxes.notice.left - boxes.charts.left)).toBeLessThan(1)
+    expect(Math.abs(boxes.notice.right - boxes.charts.right)).toBeLessThan(1)
+    expect(boxes.notice.bottom - boxes.notice.top).toBeLessThan(100)
+    expect(boxes.invitationsTop).toBeGreaterThan(boxes.notice.bottom)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  })
+}
 
 test('7-4 Instructor: completion and quiz pass share from the course summary of non-draft courses only', async ({ page }) => {
   const mock = await setup(page, 'instructor', {
