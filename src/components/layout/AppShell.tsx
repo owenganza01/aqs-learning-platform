@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router'
 import { cx } from '../../lib/cx'
 import { Avatar, Icon } from '../ui'
@@ -70,12 +70,35 @@ export function AppShell({
 }: AppShellProps) {
   const { pathname } = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   const sidebarId = useId()
   const searchId = useId()
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const sidebarRef = useRef<HTMLElement>(null)
+  const userMenuRef = useRef<HTMLDivElement>(null)
   const wasOpenRef = useRef(false)
+
+  // Close user profile dropdown on click outside or Escape
+  useEffect(() => {
+    if (!userMenuOpen) return
+    const onDocClick = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false)
+      }
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDocClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [userMenuOpen])
 
   // On small screens the open drawer is a modal dialog. Escape closes it, and Tab
   // and Shift+Tab stay inside it. The page behind it is made inert (see below).
@@ -165,27 +188,36 @@ export function AppShell({
 
         <nav aria-label="Workspace">
           <ul className={styles.navList}>
-            {navItems.map((item) => (
-              <li key={item.to}>
-                {item.unavailable ? (
-                  <span className={`${styles.navItem} ${styles.navItemUnavailable}`} aria-disabled="true">
-                    {item.icon ? <Icon name={item.icon} size={20} /> : null}
-                    {item.label}
-                    <span className="visually-hidden"> (not available yet)</span>
-                  </span>
-                ) : (
-                  <Link
-                    to={item.to}
-                    className={styles.navItem}
-                    aria-current={isActive(item) ? 'page' : undefined}
-                    onClick={() => setDrawerOpen(false)}
-                  >
-                    {item.icon ? <Icon name={item.icon} size={20} /> : null}
-                    {item.label}
-                  </Link>
-                )}
-              </li>
-            ))}
+            {navItems.map((item, index) => {
+              const prevSection = index > 0 ? navItems[index - 1].section : null
+              const isNewSection = item.section && item.section !== prevSection
+              return (
+                <Fragment key={item.to}>
+                  {isNewSection ? (
+                    <li className={styles.navSectionHeader} aria-hidden="true">
+                      {item.section}
+                    </li>
+                  ) : null}
+                  <li>
+                    {item.unavailable ? (
+                      <span className={`${styles.navItem} ${styles.navItemUnavailable}`} aria-disabled="true">
+                        <span>{item.label}</span>
+                        <span className="visually-hidden"> (not available yet)</span>
+                      </span>
+                    ) : (
+                      <Link
+                        to={item.to}
+                        className={styles.navItem}
+                        aria-current={isActive(item) ? 'page' : undefined}
+                        onClick={() => setDrawerOpen(false)}
+                      >
+                        <span>{item.label}</span>
+                      </Link>
+                    )}
+                  </li>
+                </Fragment>
+              )
+            })}
           </ul>
         </nav>
 
@@ -208,15 +240,6 @@ export function AppShell({
         )}
 
         <div className={styles.sidebarBottom}>
-          <button
-            type="button"
-            className={styles.signOut}
-            disabled={onSignOut ? false : unavailableActions}
-            onClick={onSignOut}
-          >
-            <Icon name="logOut" size={20} />
-            Sign out
-          </button>
           <p className={styles.copyright}>© {new Date().getFullYear()} AQS E-Learning</p>
         </div>
       </aside>
@@ -275,15 +298,82 @@ export function AppShell({
                 <span className={styles.divider} aria-hidden="true" />
               </>
             )}
-            <div className={styles.user}>
-              <Avatar name={user.name} decorative />
-              <div className={styles.userText}>
-                <p className={styles.userName}>{user.name}</p>
-                <p className={styles.userRole}>{user.roleLabel}</p>
-              </div>
-              <span className="visually-hidden">
-                Signed in as {user.name}, {user.roleLabel}
-              </span>
+            <div className={styles.userMenuContainer} ref={userMenuRef}>
+              <button
+                type="button"
+                className={styles.userMenuButton}
+                aria-expanded={userMenuOpen}
+                aria-haspopup="menu"
+                onClick={() => setUserMenuOpen((open) => !open)}
+              >
+                <Avatar name={user.name} decorative />
+                <div className={styles.userText}>
+                  <p className={styles.userName}>{user.name}</p>
+                  <p className={styles.userRole}>{user.roleLabel}</p>
+                </div>
+                <Icon
+                  name="chevronDown"
+                  size={16}
+                  className={cx(styles.userChevron, userMenuOpen && styles.userChevronOpen)}
+                />
+              </button>
+
+              {userMenuOpen ? (
+                <div className={styles.userDropdown} role="menu" aria-label="User profile menu">
+                  <div className={styles.dropdownHeader}>
+                    <p className={styles.dropdownUserName}>{user.name}</p>
+                    <p className={styles.dropdownUserRole}>{user.roleLabel}</p>
+                    {user.email ? <p className={styles.dropdownUserEmail}>{user.email}</p> : null}
+                  </div>
+                  <div className={styles.dropdownDivider} role="separator" />
+                  <Link
+                    to="/profile"
+                    role="menuitem"
+                    className={styles.dropdownItem}
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <Icon name="user" size={16} />
+                    <span>Profile</span>
+                  </Link>
+                  <Link
+                    to={
+                      workspaceKind === 'platform'
+                        ? '/admin/settings'
+                        : workspaceKind === 'organization'
+                          ? pathname
+                          : '/profile'
+                    }
+                    role="menuitem"
+                    className={styles.dropdownItem}
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <Icon name="settings" size={16} />
+                    <span>Settings</span>
+                  </Link>
+                  <Link
+                    to="/help"
+                    role="menuitem"
+                    className={styles.dropdownItem}
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <Icon name="help" size={16} />
+                    <span>Help & Support</span>
+                  </Link>
+                  <div className={styles.dropdownDivider} role="separator" />
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className={cx(styles.dropdownItem, styles.dropdownSignOut)}
+                    onClick={() => {
+                      setUserMenuOpen(false)
+                      onSignOut?.()
+                    }}
+                  >
+                    <Icon name="logOut" size={16} />
+                    <span>Sign out</span>
+                  </button>
+                </div>
+              ) : null}
             </div>
           </div>
         </header>

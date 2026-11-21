@@ -161,13 +161,15 @@ export function LandingPage() {
           </div>
           <figure className={styles.heroMedia}>
             {/* Photo: Pexels 7689856, "People working in the office" (client request, 12 November 2026). */}
-            <img
-              src="/images/landing/team-working-office.jpg"
-              width={1600}
-              height={1066}
-              alt="Four colleagues wearing headsets work together at laptops and a monitor in an office."
-              className={styles.heroImage}
-            />
+            <div className={styles.heroFrame}>
+              <img
+                src="/images/landing/team-working-office.jpg"
+                width={1600}
+                height={1066}
+                alt="Four colleagues wearing headsets work together at laptops and a monitor in an office."
+                className={styles.heroImage}
+              />
+            </div>
           </figure>
         </div>
       </section>

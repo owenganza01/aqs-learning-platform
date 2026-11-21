@@ -59,9 +59,9 @@
   --shell-fg: var(--color-border-strong); /* 7.75:1 on navy */
   --shell-fg-strong: var(--color-white);
   --shell-hover-bg: rgb(255 255 255 / 0.06);
-  --shell-active-bg: var(--color-navy-light);
+  --shell-active-bg: rgb(255 255 255 / 0.12);
   --shell-active-fg: var(--color-white);
-  --shell-active-bar: transparent;
+  --shell-active-bar: #38bdf8;
   --shell-focus-gap: var(--color-navy);
   --shell-focus-color: var(--focus-ring-on-dark);
   --workspace-accent: var(--color-blue); /* decorative: bars and rules */
@@ -173,9 +173,9 @@
   --shell-fg: var(--color-text-subtle); /* #475569 on white · 7.58:1 */
   --shell-fg-strong: var(--color-text); /* 17.85:1 */
   --shell-hover-bg: var(--color-surface-muted);
-  --shell-active-bg: var(--color-orange-50);
-  --shell-active-fg: var(--color-warning); /* #9a3412 on #fff7ed · 6.88:1 */
-  --shell-active-bar: var(--color-accent-text);
+  --shell-active-bg: rgb(234 88 12 / 0.1);
+  --shell-active-fg: #9a3412; /* #9a3412 on light · 6.88:1 */
+  --shell-active-bar: #ea580c;
   --shell-focus-gap: var(--color-white);
   --shell-focus-color: var(--color-blue);
   --workspace-accent: var(--color-accent-text); /* #c2410c */
@@ -198,7 +198,7 @@
   --shell-bg: #15171c;
   --shell-fg: var(--color-border-strong); /* #cbd5e1 on #15171c · 12.1:1 */
   --shell-hover-bg: rgb(255 255 255 / 0.07);
-  --shell-active-bg: #2a2c4d;
+  --shell-active-bg: rgb(99 102 241 / 0.16);
   --shell-active-fg: var(--color-white); /* on #2a2c4d · 13.41:1 */
   --shell-active-bar: #818cf8; /* decorative bar */
   --shell-focus-gap: #15171c;

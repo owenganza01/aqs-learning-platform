@@ -110,47 +110,49 @@
 .heroMedia {
   min-width: 0;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroFrame {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-lg, 16px);
+  overflow: hidden;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 20px 48px -12px rgb(30 58 95 / 14%), 0 0 0 1px rgb(30 58 95 / 4%);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .heroImage {
   display: block;
   width: 100%;
   height: auto;
-  /* The hero frame keeps its 1200 : 505 proportions; the 3:2 photo is cropped to fill it, keeping
-     the four people and the desk in view. */
-  aspect-ratio: 1200 / 505;
+  aspect-ratio: 16 / 11;
   object-fit: cover;
-  object-position: 50% 60%;
-  border: 1px solid var(--color-border);
-  /* Sharp corners (client request, 12 November 2026). */
-  border-radius: 0;
-  background: var(--color-white);
-  box-shadow: 0 12px 32px -4px rgb(30 58 95 / 15%);
+  object-position: 25% 45%;
+  border-radius: inherit;
 }
 
-/* Desktop (two columns): the photo fills the whole right column, top to bottom, at the height of
-   the text beside it (client request, 12 November 2026). Below 1024px the hero is one column and
-   the photo keeps the 1200 : 505 frame above. */
+/* Desktop: elegant framed hero image integrated into grid column beside the hero copy */
 @media (min-width: 1024px) {
-  /* Edge to edge (client request, 12 November 2026): the photo starts right under the header,
-     cancelling the hero's 80px top padding, and runs to the screen's right edge, cancelling the
-     container's 72px padding and, on screens wider than the 1440px grid, the centred margin. The
-     hero clips anything past the edge (overflow: hidden), so the page never scrolls sideways. */
   .heroMedia {
-    align-self: stretch;
+    align-self: center;
     display: flex;
-    margin-top: -80px;
-    margin-right: calc(-72px - max(0px, (100vw - (var(--content-max-width) + 2 * 72px)) / 2));
+    justify-content: flex-end;
+    margin: 0;
   }
 
-  /* Square corners and no frame where the photo touches the header and the screen edge. The photo
-     keeps the left part of the 3:2 frame in view, where the two women work at the screen. */
+  .heroFrame {
+    max-width: 580px;
+    border-radius: var(--radius-lg, 16px);
+  }
+
   .heroImage {
-    height: 100%;
-    aspect-ratio: auto;
-    object-position: 4% 50%;
-    border: 0;
-    box-shadow: none;
+    aspect-ratio: 4 / 3;
+    max-height: 480px;
   }
 }
 

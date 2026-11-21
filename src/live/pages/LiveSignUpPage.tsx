@@ -3,12 +3,12 @@ import { Navigate, useSearchParams } from 'react-router'
 import { Banner } from '../../components/ui'
 import { useAuth } from '../../lib/auth-context'
 import { friendlyAuthError } from '../../lib/auth-errors'
-import { parseAuthMethods, type AuthMethodId } from '../../lib/auth-methods'
+import { OAUTH_PROVIDER_LABELS, parseAuthMethods, type AuthMethodId } from '../../lib/auth-methods'
 import { SignUpView } from '../../pages/SignUpPage'
 import { safeNext } from '../safe-next'
 import { LegalFooter } from '../components/LegalFooter'
 
-const METHODS = parseAuthMethods(import.meta.env.VITE_AUTH_PROVIDERS)
+const METHODS = parseAuthMethods(import.meta.env.VITE_AUTH_PROVIDERS ?? 'google,apple,facebook,email')
 
 /*
  * Live sign-up (D42, 12 November 2026). Google, Apple and Facebook create the learner account on
@@ -45,6 +45,10 @@ export default function LiveSignUpPage() {
         ) : undefined
       }
       onProvider={async (provider) => {
+        if (provider === 'apple' || provider === 'facebook') {
+          setError(`${OAUTH_PROVIDER_LABELS[provider]} sign-up is coming soon. Please continue with Email or Google.`)
+          return
+        }
         setBusy(provider)
         setError(null)
         const result = await signInWithProvider(provider, { redirectTo: callback })

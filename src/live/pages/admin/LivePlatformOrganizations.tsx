@@ -85,7 +85,7 @@ export function LivePlatformOverview() {
                   <BarChart title="Learners and courses" description="Current counts from the platform report." labelHeading="Count of" valueHeading="Number" data={platformTotals(rows)} />
                 </Card>
               </section>
-              <Card padding="none" as="section" aria-label="Organizations">
+              <Card padding="none" as="section" aria-label="Organizations" className={sectionStyles.tableSection}>
                 <div className={sectionStyles.cardPad}>
                   <CardHeader
                     title="Organizations"

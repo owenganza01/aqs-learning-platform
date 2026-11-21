@@ -21,7 +21,7 @@ export function LiveShell({ shell, banner, children }: { shell: ShellDefinition;
   return (
     <RoleShell
       shell={shell}
-      user={{ name: person?.fullName || person?.email || '', roleLabel: shell.roleLabel }}
+      user={{ name: person?.fullName || person?.email || '', roleLabel: shell.roleLabel, email: person?.email }}
       banner={
         <>
           <OfflineNotice />
