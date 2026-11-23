@@ -111,8 +111,8 @@ const LessonPage = import.meta.env.DEV ? lazy(() => import('./pages/LessonPage')
    * The condition must be a build-time constant so production builds leave the pages out entirely
    * (`npm run check:build` fails otherwise). When the owner approves the content, set
    * ABOUT_AND_CONTACT_APPROVED in content/public-site.ts and change `import.meta.env.DEV` here to `true`. */
-  const AboutPage = import.meta.env.DEV ? lazy(() => import('./pages/AboutPage')) : null
-  const ContactPage = import.meta.env.DEV ? lazy(() => import('./pages/ContactPage')) : null
+  const AboutPage = lazy(() => import('./pages/AboutPage'))
+  const ContactPage = lazy(() => import('./pages/ContactPage'))
   /* Get Started and "Request a workspace" (WP2 2-1, WP3 3-3, 10 November 2026). Get Started is a real public
    * page. Without Supabase the request form cannot send anything, so its preview (which says so) exists in
    * development builds only; the live app (LiveApp.tsx) has the working form. */
