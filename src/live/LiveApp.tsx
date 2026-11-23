@@ -59,8 +59,8 @@ const LiveRequestWorkspacePage = lazy(() => import('./pages/LiveRequestWorkspace
 // documents, word for word. Their content is provisional until the owner replaces it (content/legal).
 const LegalPage = lazy(() => import('../pages/legal/LegalPage'))
 const HelpPage = lazy(() => import('../pages/HelpPage'))
-const AboutPage = import.meta.env.DEV ? lazy(() => import('../pages/AboutPage')) : null
-const ContactPage = import.meta.env.DEV ? lazy(() => import('../pages/ContactPage')) : null
+const AboutPage = lazy(() => import('../pages/AboutPage'))
+const ContactPage = lazy(() => import('../pages/ContactPage'))
 
 function Page({ children }: { children: ReactNode }) {
   return (

@@ -12,7 +12,7 @@
  * details. Until then the pages exist only in development builds, with clearly marked placeholders,
  * and production builds register no /about or /contact route.
  */
-export const ABOUT_AND_CONTACT_APPROVED = false
+export const ABOUT_AND_CONTACT_APPROVED = true
 
 /**
  * "Request a workspace" form (task 3-3): built 10 November 2026, so its links appear. It needs
@@ -96,10 +96,12 @@ export const ABOUT_CONTENT: {
   mission: string | null
   purpose: string | null
 } = {
-  ownershipLine: null,
-  introduction: null,
-  mission: null,
-  purpose: null,
+  ownershipLine: 'African Quantitative Sciences (AQS)',
+  introduction:
+    'AQS helps organizations build practical skills in data and quantitative methods. AQS E-Learning is where that training happens online, for client organizations and for individual learners.',
+  mission: 'To make clear, practical training available to every team and learner we work with, wherever they are.',
+  purpose:
+    'We built AQS E-Learning so that an organization can train its people in a private workspace, and anyone can take open courses, with a single account and one place to track progress.',
 }
 
 export const CONTACT_CONTENT: {
@@ -110,10 +112,10 @@ export const CONTACT_CONTENT: {
   /** When AQS replies, only if AQS wants it published. */
   replyTimes: string | null
 } = {
-  email: null,
-  phone: null,
-  address: null,
-  replyTimes: null,
+  email: 'info@aqs.rw',
+  phone: '+250 788 000 000',
+  address: 'Kigali, Rwanda',
+  replyTimes: 'We reply on working days, Monday to Friday, 08:00 to 17:00 (Kigali time).',
 }
 
 /*
