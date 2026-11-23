@@ -4,6 +4,8 @@ export type NavItem = {
   label: string
   to: string
   icon?: IconName
+  /** Optional section header to group navigation items under (e.g. "Learning", "Manage", "Platform"). */
+  section?: string
   /** Force the active style (otherwise worked out from the current URL). */
   active?: boolean
   /**
@@ -22,6 +24,7 @@ export type CurrentUser = {
   name: string
   /** Shown under the name, e.g. "Learner" or "General Admin". */
   roleLabel: string
+  email?: string
 }
 
 /** Which signed-in workspace a shell belongs to (Unified Refinement Plan, Phase 2). */

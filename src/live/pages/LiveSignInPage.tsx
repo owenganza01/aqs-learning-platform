@@ -3,13 +3,13 @@ import { Navigate, useSearchParams } from 'react-router'
 import { Banner } from '../../components/ui'
 import { useAuth } from '../../lib/auth-context'
 import { SIGN_IN_NOT_CONFIGURED, SIGN_IN_PROBLEM_MESSAGES, friendlyAuthError, signInProblemFromQuery } from '../../lib/auth-errors'
-import { parseAuthMethods, type AuthMethodId } from '../../lib/auth-methods'
+import { OAUTH_PROVIDER_LABELS, parseAuthMethods, type AuthMethodId } from '../../lib/auth-methods'
 import { SignInView } from '../../pages/SignInPage'
 import { safeNext } from '../safe-next'
 import { LegalFooter } from '../components/LegalFooter'
 
 /** Methods switched on for this deployment (VITE_AUTH_PROVIDERS; Google is always on). */
-const METHODS = parseAuthMethods(import.meta.env.VITE_AUTH_PROVIDERS)
+const METHODS = parseAuthMethods(import.meta.env.VITE_AUTH_PROVIDERS ?? 'google,apple,facebook,email')
 
 /*
  * Live sign-in (D15, D42): Google, and Apple, Facebook and email where switched on. New people get
@@ -45,6 +45,13 @@ export default function LiveSignInPage() {
         ) : undefined
       }
       onProvider={async (provider) => {
+        if (provider === 'apple' || provider === 'facebook') {
+          setError({
+            tone: 'info',
+            text: `${OAUTH_PROVIDER_LABELS[provider]} sign-in is coming soon. Please continue with Email or Google.`,
+          })
+          return
+        }
         setBusy(provider)
         setError(null)
         const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`

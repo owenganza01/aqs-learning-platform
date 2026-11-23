@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { PageHeader } from '../../../components/layout/PageHeader'
-import { Badge, Button, ButtonLink, Card, EmptyState, ProgressBar, StatCard, TextField } from '../../../components/ui'
+import { Badge, BarChart, Button, ButtonLink, Card, EmptyState, ProgressBar, StatCard, TextField } from '../../../components/ui'
 import styles from '../../../pages/InstructorDashboardPage.module.css'
 import { ActionFeedback, Loaded } from '../../components/States'
 import { LiveShell } from '../../components/LiveShell'
 import { authoring, slugify } from '../../data/authoring'
+import { courseLearningSummary } from '../../data/summaries'
+import { completionByCourse, quizPassShareByCourse } from '../../summary-charts'
 import { instructorShell } from '../../navigation'
 import { useCurrentOrg } from '../../org-context'
 import { useSession } from '../../session-context'
@@ -19,12 +21,19 @@ import teach from './CourseEditor.module.css'
  * learner records course staff may read (G2). The design's "Recent learner activity" needs an
  * activity feed the first release does not record, so it is not shown.
  * B.1 (Revision 2 Phase 4): the heading names the page's purpose, and each course is a card with its status
- * and completion, as in the instructor dashboard frame. No chart card: instructor charts wait for 7-1 (7-4).
+ * and completion, as in the instructor dashboard frame.
+ * Task 7-4 (P5): charts of completion and quiz pass share by course from course_learning_summary
+ * (migration 0023; the database returns only courses this person may see). If the summary cannot
+ * be loaded the charts say so; the course cards still work.
  */
 export default function LiveInstructorDashboard() {
   const org = useCurrentOrg()
   const { userId } = useSession()
-  const courses = useResource(() => loadTeachCourses(org.id, userId ?? '', !org.roles.includes('org_admin')), `${org.id}:${userId}`)
+  const courses = useResource(async () => {
+    const list = await loadTeachCourses(org.id, userId ?? '', !org.roles.includes('org_admin'))
+    const summary = await courseLearningSummary(list.filter((c) => c.status !== 'draft').map((c) => c.id)).catch(() => null)
+    return { list, summary }
+  }, `${org.id}:${userId}`)
   const base = `/o/${org.slug}/teach`
 
   return (
@@ -39,13 +48,33 @@ export default function LiveInstructorDashboard() {
         }
       />
       <Loaded resource={courses} label="Loading your courses" loading="dashboard">
-        {(list) => (
+        {({ list, summary }) => {
+          const titled = (summary ?? []).map((row) => ({ ...row, title: list.find((c) => c.id === row.courseId)?.title ?? 'Course' }))
+          return (
           <>
             <div className={styles.stats}>
               <StatCard label="Courses" value={list.length} note={`${list.filter((c) => c.status === 'draft').length} in draft`} />
               <StatCard label="Published" value={list.filter((c) => c.status === 'published').length} note="Open to learners" />
               <StatCard label="Learners enrolled" value={list.reduce((n, c) => n + c.enrolled, 0)} note="Across your courses" />
             </div>
+            {list.some((c) => c.status !== 'draft') ? (
+              <section className={styles.charts} aria-label="Charts">
+                <Card padding="lg">
+                  {summary ? (
+                    <BarChart title="Course completion" description="Learners who completed each course, as of now." unit="percent" labelHeading="Course" valueHeading="Completion" data={completionByCourse(titled)} emptyMessage="No learners in your courses yet." />
+                  ) : (
+                    <p className={styles.courseMeta}>Course figures are not available right now.</p>
+                  )}
+                </Card>
+                <Card padding="lg">
+                  {summary ? (
+                    <BarChart title="Quiz pass share" description="Learners who passed each course's quizzes, out of those who tried." unit="percent" labelHeading="Course" valueHeading="Passed" data={quizPassShareByCourse(titled)} emptyMessage="No quiz attempts yet." />
+                  ) : (
+                    <p className={styles.courseMeta}>Course figures are not available right now.</p>
+                  )}
+                </Card>
+              </section>
+            ) : null}
             {list.length === 0 ? (
               <EmptyState title="No courses yet" description="Use Create course to start your first draft." />
             ) : (
@@ -76,7 +105,8 @@ export default function LiveInstructorDashboard() {
               </ul>
             )}
           </>
-        )}
+          )
+        }}
       </Loaded>
     </LiveShell>
   )

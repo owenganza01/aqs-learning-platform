@@ -58,6 +58,7 @@ const LiveRequestWorkspacePage = lazy(() => import('./pages/LiveRequestWorkspace
 // Terms of Use, Privacy Policy and Cookie Policy (tasks 5-3 and 5-5, 15 November 2026): the owner's
 // documents, word for word. Their content is provisional until the owner replaces it (content/legal).
 const LegalPage = lazy(() => import('../pages/legal/LegalPage'))
+const HelpPage = lazy(() => import('../pages/HelpPage'))
 const AboutPage = import.meta.env.DEV ? lazy(() => import('../pages/AboutPage')) : null
 const ContactPage = import.meta.env.DEV ? lazy(() => import('../pages/ContactPage')) : null
 
@@ -95,6 +96,7 @@ export function LiveApp({ extraRoutes }: { extraRoutes?: ReactNode }) {
         <Route path="/terms" element={<Page><LegalPage document="terms" /></Page>} />
         <Route path="/privacy" element={<Page><LegalPage document="privacy" /></Page>} />
         <Route path="/cookies" element={<Page><LegalPage document="cookies" /></Page>} />
+        <Route path="/help" element={<Page><HelpPage /></Page>} />
         {AboutPage ? <Route path="/about" element={<Page><AboutPage /></Page>} /> : null}
         {ContactPage ? <Route path="/contact" element={<Page><ContactPage /></Page>} /> : null}
 

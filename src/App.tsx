@@ -120,6 +120,7 @@ const LessonPage = import.meta.env.DEV ? lazy(() => import('./pages/LessonPage')
   /* Terms of Use, Privacy Policy and Cookie Policy (15 November 2026): real public pages with the owner's
    * documents, word for word. The content is provisional until the owner replaces it (content/legal). */
   const LegalPage = lazy(() => import('./pages/legal/LegalPage'))
+  const HelpPage = lazy(() => import('./pages/HelpPage'))
   const RequestWorkspacePreview = import.meta.env.DEV ? lazy(() => import('./pages/RequestWorkspacePreview')) : null
 
 export default function App() {
@@ -138,6 +139,7 @@ export default function App() {
         <Route path="/terms" element={<Suspense fallback={null}><LegalPage document="terms" /></Suspense>} />
         <Route path="/privacy" element={<Suspense fallback={null}><LegalPage document="privacy" /></Suspense>} />
         <Route path="/cookies" element={<Suspense fallback={null}><LegalPage document="cookies" /></Suspense>} />
+        <Route path="/help" element={<Suspense fallback={null}><HelpPage /></Suspense>} />
         {RequestWorkspacePreview ? (
           <Route path="/request-workspace" element={<Suspense fallback={null}><RequestWorkspacePreview /></Suspense>} />
         ) : null}

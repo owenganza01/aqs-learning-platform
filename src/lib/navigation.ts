@@ -19,12 +19,12 @@ export function getPlatformAdminShell(): ShellDefinition {
   return {
     ...getShellDefinition('platform-admin', '/admin'),
     navItems: [
-      { label: 'Overview', to: '/admin', exact: true },
-      { label: 'Organizations', to: '/admin/organizations' },
-      { label: 'Users and roles', to: '/admin/users' },
-      { label: 'Courses', to: '/admin/courses' },
-      { label: 'Reports', to: '/admin/reports' },
-      { label: 'Settings', to: '/admin/settings' },
+      { label: 'Overview', to: '/admin', exact: true, icon: 'layoutDashboard', section: 'Core' },
+      { label: 'Organizations', to: '/admin/organizations', icon: 'building', section: 'Tenants' },
+      { label: 'Users and roles', to: '/admin/users', icon: 'search' },
+      { label: 'Courses', to: '/admin/courses', icon: 'bookOpen', section: 'Catalog' },
+      { label: 'Reports', to: '/admin/reports', icon: 'barChart', section: 'Operations' },
+      { label: 'Settings', to: '/admin/settings', icon: 'settings' },
     ],
   }
 }
@@ -38,10 +38,10 @@ export function getOrgAdminShell(orgSlug: string): ShellDefinition {
   return {
     ...getShellDefinition('org-admin', base),
     navItems: [
-      { label: 'Dashboard', to: base, exact: true },
-      { label: 'Members', to: `${base}/members` },
-      { label: 'Invitations and domains', to: `${base}/invitations` },
-      { label: 'Organization settings', to: `${base}/settings` },
+      { label: 'Dashboard', to: base, exact: true, icon: 'layoutDashboard', section: 'Workspace' },
+      { label: 'Members', to: `${base}/members`, icon: 'users', section: 'People & Access' },
+      { label: 'Invitations and domains', to: `${base}/invitations`, icon: 'mail' },
+      { label: 'Organization settings', to: `${base}/settings`, icon: 'building', section: 'Organization' },
     ],
   }
 }
@@ -56,15 +56,13 @@ export function getInstructorShell(orgSlug: string): ShellDefinition {
   return {
     ...getShellDefinition('instructor', base),
     navItems: [
-      { label: 'Dashboard', to: base, exact: true },
-      { label: 'Courses', to: `${base}/courses` },
-      { label: 'Learners', to: `${base}/learners` },
-      { label: 'Invitations', to: `${base}/invitations` },
-      { label: 'Reports', to: `${base}/reports` },
-      { label: 'Messages', to: `${base}/messages` },
-      // /profile is the learner profile, inside the learner workspace. An instructor profile page is not
-      // built, so this entry stays unavailable rather than moving the instructor into another workspace.
-      { label: 'Profile', to: `${base}/profile`, unavailable: true },
+      { label: 'Dashboard', to: base, exact: true, icon: 'layoutDashboard', section: 'Studio' },
+      { label: 'Courses', to: `${base}/courses`, icon: 'bookOpen' },
+      { label: 'Learners', to: `${base}/learners`, icon: 'users' },
+      { label: 'Invitations', to: `${base}/invitations`, icon: 'mail', section: 'Operations' },
+      { label: 'Reports', to: `${base}/reports`, icon: 'barChart' },
+      { label: 'Messages', to: `${base}/messages`, icon: 'mail' },
+      { label: 'Profile', to: `${base}/profile`, icon: 'user', unavailable: true },
     ],
   }
 }
@@ -99,12 +97,11 @@ export function getShellDefinition(role: ShellRole, dashboardTo: string): ShellD
         workspace: { title: 'AQS E-Learning' },
         helpTitle: 'Here to help you learn',
         navItems: [
-          { label: 'Dashboard', to: dashboardTo },
-          { label: 'My courses', to: '/my-courses' },
-          { label: 'Catalog', to: '/catalog' },
-          { label: 'Certificates', to: '/certificates', unavailable: true },
-          { label: 'Messages', to: '/messages' },
-          { label: 'Profile', to: '/profile' },
+          { label: 'Dashboard', to: dashboardTo, icon: 'layoutDashboard', section: 'Learning' },
+          { label: 'My courses', to: '/my-courses', icon: 'bookOpen' },
+          { label: 'Catalog', to: '/catalog', icon: 'graduationCap' },
+          { label: 'Certificates', to: '/certificates', icon: 'award', unavailable: true, section: 'Records' },
+          { label: 'Messages', to: '/messages', icon: 'mail' },
         ],
       }
     case 'instructor':
@@ -114,13 +111,12 @@ export function getShellDefinition(role: ShellRole, dashboardTo: string): ShellD
         workspace: { title: 'Teaching Studio', subtitle: 'Sample organization', mark: workspaceInitials('Sample organization') },
         helpTitle: 'Here to help you teach',
         navItems: [
-          { label: 'Dashboard', to: dashboardTo },
-          { label: 'Courses', to: '/o/sample-org/teach/courses', unavailable: true },
-          { label: 'Learners', to: '/o/sample-org/teach/learners', unavailable: true },
-          { label: 'Invitations', to: '/o/sample-org/teach/invitations', unavailable: true },
-          { label: 'Reports', to: '/o/sample-org/teach/reports', unavailable: true },
-          { label: 'Messages', to: '/o/sample-org/teach/messages', unavailable: true },
-          { label: 'Profile', to: '/profile', unavailable: true },
+          { label: 'Dashboard', to: dashboardTo, icon: 'layoutDashboard', section: 'Studio' },
+          { label: 'Courses', to: '/o/sample-org/teach/courses', icon: 'bookOpen', unavailable: true },
+          { label: 'Learners', to: '/o/sample-org/teach/learners', icon: 'users', unavailable: true },
+          { label: 'Invitations', to: '/o/sample-org/teach/invitations', icon: 'mail', unavailable: true, section: 'Operations' },
+          { label: 'Reports', to: '/o/sample-org/teach/reports', icon: 'barChart', unavailable: true },
+          { label: 'Messages', to: '/o/sample-org/teach/messages', icon: 'mail', unavailable: true },
         ],
       }
     case 'org-admin':
@@ -130,10 +126,10 @@ export function getShellDefinition(role: ShellRole, dashboardTo: string): ShellD
         workspace: { title: 'Sample organization', subtitle: 'Organization workspace', mark: workspaceInitials('Sample organization') },
         helpTitle: 'Here to help you manage',
         navItems: [
-          { label: 'Dashboard', to: dashboardTo },
-          { label: 'Members', to: '/o/sample-org/manage/members', unavailable: true },
-          { label: 'Invitations and domains', to: '/o/sample-org/manage/invitations', unavailable: true },
-          { label: 'Organization settings', to: '/o/sample-org/manage/settings', unavailable: true },
+          { label: 'Dashboard', to: dashboardTo, icon: 'layoutDashboard', section: 'Workspace' },
+          { label: 'Members', to: '/o/sample-org/manage/members', icon: 'users', unavailable: true, section: 'People & Access' },
+          { label: 'Invitations and domains', to: '/o/sample-org/manage/invitations', icon: 'mail', unavailable: true },
+          { label: 'Organization settings', to: '/o/sample-org/manage/settings', icon: 'building', unavailable: true, section: 'Organization' },
         ],
       }
     case 'platform-admin':
@@ -143,12 +139,12 @@ export function getShellDefinition(role: ShellRole, dashboardTo: string): ShellD
         workspace: { title: 'AQS Platform', subtitle: 'Control Center', mark: 'AQS', scope: 'Platform-wide' },
         helpTitle: 'Here to help you manage',
         navItems: [
-          { label: 'Overview', to: dashboardTo },
-          { label: 'Organizations', to: '/admin/organizations', unavailable: true },
-          { label: 'Users and roles', to: '/admin/users', unavailable: true },
-          { label: 'Courses', to: '/admin/courses', unavailable: true },
-          { label: 'Reports', to: '/admin/reports', unavailable: true },
-          { label: 'Settings', to: '/admin/settings', unavailable: true },
+          { label: 'Overview', to: dashboardTo, icon: 'layoutDashboard', section: 'Core' },
+          { label: 'Organizations', to: '/admin/organizations', icon: 'building', unavailable: true, section: 'Tenants' },
+          { label: 'Users and roles', to: '/admin/users', icon: 'search', unavailable: true },
+          { label: 'Courses', to: '/admin/courses', icon: 'bookOpen', unavailable: true, section: 'Catalog' },
+          { label: 'Reports', to: '/admin/reports', icon: 'barChart', unavailable: true, section: 'Operations' },
+          { label: 'Settings', to: '/admin/settings', icon: 'settings', unavailable: true },
         ],
       }
   }

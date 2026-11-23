@@ -35,9 +35,9 @@ for (const path of ['/terms', '/privacy', '/cookies']) {
 }
 
 // Task 5-7: what the site keeps in the browser, compared with the Cookie Policy ("essential cookies"
-// only). Every key must be on this list. The video position is a known exception: the policy says no
-// functional storage is used, and tracker task 5-6 (stop saving the position) is not done.
-const ALLOWED_LOCAL = [/^sb-[a-z0-9]+-auth-token(?:-code-verifier)?$/ /* the sign-in session (essential) */, /^aqs:video-position:/ /* playback position: task 5-6 */]
+// only). Every key must be on this list. Since task 5-6 (19 November 2026) the video position is kept
+// in memory for the visit only, so the list holds essential keys alone.
+const ALLOWED_LOCAL = [/^sb-[a-z0-9]+-auth-token(?:-code-verifier)?$/ /* the sign-in session (essential) */]
 const ALLOWED_SESSION = [/^aqs\.invite-token$/ /* a pending invitation, for this tab only (essential) */]
 
 async function inventory(page: Page) {

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { PageHeader } from '../../../components/layout/PageHeader'
-import { Badge, Button, ButtonLink, Card, CardHeader, EmptyState, StatCard, Table, TextField, type TableColumn } from '../../../components/ui'
+import { Badge, BarChart, Button, ButtonLink, Card, CardHeader, EmptyState, StatCard, Table, TextField, type TableColumn } from '../../../components/ui'
 import styles from '../../../pages/PlatformAdminOrganizationsPage.module.css'
 import createStyles from '../../../pages/OrganizationCreatePage.module.css'
 import sectionStyles from '../../../pages/PlatformAdminSectionPages.module.css'
@@ -13,6 +13,7 @@ import { platformShell } from '../../navigation'
 import type { OrgStatus } from '../../session-context'
 import { useAction, useResource } from '../../useResource'
 import { ORG_STATUS } from './org-status'
+import { organizationsByStatus, platformTotals } from '../../summary-charts'
 import { formatDate } from '../../../lib/format-date'
 
 /*
@@ -75,7 +76,16 @@ export function LivePlatformOverview() {
                 <StatCard label="Learners in organizations" value={orgs.reduce((n, r) => n + (r.activeLearners ?? 0), 0)} note="Active learner memberships" />
                 <StatCard label="Platform Admins" value={platform?.platformAdmins ?? 0} note={`${platform?.coursesPublished ?? 0} published platform courses`} />
               </div>
-              <Card padding="none" as="section" aria-label="Organizations">
+              {/* Task 7-5 (P5): counts only, straight from the platform report (P19 unchanged). */}
+              <section className={sectionStyles.charts} aria-label="Charts">
+                <Card padding="lg">
+                  <BarChart title="Organizations by status" description="Current counts from the platform report." labelHeading="Status" valueHeading="Organizations" data={organizationsByStatus(rows)} emptyMessage="No organizations yet." />
+                </Card>
+                <Card padding="lg">
+                  <BarChart title="Learners and courses" description="Current counts from the platform report." labelHeading="Count of" valueHeading="Number" data={platformTotals(rows)} />
+                </Card>
+              </section>
+              <Card padding="none" as="section" aria-label="Organizations" className={sectionStyles.tableSection}>
                 <div className={sectionStyles.cardPad}>
                   <CardHeader
                     title="Organizations"

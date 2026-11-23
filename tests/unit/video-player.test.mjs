@@ -45,3 +45,17 @@ test('storage failures never break the player', () => {
   s.setItem('k', 'not a number')
   assert.equal(p.readPosition(s, 'k'), 0)
 })
+
+test('5-6: the position is kept for the visit only, in memory, never in browser storage', async () => {
+  const store = p.visitStorage()
+  const key = p.positionKey('u9', 'l9')
+  assert.equal(p.readPosition(store, key), 0)
+  p.savePosition(store, key, 30.2, 600)
+  assert.equal(p.readPosition(p.visitStorage(), key), 30, 'the same store for the whole visit')
+  p.savePosition(store, key, 599, 600)
+  assert.equal(p.readPosition(store, key), 0, 'cleared near the end')
+  const { readFile } = await import('node:fs/promises')
+  const source = await readFile(new URL('../../src/live/components/VideoPlayer/player-model.ts', import.meta.url), 'utf8')
+  const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
+  assert.doesNotMatch(code, /localStorage|sessionStorage/, 'no browser storage in the player model')
+})

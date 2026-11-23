@@ -62,7 +62,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       signInWithEmail: async ({ email, password }) => {
         if (!supabase) return { error: NOT_CONFIGURED_MESSAGE }
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+        const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+        if (data?.session) {
+          setSession(data.session)
+        }
         return { error: error ? error.message : null, code: error?.code ?? null }
       },
       signUpWithEmail: async ({ email, password, fullName, redirectTo }) => {
@@ -75,6 +78,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             ...(redirectTo ? { emailRedirectTo: redirectTo } : {}),
           },
         })
+        if (data?.session) {
+          setSession(data.session)
+        }
         if (error) return { error: error.message, code: error.code ?? null, confirmationSent: false }
         return { error: null, code: null, confirmationSent: data.session === null }
       },
