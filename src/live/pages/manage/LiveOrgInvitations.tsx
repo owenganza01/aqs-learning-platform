@@ -5,7 +5,7 @@ import styles from '../../../pages/OrgInvitationsPage.module.css'
 import { ActionFeedback, Loaded } from '../../components/States'
 import { DomainsCard } from '../../components/DomainsCard'
 import { LiveShell } from '../../components/LiveShell'
-import { invitationActions, listInvitations, type Invitation, type InvitationSent } from '../../data/orgAdmin'
+import { invitationActions, listInvitations, type Invitation, type InvitationEmailStatus, type InvitationSent } from '../../data/orgAdmin'
 import { formatDate } from '../../learner-model'
 import { orgAdminShell } from '../../navigation'
 import { useCurrentOrg } from '../../org-context'
@@ -29,10 +29,24 @@ const STATUS: Record<Invitation['status'], { label: string; tone: BadgeTone }> =
   accepted: { label: 'Accepted', tone: 'success' },
 }
 
+const EMAIL_STATUS: Record<InvitationEmailStatus, { label: string; tone: BadgeTone }> = {
+  queued: { label: 'Sending', tone: 'neutral' },
+  sending: { label: 'Sending', tone: 'neutral' },
+  accepted: { label: 'Sent', tone: 'info' },
+  delivered: { label: 'Delivered', tone: 'success' },
+  bounced: { label: 'Bounced', tone: 'danger' },
+  complained: { label: 'Marked as spam', tone: 'danger' },
+  failed: { label: 'Not sent', tone: 'danger' },
+}
+
 export function SentNotice({ sent }: { sent: InvitationSent }) {
   const [copied, setCopied] = useState(false)
   return sent.emailSent ? (
-    <Banner tone="success">Invitation sent. It expires in seven days.</Banner>
+    <Banner tone="success">
+      {sent.emailQueued
+        ? 'Invitation created. The email is on its way (usually within a minute) and its progress shows in the list below. The invitation expires in seven days.'
+        : 'Invitation sent. It expires in seven days.'}
+    </Banner>
   ) : (
     <Banner
       tone="warning"
@@ -104,7 +118,7 @@ function InvitationLinkResult({ sent, email }: { sent: InvitationSent; email: st
 
 export default function LiveOrgInvitations() {
   const org = useCurrentOrg()
-  const list = useResource(async () => ({ rows: await listInvitations(org.id), loadedAt: Date.now() }), org.id)
+  const list = useResource(async () => ({ rows: await listInvitations(org.id, { emailStatus: true }), loadedAt: Date.now() }), org.id)
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<OrgRole>('learner')
   const [sent, setSent] = useState<{ result: InvitationSent; email: string } | null>(null)
@@ -126,6 +140,12 @@ export default function LiveOrgInvitations() {
     { key: 'status', header: 'Status', render: (i) => <Badge tone={STATUS[i.shown].tone}>{STATUS[i.shown].label}</Badge> },
     { key: 'sent', header: 'Sent', render: (i) => formatDate(i.createdAt) },
     { key: 'expires', header: 'Expires', render: (i) => (i.shown === 'pending' ? formatDate(i.expiresAt) : '—') },
+    {
+      key: 'email-status',
+      header: 'Email status',
+      render: (i) =>
+        i.shown === 'pending' && i.emailStatus ? <Badge tone={EMAIL_STATUS[i.emailStatus].tone}>{EMAIL_STATUS[i.emailStatus].label}</Badge> : '—',
+    },
     {
       key: 'actions',
       header: <span className="visually-hidden">Actions</span>,

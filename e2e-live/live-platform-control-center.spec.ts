@@ -79,6 +79,8 @@ async function setup(page: Page, status: OrgStatus = 'active', admins = 1): Prom
       organization_origin_request: () => ({ json: [] }),
       organization_requests: () => ({ json: [REQUEST] }),
       organization_request_detail: () => ({ json: [REQUEST_DETAIL] }),
+      organization_request_history: () => ({ json: [] }),
+      organization_request_documents: () => ({ json: [] }),
       approve_organization_request: () => ({ json: ORG.id }),
       decline_organization_request: () => ({ json: null }),
       course_people: () => ({ json: [] }),
@@ -189,16 +191,20 @@ test('approve and decline use the pattern; Cancel sends nothing', async ({ page 
   })
 })
 
-test('approve asks through the pattern and says nobody gains access yet', async ({ page }) => {
+// 0025 (C2): CHANGED ASSERTION. Approval now activates the workspace and invites the named administrators;
+// the dialog says exactly that (was: "Create a draft workspace…", "Nobody gains access yet").
+test('approve asks through the pattern and says it activates the workspace and invites the administrators', async ({ page }) => {
   const mock = await setup(page)
   await page.goto(`/admin/requests/${REQ_ID}`)
   await ready(page, /ZZ Test Training Co/)
   const approve = page.getByRole('form', { name: 'Approve' })
   await approve.getByLabel('What you checked').fill('Website checked.')
-  const trigger = approve.getByRole('button', { name: 'Approve and create draft' })
+  const trigger = approve.getByRole('button', { name: 'Approve and activate' })
   await trigger.click()
-  const dialog = page.getByRole('dialog', { name: 'Create a draft workspace for ZZ Test Training Co?' })
-  await expect(dialog).toContainText('Nobody gains access yet')
+  const dialog = page.getByRole('dialog', { name: 'Approve and activate ZZ Test Training Co?' })
+  await expect(dialog).toContainText('as Active')
+  await expect(dialog).toContainText('Each becomes an Organization Admin only by accepting the invitation')
+  await expect(dialog).toContainText('if any step fails, nothing is created')
   await expect(dialog.locator('[data-undo]')).toHaveAttribute('data-undo', 'no')
   await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeFocused()
   await page.keyboard.press('Escape')
@@ -366,7 +372,7 @@ for (const width of [1440, 768, 390]) {
       await ready(page, /ZZ Test Training Co/)
       await page.getByRole('form', { name: 'Approve' }).getByLabel('What you checked').fill('Website checked.')
       await page.getByRole('form', { name: 'Decline' }).getByLabel('Reason (seen only by AQS)').fill('Not confirmed.')
-      await open('Approve and create draft')
+      await open('Approve and activate')
       await page.getByRole('form', { name: 'Decline' }).getByRole('button', { name: 'Decline request' }).click()
       await expect(page.getByRole('dialog')).toBeVisible()
       await expectAccessible(page)

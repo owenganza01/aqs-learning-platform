@@ -106,3 +106,35 @@ test('thumbnails keep their public URL', async () => {
   assert.equal(r.url, 'https://storage.test/public/course-thumbnails/c/t.png')
   assert.equal(deps.calls.signed.length, 0)
 })
+
+test('A10: a lesson file asked for with download: false is signed to be shown, after the same access check', async () => {
+  assert.deepEqual(m.accessCall({ kind: 'resource', id: ID, download: false }), { fn: 'media_access', args: { p_kind: 'resource', p_id: ID } })
+  const deps = fakeDeps(ok({ bucket: 'course-files', object_path: 'c/r/notes.pdf', download: true }))
+  const r = await m.mediaUrl({ kind: 'resource', id: ID, download: false }, deps)
+  assert.equal(deps.calls.signed[0].download, false)
+  assert.equal(deps.calls.signed[0].seconds, 15 * 60)
+  assert.equal(r.expiresAt, '2026-11-04T10:15:00.000Z')
+})
+
+test('A10: without the flag a lesson file is still signed as a download', async () => {
+  const deps = fakeDeps(ok({ bucket: 'course-files', object_path: 'c/r/notes.pdf', download: true }))
+  await m.mediaUrl({ kind: 'resource', id: ID }, deps)
+  assert.equal(deps.calls.signed[0].download, true)
+})
+
+test('A10: a lesson file the database refuses (not downloadable, another organisation) is never signed, shown or saved', async () => {
+  const deps = fakeDeps(refused)
+  await assert.rejects(m.mediaUrl({ kind: 'resource', id: ID, download: false }, deps), (e) => e instanceof FunctionError && e.status === 403)
+  assert.equal(deps.calls.signed.length, 0)
+})
+
+test('A10: download is still refused on other kinds, and a lesson file accepts only download: false', () => {
+  for (const body of [
+    { kind: 'resource', id: ID, download: true },
+    { kind: 'resource', id: ID, download: 'no' },
+    { kind: 'thumbnail', id: ID, download: false },
+    { kind: 'lesson-captions', id: ID, download: false },
+  ]) {
+    assert.throws(() => m.accessCall(body), (e) => e instanceof FunctionError && e.status === 400, JSON.stringify(body))
+  }
+})

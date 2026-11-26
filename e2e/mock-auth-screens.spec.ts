@@ -23,20 +23,21 @@ test.describe('sign-in error screen (development only)', () => {
     await expect(page.getByRole('heading', { level: 1, name: "We couldn't sign you in" })).toBeVisible()
     await expect(page.getByText('Please try again', { exact: true })).toBeVisible()
     await expect(page.getByText(DEMO_NOTICE, { exact: true })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
+    // A8 (changed assertion): the preview's "Try again" cannot work, so it is disabled and says so
+    await expect(page.getByRole('button', { name: 'Try again (not available yet)' })).toBeDisabled()
     // Unavailable (D24): disabled, so it cannot be focused or activated
     await expect(page.getByRole('button', { name: /Contact support/ })).toBeDisabled()
   })
 
   test('"Try again" is inert: no navigation, request, session or storage write', async ({ page }) => {
     await page.goto('/sign-in/error')
-    const button = page.getByRole('button', { name: 'Try again' })
-    await expect(button).toBeVisible()
+    const button = page.getByRole('button', { name: 'Try again (not available yet)' })
+    await expect(button).toBeDisabled()
 
     const urlBefore = page.url()
     const { requests, storage, current } = await captureSideEffects(page)
 
-    await button.click()
+    await button.click({ force: true })
     await page.waitForLoadState('networkidle')
 
     expect(page.url()).toBe(urlBefore)
@@ -54,7 +55,7 @@ test.describe('sign-in error screen (development only)', () => {
   test('"Try again" stays inert even with the return link present', async ({ page }) => {
     await page.goto('/sign-in/error')
     const urlBefore = page.url()
-    await page.getByRole('button', { name: 'Try again' }).click()
+    await page.getByRole('button', { name: 'Try again (not available yet)' }).click({ force: true })
     await page.waitForLoadState('networkidle')
     expect(page.url()).toBe(urlBefore)
     await expect(page.getByRole('heading', { level: 1, name: "We couldn't sign you in" })).toBeVisible()
@@ -65,10 +66,11 @@ test.describe('sign-up screen (development only)', () => {
   test('renders every sign-up option with the demo notice', async ({ page }) => {
     await page.goto('/sign-up')
     await expect(page.getByRole('heading', { level: 1, name: 'Create your learner account' })).toBeVisible()
+    // A8 (changed assertion): inert options are disabled and say they are not available yet
     await expect(page.getByRole('list', { name: 'Sign-in options' }).getByRole('button')).toHaveText([
-      'Continue with Google',
-      'Continue with Apple',
-      'Continue with Facebook',
+      'Continue with Google (not available yet)',
+      'Continue with Apple (not available yet)',
+      'Continue with Facebook (not available yet)',
     ])
     // Phase A (A.1): the email form is the one email option and is always shown (no "Sign up with Email" toggle)
     await expect(page.getByRole('form', { name: 'Sign up with email' })).toBeVisible()
@@ -87,7 +89,10 @@ test.describe('sign-up screen (development only)', () => {
     const { requests, storage, current } = await captureSideEffects(page)
 
     for (const name of ['Continue with Google', 'Continue with Apple', 'Continue with Facebook']) {
-      await page.getByRole('button', { name }).click()
+      // A8 (changed assertion): each option is disabled; a forced click still does nothing
+      const option = page.getByRole('button', { name: `${name} (not available yet)` })
+      await expect(option).toBeDisabled()
+      await option.click({ force: true })
     }
     const form = page.getByRole('form', { name: 'Sign up with email' })
     for (const label of ['Full name', 'Email address', 'Password', 'Confirm password']) {
@@ -117,9 +122,11 @@ test.describe('sign-up screen (development only)', () => {
       await page.keyboard.press('Tab')
       focused.push(await page.evaluate(() => document.activeElement?.textContent?.trim() ?? ''))
     }
-    // Phase A (A.1): "Sign up with Email" no longer exists; the inert preview's email form is disabled, so it is not a stop
-    for (const item of ['Continue with Google', 'Continue with Apple', 'Continue with Facebook', 'Sign in']) {
-      expect(focused).toContain(item)
+    // Phase A (A.1): "Sign up with Email" no longer exists; the inert preview's email form is disabled, so it is not a stop.
+    // A8 (changed assertion): the inert provider options are disabled too, so the sign-in link is the stop.
+    expect(focused).toContain('Sign in')
+    for (const item of ['Continue with Google', 'Continue with Apple', 'Continue with Facebook']) {
+      expect(focused.some((text) => text.startsWith(item))).toBe(false)
     }
     for (const item of ['Privacy Policy', 'Terms', 'Learn about teaching.']) {
       expect(focused).not.toContain(item)

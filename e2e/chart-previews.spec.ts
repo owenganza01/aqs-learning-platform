@@ -25,11 +25,14 @@ test('the design system has a Charts section with values, all zero, one item, lo
   }
   await expect(section.getByRole('figure', { name: 'Loading' }).getByRole('status')).toBeVisible()
   await expect(section.getByRole('figure', { name: 'Empty' })).toContainText('Nothing to show yet.')
-  // All zero: no bar has length, each value still reads 0
+  // All zero: no bar has length, each value still reads 0 on the chart and in the table
+  // (C4, changed assertion: the drawn length of each bar is measured, not the old "0%" width attribute).
   const zero = section.getByRole('figure', { name: 'All zero' })
-  for (const width of await zero.locator('[data-chart-bars] rect[data-value]').evaluateAll((els) => els.map((e) => e.getAttribute('width')))) {
-    expect(width).toBe('0%')
+  await expect(zero.locator('[data-chart-bar]')).toHaveCount(3)
+  for (const width of await zero.locator('[data-chart-bar]').evaluateAll((els) => els.map((e) => (e as SVGGraphicsElement).getBBox().width))) {
+    expect(width).toBe(0)
   }
+  await expect(zero.locator('[data-chart-value]')).toHaveText(['0', '0', '0'])
   await expect(zero.getByRole('table').getByRole('cell')).toHaveText(['0', '0', '0'])
 })
 
@@ -40,11 +43,17 @@ for (const { name, path, charts } of PREVIEWS) {
       const figure = chart(page, title)
       await expect(figure).toBeVisible()
       await expect(figure).toContainText(NOTE)
-      // Every bar's value is in the table alternative (screen readers) and drawn on the bar
-      const values = await figure.locator('[data-chart-bars] text').allTextContents()
-      const cells = await figure.getByRole('table', { includeHidden: true }).locator('td').allTextContents()
+      // Every bar's value is in the table alternative (screen readers) and drawn on the bar, and every
+      // label drawn on the chart is a row heading of the table (C4: the values and labels are located by
+      // their drawn text, not by the old chart's SVG structure).
+      await expect(figure.locator('[data-chart-value]').first()).toBeVisible()
+      const values = await figure.locator('[data-chart-value]').allTextContents()
+      const table = figure.getByRole('table', { includeHidden: true })
+      const cells = await table.locator('td').allTextContents()
       expect(values.length).toBeGreaterThan(0)
       expect(cells).toEqual(values)
+      const drawnLabels = await figure.locator('[data-chart-label]').evaluateAll((els) => els.map((e) => [...e.querySelectorAll('tspan')].map((t) => t.textContent).join(' ')))
+      expect(drawnLabels).toEqual(await table.locator('tbody th').allTextContents())
     }
   })
 }
@@ -52,8 +61,8 @@ for (const { name, path, charts } of PREVIEWS) {
 test('"Show as table" shows the same numbers as a visible table, and back', async ({ page }) => {
   await page.goto('/admin')
   const figure = chart(page, 'Organizations by status')
-  await expect(figure.locator('[data-chart-bars] text').first()).toBeVisible()
-  const values = await figure.locator('[data-chart-bars] text').allTextContents()
+  await expect(figure.locator('[data-chart-value]').first()).toBeVisible()
+  const values = await figure.locator('[data-chart-value]').allTextContents()
   await figure.getByRole('button', { name: 'Show as table' }).click()
   const table = figure.getByRole('table')
   await expect(table).toBeVisible()
@@ -61,6 +70,32 @@ test('"Show as table" shows the same numbers as a visible table, and back', asyn
   await expect(figure.locator('[data-chart-bars]')).toHaveCount(0)
   await figure.getByRole('button', { name: 'Show as chart' }).click()
   await expect(figure.locator('[data-chart-bars]')).toBeVisible()
+  await expect(figure.locator('[data-chart-value]')).toHaveText(values)
+})
+
+test('hovering a bar shows its label and value in a tooltip; the chart itself is hidden from screen readers', async ({ page }) => {
+  await page.goto('/o/sample-org/manage')
+  const figure = chart(page, 'Overdue assignments by course')
+  const label = (await figure.getByRole('table', { includeHidden: true }).locator('tbody th').nth(1).textContent())!
+  const value = (await figure.getByRole('table', { includeHidden: true }).locator('td').nth(1).textContent())!
+  await figure.locator('[data-chart-bar]').nth(1).hover()
+  const tooltip = figure.locator('.recharts-tooltip-wrapper')
+  await expect(tooltip).toContainText(label)
+  await expect(tooltip).toContainText(`Overdue: ${value}`)
+  // The drawing is aria-hidden and holds nothing focusable; the table carries the figures.
+  await expect(figure.locator('[data-chart-bars]')).toHaveAttribute('aria-hidden', 'true')
+  expect(await figure.locator('[data-chart-bars] [tabindex]:not([tabindex="-1"]), [data-chart-bars] a, [data-chart-bars] button').count()).toBe(0)
+})
+
+test('the chart library loads only on a page with a chart', async ({ page }) => {
+  const requested: string[] = []
+  page.on('request', (r) => requested.push(r.url()))
+  await page.goto('/')
+  await page.waitForLoadState('networkidle')
+  expect(requested.filter((u) => /recharts|BarChartPlot/.test(u))).toEqual([])
+  await page.goto('/admin')
+  await expect(chart(page, 'Organizations by status').locator('[data-chart-bar]').first()).toBeVisible()
+  expect(requested.filter((u) => /recharts|BarChartPlot/.test(u)).length).toBeGreaterThan(0)
 })
 
 test('Platform counts are counts only: no person is named', async ({ page }) => {
@@ -79,6 +114,15 @@ test('with reduced motion nothing in a chart animates', async ({ page }) => {
     document.getAnimations().filter((a) => (a.effect as KeyframeEffect | null)?.target instanceof Element && ((a.effect as KeyframeEffect).target as Element).closest('figure')).length,
   )
   expect(running).toBe(0)
+  // C4: Recharts animates in script, not with CSS, so the bars are also measured: as soon as they are drawn
+  // they have their final length and keep it.
+  const bars = chart(page, 'Course completion').locator('[data-chart-bar]')
+  await expect(bars.first()).toBeVisible()
+  const widths = () => bars.evaluateAll((els) => els.map((e) => Math.round((e as SVGGraphicsElement).getBBox().width)))
+  const first = await widths()
+  await page.waitForTimeout(600)
+  expect(await widths()).toEqual(first)
+  expect(first.every((w) => w > 0)).toBe(true)
 })
 
 for (const width of [1440, 768, 390]) {
@@ -96,17 +140,27 @@ for (const width of [1440, 768, 390]) {
         const result = await (path === '/design-system' ? builder.include('#charts') : builder).analyze()
         expect(result.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(', ')}`)).toEqual([])
         expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0)
-        // Every label and value fits inside its chart
-        const cut = await page.locator('figure [data-chart-bars] li').evaluateAll((rows) =>
-          rows.flatMap((row) => {
-            const box = row.closest('figure')!.getBoundingClientRect()
-            return [...row.querySelectorAll('span, text')]
+        // Every label and value fits inside its chart, and no label runs into its bar
+        // (C4, changed assertion: the drawn label and value text is measured instead of the old chart's list rows).
+        await expect(page.locator('figure [data-chart-label]').first()).toBeVisible()
+        const cut = await page.locator('figure [data-chart-bars]').evaluateAll((plots) =>
+          plots.flatMap((plot) => {
+            const box = plot.closest('figure')!.getBoundingClientRect()
+            const outside = [...plot.querySelectorAll('[data-chart-label], [data-chart-value]')]
               .filter((el) => {
                 const r = el.getBoundingClientRect()
-                const overflowing = el instanceof HTMLElement && el.scrollWidth > el.clientWidth + 1
-                return overflowing || r.left < box.left - 1 || r.right > box.right + 1
+                return r.left < box.left - 1 || r.right > box.right + 1
               })
-              .map((el) => el.textContent)
+              .map((el) => `cut: ${el.textContent}`)
+            const labels = [...plot.querySelectorAll('[data-chart-label]')]
+            const tracks = [...plot.querySelectorAll('[data-chart-track]')]
+            const overlapping = labels.flatMap((label, i) => {
+              const l = label.getBoundingClientRect()
+              const t = tracks[i]?.getBoundingClientRect()
+              if (!t) return [`no bar for ${label.textContent}`]
+              return l.right <= t.left + 1 || l.bottom <= t.top + 1 ? [] : [`overlaps: ${label.textContent}`]
+            })
+            return [...outside, ...overlapping]
           }),
         )
         expect(cut).toEqual([])

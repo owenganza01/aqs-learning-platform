@@ -3,9 +3,10 @@ import { expect, test, type Page } from '@playwright/test'
 import { mockSupabase, sessionTables, signIn, USER, type Handler, type Mock } from './mock-supabase.js'
 import { settleAnimations } from '../e2e/settle-animations.js'
 
-// Organisation onboarding (WP3, migration 0021 and the organisation-request Edge Function), against
-// the MOCKED Supabase API: the public request, the Platform Admin review, approval into a draft
-// organisation, its profile, and the proposed administrators. These tests prove the screens call the
+// Organisation onboarding (WP3, migration 0021 and the organisation-request Edge Function; extended by
+// 0025, WS-ONBOARD 23 November 2026), against the MOCKED Supabase API: the public request with its
+// review step and documents, the Platform Admin review (documents, history, more information), approval
+// that activates the workspace (C2), its profile, and the proposed administrators. These tests prove the screens call the
 // right function with the right arguments and handle its answers; the rules themselves (who may do
 // what, validation, rate limits, one draft per approval) are proved by the database tests
 // (supabase/tests/database/095_organization_data.test.sql) and the function tests. Synthetic data only.
@@ -37,6 +38,16 @@ const DETAIL = {
   wants_domain_admission: true,
   email_domain: 'zz-test.example',
   proposed_admin_emails: ['admin.one@zz-test.example', 'admin.two@zz-test.example'],
+  organization_description: 'ZZ A fictional training company.',
+  address: 'ZZ 1 Test Street, Nairobi',
+  representative_name: 'Test Contact',
+  representative_title: 'Director',
+  proposed_admins: [
+    { name: 'Admin One', email: 'admin.one@zz-test.example' },
+    { name: null, email: 'admin.two@zz-test.example' },
+  ],
+  terms_version: 'terms-2026-11-15',
+  terms_accepted_at: '2026-11-10T08:00:00Z',
   review_started_by_name: null as string | null,
   review_started_at: null as string | null,
   decided_by_name: null as string | null,
@@ -72,6 +83,20 @@ async function fillValid(page: Page) {
   await page.getByRole('radio', { name: 'Yes' }).check()
   await page.getByLabel("Your organisation's email domain").fill('zz-test.example')
   await page.getByLabel('Administrator 1 email').fill('admin.one@zz-test.example')
+  // 0025 (A5): the new required answers.
+  await page.getByLabel('About your organisation').fill('ZZ A fictional training company.')
+  await page.getByLabel('Address', { exact: true }).fill('ZZ 1 Test Street, Nairobi')
+  await page.getByLabel("Representative's name").fill('Test Contact')
+  await page.getByLabel("Representative's job title").fill('Director')
+  await page.getByLabel('Administrator 1 name').fill('Admin One')
+  await page.getByRole('checkbox', { name: /I accept the Terms of Use/ }).check()
+}
+
+/** 0025: answers are checked on a review step before anything is sent. */
+async function reviewAndSend(page: Page) {
+  await page.getByRole('button', { name: 'Review request' }).click()
+  await expect(page.getByRole('heading', { name: 'Check your request' })).toBeFocused()
+  await page.getByRole('button', { name: 'Send request' }).click()
 }
 
 /* ---------------------------------------------------------------- Public request */
@@ -82,6 +107,11 @@ test.describe('request a workspace (public, signed out)', () => {
     await page.goto('/request-workspace')
     await expect(page.getByText(/Development preview/)).toHaveCount(0)
     await fillValid(page)
+    await page.getByRole('button', { name: 'Review request' }).click()
+    const review = page.getByRole('region', { name: 'Check your request' })
+    await expect(review).toContainText('ZZ 1 Test Street, Nairobi')
+    await expect(review).toContainText('Admin One (admin.one@zz-test.example)')
+    expect(mock.calls.filter((c) => c.kind === 'functions')).toHaveLength(0)
     await page.getByRole('button', { name: 'Send request' }).click()
     await expect(page.getByRole('heading', { name: 'Request received' })).toBeFocused()
     await expect(page.getByText('REQ-F001AB')).toBeVisible()
@@ -99,6 +129,12 @@ test.describe('request a workspace (public, signed out)', () => {
       wants_domain_admission: true,
       email_domain: 'zz-test.example',
       proposed_admin_emails: ['admin.one@zz-test.example'],
+      proposed_admins: [{ name: 'Admin One', email: 'admin.one@zz-test.example' }],
+      organization_description: 'ZZ A fictional training company.',
+      address: 'ZZ 1 Test Street, Nairobi',
+      representative_name: 'Test Contact',
+      representative_title: 'Director',
+      terms_accepted: true,
       company_fax: '',
     })
     expect(typeof body.started_at).toBe('number')
@@ -112,7 +148,7 @@ test.describe('request a workspace (public, signed out)', () => {
     })
     await page.goto('/request-workspace')
     await fillValid(page)
-    await page.getByRole('button', { name: 'Send request' }).click()
+    await reviewAndSend(page)
     const summary = page.getByRole('alert').filter({ hasText: 'Please check' })
     await expect(summary.getByRole('link')).toHaveText(['Use a work email address that can receive mail'])
     await expect(page.getByLabel('Work email')).toHaveAttribute('aria-invalid', 'true')
@@ -123,7 +159,7 @@ test.describe('request a workspace (public, signed out)', () => {
     await mockSupabase(page, { functions: { 'organisation-request': () => ({ status: 503, json: { error: { kind: 'unavailable', message: 'unavailable' } } }) } })
     await page.goto('/request-workspace')
     await fillValid(page)
-    await page.getByRole('button', { name: 'Send request' }).click()
+    await reviewAndSend(page)
     await expect(page.getByText("Your request couldn't be sent right now. Please try again in a few minutes. Your answers are still here.")).toBeVisible()
     await expect(page.getByLabel('Country')).toHaveValue('Kenya')
   })
@@ -134,8 +170,47 @@ test.describe('request a workspace (public, signed out)', () => {
     })
     await page.goto('/request-workspace')
     await fillValid(page)
-    await page.getByRole('button', { name: 'Send request' }).click()
+    await reviewAndSend(page)
     await expect(page.getByText('Too many requests from this network. Please try again later.')).toBeVisible()
+  })
+
+  test('documents travel with the request as multipart form data; a wrong type is caught first', async ({ page }) => {
+    const mock = await mockSupabase(page, { functions: { 'organisation-request': () => ({ json: { reference: 'REQ-F001AB', documentsStored: 1, documentsFailed: 0 } }) } })
+    await page.goto('/request-workspace')
+    await fillValid(page)
+    await page.locator('#req-documents').setInputFiles({ name: 'notes.gif', mimeType: 'image/gif', buffer: Buffer.from('GIF89a') })
+    await page.getByRole('button', { name: 'Review request' }).click()
+    await expect(page.getByRole('alert').filter({ hasText: 'Please check' }).getByRole('link')).toHaveText(['notes.gif is not a PDF, PNG or JPEG file.'])
+    await page.getByRole('button', { name: 'Remove notes.gif' }).click()
+    await page.locator('#req-documents').setInputFiles({ name: 'registration.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.7 ZZ') })
+    await expect(page.getByRole('list', { name: 'Attached documents' })).toContainText('registration.pdf')
+    await reviewAndSend(page)
+    await expect(page.getByText('REQ-F001AB')).toBeVisible()
+    const call = mock.calls.find((c) => c.kind === 'functions')
+    const raw = String(call?.body ?? '')
+    expect(raw).toContain('name="request"')
+    expect(raw).toContain('name="documents"; filename="registration.pdf"')
+    expect(raw).toContain('"organization_name":"ZZ Test Training Co"')
+  })
+
+  test('Send request sends once, even when pressed twice', async ({ page }) => {
+    const mock = await mockSupabase(page, { functions: { 'organisation-request': () => ({ json: { reference: 'REQ-F001AB' } }) } })
+    await page.goto('/request-workspace')
+    await fillValid(page)
+    await page.getByRole('button', { name: 'Review request' }).click()
+    await page.getByRole('button', { name: 'Send request' }).dblclick()
+    await expect(page.getByText('REQ-F001AB')).toBeVisible()
+    expect(mock.calls.filter((c) => c.kind === 'functions')).toHaveLength(1)
+  })
+
+  test('Edit answers goes back to the form with every answer kept', async ({ page }) => {
+    await mockSupabase(page)
+    await page.goto('/request-workspace')
+    await fillValid(page)
+    await page.getByRole('button', { name: 'Review request' }).click()
+    await page.getByRole('button', { name: 'Edit answers' }).click()
+    await expect(page.getByLabel('Address', { exact: true })).toHaveValue('ZZ 1 Test Street, Nairobi')
+    await expect(page.getByRole('checkbox', { name: /I accept the Terms of Use/ })).toBeChecked()
   })
 
   test('Get started in the header opens the chooser, which leads to the form', async ({ page }) => {
@@ -150,7 +225,12 @@ test.describe('request a workspace (public, signed out)', () => {
 
 /* ---------------------------------------------------------------- Platform Admin review */
 
-type State = { status: 'new' | 'in_review' | 'approved' | 'declined'; orgId: string | null }
+type State = { status: 'new' | 'in_review' | 'more_info_requested' | 'approved' | 'declined'; orgId: string | null }
+
+const DOCS = [
+  { id: '00000000-0000-4000-8000-00000000d0c1', file_name: 'registration.pdf', content_type: 'application/pdf', size_bytes: 20480, uploaded: true, created_at: '2026-11-10T08:00:00Z' },
+  { id: '00000000-0000-4000-8000-00000000d0c2', file_name: 'logo.png', content_type: 'image/png', size_bytes: 2048, uploaded: false, created_at: '2026-11-10T08:00:00Z' },
+]
 
 async function asPlatformAdmin(page: Page, state: State, extra: { rpc?: Record<string, Handler>; tables?: Record<string, Handler> } = {}): Promise<Mock> {
   await signIn(page)
@@ -177,6 +257,17 @@ async function asPlatformAdmin(page: Page, state: State, extra: { rpc?: Record<s
         return { json: !wanted || wanted === state.status ? [row] : [] }
       },
       organization_request_detail: () => ({ json: [detail()] }),
+      organization_request_history: () => ({
+        json: [
+          { occurred_at: '2026-11-10T08:00:00Z', event: 'submitted', from_status: null, to_status: 'new', actor_name: null, note: null },
+          ...(state.status === 'new' ? [] : [{ occurred_at: '2026-11-10T09:00:00Z', event: 'review_started', from_status: 'new', to_status: 'in_review', actor_name: 'Ada Learner', note: null }]),
+        ],
+      }),
+      organization_request_documents: () => ({ json: DOCS }),
+      request_more_information: () => {
+        state.status = 'more_info_requested'
+        return { json: null }
+      },
       start_organization_request_review: () => {
         state.status = 'in_review'
         return { json: null }
@@ -213,11 +304,14 @@ test.describe('workspace requests (Platform Admin)', () => {
     await expect(page.getByTestId('domain-signal')).toHaveText('The work email is on the same domain as the website. A signal to check, not proof.')
   })
 
-  test('start review, then approve: one draft organisation is created and opened, nothing is sent', async ({ page }) => {
+  // 0025 (C2): CHANGED ASSERTIONS. Approval activates the workspace and invites the administrators
+  // (in the database, in one transaction); the screen calls approve_organization_request once and
+  // nothing else (was: "one draft organisation … nothing is sent").
+  test('start review, then approve: the workspace is activated and opened; the page itself writes nothing else', async ({ page }) => {
     const state: State = { status: 'new', orgId: null }
     const mock = await asPlatformAdmin(page, state, {
       tables: {
-        organizations: () => ({ json: [{ id: NEW_ORG_ID, name: 'ZZ Test Training Co', slug: 'zz-test-training-co', status: 'draft', created_at: '2026-11-10T10:00:00Z', activated_at: null, suspended_at: null }] }),
+        organizations: () => ({ json: [{ id: NEW_ORG_ID, name: 'ZZ Test Training Co', slug: 'zz-test-training-co', status: 'active', created_at: '2026-11-10T10:00:00Z', activated_at: '2026-11-10T10:00:00Z', suspended_at: null }] }),
         organization_memberships: () => ({ json: [] }),
         invitations: () => ({ json: [] }),
       },
@@ -236,22 +330,24 @@ test.describe('workspace requests (Platform Admin)', () => {
     await expect(approve.getByLabel('Workspace name')).toHaveValue('ZZ Test Training Co')
     await expect(approve.getByLabel('Web address')).toHaveValue('zz-test-training-co')
     // What was checked is required.
-    await approve.getByRole('button', { name: 'Approve and create draft' }).click()
+    await expect(approve).toContainText('Approving activates the workspace and invites admin.one@zz-test.example, admin.two@zz-test.example as Organization Admin.')
+    await approve.getByRole('button', { name: 'Approve and activate' }).click()
     await expect(approve.getByText('Record what you checked before approving.')).toBeVisible()
     expect(mock.calls.filter((c) => c.name === 'approve_organization_request')).toHaveLength(0)
 
     await approve.getByLabel('What you checked').fill('Website and phone call checked.')
-    await approve.getByRole('button', { name: 'Approve and create draft' }).click()
+    await approve.getByRole('button', { name: 'Approve and activate' }).click()
     const dialog = page.getByRole('dialog')
-    await expect(dialog).toContainText('Create a draft workspace for ZZ Test Training Co?')
-    await dialog.getByRole('button', { name: 'Approve and create draft' }).click()
+    await expect(dialog).toContainText('Approve and activate ZZ Test Training Co?')
+    await expect(dialog).toContainText('invites 2 people as Organization Admin: admin.one@zz-test.example, admin.two@zz-test.example')
+    await dialog.getByRole('button', { name: 'Approve and activate' }).click()
 
     await expect(page).toHaveURL(`/admin/organizations/${NEW_ORG_ID}`)
-    await expect(page.getByText('Draft workspace created from the request. Next: invite its Organization Admin below. Nothing has been sent yet.')).toBeVisible()
+    await expect(page.getByText('Workspace activated from the request. Its Organization Admin invitations are listed below; each person becomes an Organization Admin by accepting with Google.')).toBeVisible()
     const approvals = mock.calls.filter((c) => c.name === 'approve_organization_request')
     expect(approvals).toHaveLength(1)
     expect(approvals[0].body).toEqual({ p_id: REQ_ID, p_name: 'ZZ Test Training Co', p_slug: 'zz-test-training-co', p_note: 'Website and phone call checked.' })
-    // No invitation, activation or other write happened.
+    // The screen made no other write: the database did the activation and invitations in one transaction.
     expect(mock.calls.filter((c) => c.kind === 'functions')).toEqual([])
     expect(mock.calls.filter((c) => c.method !== 'GET' && /invitation|set_organization_status|create_organization$/.test(c.name))).toEqual([])
     expect(mock.calls.filter((c) => c.kind === 'tables' && c.method !== 'GET')).toEqual([])
@@ -267,7 +363,7 @@ test.describe('workspace requests (Platform Admin)', () => {
     await decline.getByLabel('Reason (seen only by AQS)').fill('Could not confirm the organisation.')
     await decline.getByRole('button', { name: 'Decline request' }).click()
     await page.getByRole('dialog').getByRole('button', { name: 'Decline request' }).click()
-    await expect(page.getByText('The request was declined. Reply to the contact by email.')).toBeVisible()
+    await expect(page.getByText('The request was declined. The applicant is emailed that it was declined, without your reason.')).toBeVisible()
     expect(mock.calls.find((c) => c.name === 'decline_organization_request')?.body).toEqual({ p_id: REQ_ID, p_note: 'Could not confirm the organisation.' })
     await expect(page.getByRole('form', { name: 'Decline' })).toHaveCount(0)
     await expect(page.getByText('Could not confirm the organisation.')).toBeVisible()
@@ -281,10 +377,49 @@ test.describe('workspace requests (Platform Admin)', () => {
     await page.goto(`/admin/requests/${REQ_ID}`)
     const approve = page.getByRole('form', { name: 'Approve' })
     await approve.getByLabel('What you checked').fill('Website checked.')
-    await approve.getByRole('button', { name: 'Approve and create draft' }).click()
-    await page.getByRole('dialog').getByRole('button', { name: 'Approve and create draft' }).click()
+    await approve.getByRole('button', { name: 'Approve and activate' }).click()
+    await page.getByRole('dialog').getByRole('button', { name: 'Approve and activate' }).click()
     await expect(page.getByRole('alert').first()).toBeVisible()
     await expect(page).toHaveURL(`/admin/requests/${REQ_ID}`)
+    await expect(page.getByRole('form', { name: 'Approve' })).toBeVisible()
+  })
+
+  test('documents open through a signed link from the function; history is listed', async ({ page }) => {
+    await page.addInitScript(() => {
+      ;(window as unknown as { __opened: string[] }).__opened = []
+      window.open = ((url: string) => {
+        ;(window as unknown as { __opened: string[] }).__opened.push(url)
+        return {} as Window
+      }) as typeof window.open
+    })
+    const mock = await asPlatformAdmin(page, { status: 'in_review', orgId: null })
+    mock.functions['organisation-request'] = () => ({ json: { url: 'https://signed.example.test/doc', expiresAt: '2099-01-01T00:00:00Z' } })
+    await page.goto(`/admin/requests/${REQ_ID}`)
+    const docs = page.getByRole('region', { name: 'Supporting documents' })
+    await expect(docs).toContainText('registration.pdf')
+    await expect(docs.getByRole('listitem').filter({ hasText: 'logo.png' })).toContainText('Not received')
+    await docs.getByRole('button', { name: 'View registration.pdf' }).click()
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __opened: string[] }).__opened)).toEqual(['https://signed.example.test/doc'])
+    expect(mock.calls.find((c) => c.kind === 'functions')?.body).toEqual({ action: 'document_url', id: DOCS[0].id })
+    const history = page.getByRole('region', { name: 'History' })
+    await expect(history.getByRole('listitem')).toHaveCount(2)
+    await expect(history).toContainText('Review started')
+  })
+
+  test('request more information: emailed question, then the review is resumed', async ({ page }) => {
+    const state: State = { status: 'in_review', orgId: null }
+    const mock = await asPlatformAdmin(page, state)
+    await page.goto(`/admin/requests/${REQ_ID}`)
+    const ask = page.getByRole('form', { name: 'Request more information' })
+    await ask.getByRole('button', { name: 'Request more information' }).click()
+    await expect(ask.getByText('Write what you need from the applicant.')).toBeVisible()
+    await ask.getByLabel('What you need from the applicant').fill('Please send a registration certificate.')
+    await ask.getByRole('button', { name: 'Request more information' }).click()
+    await expect(page.getByText('Your question was saved and emailed to the applicant. The request now waits for their reply.')).toBeVisible()
+    expect(mock.calls.find((c) => c.name === 'request_more_information')?.body).toEqual({ p_id: REQ_ID, p_message: 'Please send a registration certificate.' })
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Waiting for information')
+    await expect(page.getByRole('form', { name: 'Approve' })).toHaveCount(0)
+    await page.getByRole('button', { name: 'Resume review' }).click()
     await expect(page.getByRole('form', { name: 'Approve' })).toBeVisible()
   })
 

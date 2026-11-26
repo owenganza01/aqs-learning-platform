@@ -36,7 +36,8 @@ test.describe('instructor dashboard progress (development only)', () => {
     await expect(bar).toHaveAttribute('aria-valuemax', '100')
 
     // The percentage is still shown beside the bar, as in the reviewed design.
-    await expect(page.getByText('78%', { exact: true })).toBeVisible()
+    // A14: the sample chart's table now also holds 78% (the same course), so the bar's own figure is found in its region.
+    await expect(page.getByRole('region', { name: /Course performance/ }).getByText('78%', { exact: true })).toBeVisible()
   })
 })
 
@@ -45,7 +46,7 @@ test.describe('organization detail status badge (development only)', () => {
     await page.goto(ORG_DETAIL)
 
     const heading = page.getByRole('heading', { level: 1 })
-    await expect(heading).toContainText('ABC Corporation')
+    await expect(heading).toContainText('Northgate Logistics')
     await expect(heading.getByText('Active', { exact: true })).toBeVisible()
   })
 

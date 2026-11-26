@@ -2,6 +2,8 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { settleAnimations } from './settle-animations.js'
 
+// 0025 (WS-ONBOARD, 23 November 2026): CHANGED ASSERTIONS for the approved Part 5 form: six groups,
+// the new required answers in the error list, and "Review request" (a review step) before "Send request".
 // "Request a workspace" (WP3 3-3) in the development preview: the same page as the live app with a
 // preview submit that sends nothing. The live journey (Edge Function, review, approval) is covered
 // against the mocked API in e2e-live/live-onboarding.spec.ts. Synthetic data only.
@@ -17,6 +19,14 @@ async function fillValid(page: Page) {
   await page.getByLabel('Your role').fill('Head of training')
   await page.getByLabel('Number of learners').selectOption('26-100')
   await page.getByRole('radio', { name: 'No' }).check()
+  // 0025 (WS-ONBOARD, A5): the new required answers.
+  await page.getByLabel('About your organisation').fill('ZZ A fictional training company.')
+  await page.getByLabel('Address', { exact: true }).fill('ZZ 1 Test Street, Nairobi')
+  await page.getByLabel("Representative's name").fill('Test Contact')
+  await page.getByLabel("Representative's job title").fill('Director')
+  await page.getByLabel('Administrator 1 name').fill('Test Admin')
+  await page.getByLabel('Administrator 1 email').fill('admin@zz-test.example')
+  await page.getByRole('checkbox', { name: /I accept the Terms of Use/ }).check()
 }
 
 test.describe('Request a workspace (development preview)', () => {
@@ -27,27 +37,36 @@ test.describe('Request a workspace (development preview)', () => {
     await expect(page.getByRole('main').getByRole('heading', { level: 2 })).toHaveText([
       'Your organisation',
       'About you',
+      'Authorised representative',
       'Your training',
       'Joining by company email',
+      'Supporting documents',
+      'Terms',
     ])
     await expect(page.getByText('No account or workspace is created until AQS approves your request.')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Send request' })).toBeEnabled()
+    await expect(page.getByRole('button', { name: 'Review request' })).toBeEnabled()
   })
 
   test('sending an empty form lists every problem and links each to its field', async ({ page }) => {
     await page.goto('/request-workspace')
-    await page.getByRole('button', { name: 'Send request' }).click()
+    await page.getByRole('button', { name: 'Review request' }).click()
     const summary = page.getByRole('alert').filter({ hasText: 'Please check' })
     await expect(summary).toBeFocused()
     await expect(summary.getByRole('link')).toHaveText([
       "Enter your organisation's name.",
       'Choose the type of organisation.',
+      'Describe your organisation and why you want a workspace (10 to 1,000 characters).',
+      "Enter your organisation's address (5 to 300 characters).",
       'Enter the country.',
       'Enter your full name.',
       'Enter a valid work email address.',
       'Enter your role.',
+      'Enter the name of the person authorised to act for the organisation.',
+      'Enter their job title.',
       'Choose the approximate number of learners.',
+      'Name at least one person to manage your workspace (it can be you).',
       'Answer yes or no.',
+      'Confirm that you accept the Terms of Use and may act for your organisation.',
     ])
     await summary.getByRole('link', { name: 'Enter a valid work email address.' }).click()
     await expect(page.getByLabel('Work email')).toBeFocused()
@@ -60,7 +79,7 @@ test.describe('Request a workspace (development preview)', () => {
     await fillValid(page)
     await page.getByRole('radio', { name: 'Yes' }).check()
     await page.getByLabel("Your organisation's email domain").fill('not a domain')
-    await page.getByRole('button', { name: 'Send request' }).click()
+    await page.getByRole('button', { name: 'Review request' }).click()
     await expect(page.getByRole('alert').getByRole('link')).toHaveText(["Enter your organisation's email domain, for example example.org."])
   })
 
@@ -68,13 +87,15 @@ test.describe('Request a workspace (development preview)', () => {
     await page.goto('/request-workspace')
     await fillValid(page)
     await page.getByLabel('Administrator 2 email').fill('not-an-email')
-    await page.getByRole('button', { name: 'Send request' }).click()
+    await page.getByRole('button', { name: 'Review request' }).click()
     await expect(page.getByRole('alert').getByRole('link')).toHaveText(['not-an-email is not a valid email address.'])
   })
 
   test('a valid request shows the confirmation with its reference and next steps', async ({ page }) => {
     await page.goto('/request-workspace')
     await fillValid(page)
+    await page.getByRole('button', { name: 'Review request' }).click()
+    await expect(page.getByRole('heading', { name: 'Check your request' })).toBeFocused()
     await page.getByRole('button', { name: 'Send request' }).click()
     await expect(page.getByRole('heading', { name: 'Request received' })).toBeFocused()
     await expect(page.getByText('REQ-SAMPLE')).toBeVisible()
@@ -105,13 +126,18 @@ test.describe('Request a workspace (development preview)', () => {
       await page.screenshot({ path: `test-results/wp3-screens/request-form-${width}.png`, fullPage: true })
       expect((await axe()).violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
 
-      await page.getByRole('button', { name: 'Send request' }).click()
+      await page.getByRole('button', { name: 'Review request' }).click()
       await expect(page.getByRole('alert').first()).toBeVisible()
       expect(await overflow(page)).toBeLessThanOrEqual(0)
       await page.screenshot({ path: `test-results/wp3-screens/request-form-errors-${width}.png`, fullPage: true })
       expect((await axe()).violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
 
       await fillValid(page)
+      await page.getByRole('button', { name: 'Review request' }).click()
+      await expect(page.getByRole('heading', { name: 'Check your request' })).toBeVisible()
+      expect(await overflow(page)).toBeLessThanOrEqual(0)
+      await page.screenshot({ path: `test-results/wp3-screens/request-review-${width}.png`, fullPage: true })
+      expect((await axe()).violations.map((v) => `${v.id}: ${v.nodes.length}`)).toEqual([])
       await page.getByRole('button', { name: 'Send request' }).click()
       await expect(page.getByRole('heading', { name: 'Request received' })).toBeVisible()
       expect(await overflow(page)).toBeLessThanOrEqual(0)

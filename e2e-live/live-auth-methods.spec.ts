@@ -228,3 +228,42 @@ test('the invitation page still offers Google only (staff access needs a Google 
     await expect(page.getByRole('button', { name })).toHaveCount(0)
   }
 })
+
+// A8 (23 November 2026): every sign-in and sign-up option shown in live mode works end to end against the
+// mocked Auth API, and every entry point reaches it. Which options are shown is the deployment's
+// VITE_AUTH_PROVIDERS (Google alone until the other providers are configured, docs/auth-providers.md;
+// the Google-only pages are checked in live-phase-a.spec.ts).
+test('A8: every entry point reaches sign-in, and every option shown on sign-in and sign-up starts its own flow', async ({ page }) => {
+  await mockSupabase(page)
+  for (const [path, name] of [['/', 'Sign in'], ['/get-started', 'Sign in']] as const) {
+    await page.goto(path)
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible()
+    const links = page.getByRole('link', { name, exact: true })
+    expect(await links.count(), path).toBeGreaterThan(0)
+    for (const link of await links.all()) await expect(link).toHaveAttribute('href', '/sign-in')
+  }
+  for (const path of ['/sign-in', '/sign-up']) {
+    await page.goto(path)
+    const options = page.getByRole('list', { name: 'Sign-in options' }).getByRole('button')
+    await expect(options.first()).toBeVisible()
+    const labels = await options.allTextContents()
+    expect(labels.length, path).toBeGreaterThan(0)
+    // Nothing on a live page is offered as "not available yet"; each option is enabled and wired.
+    await expect(page.getByText(/not available yet/)).toHaveCount(0)
+    for (const label of labels) {
+      const seen = await captureAuthorize(page)
+      await page.goto(path)
+      const button = page.getByRole('button', { name: label, exact: true })
+      await expect(button).toBeEnabled()
+      await button.click()
+      await expect.poll(() => seen.length, `${path}: ${label}`).toBeGreaterThan(0)
+      expect(new URL(seen[0]).searchParams.get('provider')).toBe(label.replace('Continue with ', '').toLowerCase())
+      await page.unrouteAll({ behavior: 'ignoreErrors' })
+      await mockSupabase(page)
+    }
+    // The email form, when shown, is enabled and submits to Auth (its flows are tested above).
+    await page.goto(path)
+    const form = page.getByRole('form')
+    if (await form.count()) await expect(form.getByRole('button', { name: path === '/sign-in' ? 'Sign in' : 'Create account' })).toBeEnabled()
+  }
+})

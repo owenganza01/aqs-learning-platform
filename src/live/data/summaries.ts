@@ -33,10 +33,23 @@ export async function orgLearningSummary(orgId: string): Promise<OrgCourseSummar
   return (rows ?? []).map((r) => ({ courseId: r.course_id, title: r.course_title, status: r.course_status, learners: r.learners, completed: r.completed, overdue: r.overdue }))
 }
 
+/** Migration 0028 (P10 L3): the database refuses more than this many course ids in one call. */
+export const SUMMARY_BATCH = 200
+
+/** Split ids into batches the database accepts (at most SUMMARY_BATCH each). */
+export function summaryBatches(ids: string[], size = SUMMARY_BATCH): string[][] {
+  const batches: string[][] = []
+  for (let at = 0; at < ids.length; at += size) batches.push(ids.slice(at, at + size))
+  return batches
+}
+
 export async function courseLearningSummary(courseIds: string[]): Promise<CourseSummary[]> {
   if (courseIds.length === 0) return []
-  const rows = await rpc<CourseRow[]>('course_learning_summary', { p_courses: courseIds })
-  return (rows ?? []).map((r) => ({
+  const answers = await Promise.all(
+    summaryBatches(courseIds).map((batch) => rpc<CourseRow[]>('course_learning_summary', { p_courses: batch })),
+  )
+  const rows = answers.flatMap((batch) => batch ?? [])
+  return rows.map((r) => ({
     courseId: r.course_id,
     learners: r.learners,
     completed: r.completed,

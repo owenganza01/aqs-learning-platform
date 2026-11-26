@@ -325,7 +325,9 @@ test('A.9 completion shows the course, "Completed" with its date and Back to das
 
 /** What the completion page asked for before Phase A (recorded on the old code); Phase A adds nothing. */
 // claim_domain_membership: the once-per-visit sign-in admission (4-4, D40), not a completion request.
-const COMPLETION_REQUESTS = ['claim_domain_membership', 'course_instructor_names', 'courses', 'enrollments', 'organization_memberships', 'platform_admins', 'profiles']
+// my_certificates (A11, 0026, 23 November 2026): the completion page asks whether this course issued a certificate;
+// with none, the page still shows no certificate wording.
+const COMPLETION_REQUESTS = ['claim_domain_membership', 'course_instructor_names', 'courses', 'enrollments', 'my_certificates', 'organization_memberships', 'platform_admins', 'profiles']
 
 /* ------------------------------------------------------------------ A.10 Not found */
 

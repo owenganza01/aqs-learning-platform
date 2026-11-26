@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Badge, Banner, Button, Card, CardHeader, Select, TextArea, TextField, highImpact, useConfirm } from '../../../components/ui'
-import { rpc } from '../../api'
+import { query, rpc } from '../../api'
+import { collectPages } from '../../paging'
+import { CourseArtwork } from '../../components/CourseArtwork/CourseArtwork'
 import { ActionFeedback, Loaded } from '../../components/States'
 import { authoring, slugify, type AuthoringCourse } from '../../data/authoring'
 import { publicThumbnailUrl } from '../../data/learning'
@@ -24,6 +26,10 @@ export function DetailsPanel({ course, editable, onChanged }: { course: Authorin
   })
   const thumb = publicThumbnailUrl(course.thumbnailPath)
   const platform = course.ownerType === 'platform'
+  const coverInput = useRef<HTMLInputElement>(null)
+  // T8: a cover image lives in the public bucket only for public courses. After "Who can find it"
+  // changes, the saved image no longer fits, and publication would be refused until it is re-added or removed.
+  const coverMismatch = course.thumbnailPath !== null && course.thumbnailPath.startsWith('course-thumbnails/') !== (course.visibility === 'public')
 
   return (
     <Card as="section" padding="md" aria-label="Course details">
@@ -78,44 +84,66 @@ export function DetailsPanel({ course, editable, onChanged }: { course: Authorin
         ) : null}
       </form>
 
-      <div className={`${styles.stack} ${styles.spacedTop}`}>
-        <h3 className="text-card-sm">Thumbnail</h3>
-        {thumb ? <img src={thumb} alt="" className={styles.thumbnail} /> : null}
-        <p className={styles.muted}>
-          {course.thumbnailPath ? (thumb ? 'A public thumbnail is set.' : 'A private thumbnail is set (members only).') : 'No thumbnail.'}
-        </p>
-        {editable ? (
-          <div className={styles.row}>
-            <label className="visually-hidden" htmlFor="thumbnail-file">
-              Choose a thumbnail image
-            </label>
-            <input
-              id="thumbnail-file"
-              className={styles.fileInput}
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              onChange={(event) => {
-                const file = event.target.files?.[0]
-                event.target.value = ''
-                if (file) void run.run(() => authoring.setThumbnail(course.id, file, Boolean(course.thumbnailPath)), 'Thumbnail uploaded.')
-              }}
-            />
-            {course.thumbnailPath ? (
-              <Button needsConnection
-                variant="text"
-                size="sm"
-                onClick={async () => {
-                  if (await confirm(highImpact({ title: `Remove the thumbnail of “${course.title}”?`, happens: 'The course shows no image until a new one is added.', kept: 'The course and its content are kept.', canUndo: false, undo: "This can't be undone, but you can add an image again.", confirmLabel: 'Remove thumbnail' })))
-                    void run.run(() => authoring.clearThumbnail(course.id), 'Thumbnail removed.')
-                }}
-              >
-                Remove thumbnail
-              </Button>
-            ) : null}
+      {/*
+        9.4 (A10): a cover image is optional. A course without one shows its artwork in AQS colours
+        (task 8-2) everywhere learners see it, and can be published without one.
+      */}
+      <section className={`${styles.stack} ${styles.spacedTop}`} aria-labelledby="cover-image-heading">
+        <h3 id="cover-image-heading" className="text-card-sm">
+          Cover image <span className={styles.muted}>(optional)</span>
+        </h3>
+        {thumb ? (
+          <img src={thumb} alt="" className={styles.thumbnail} />
+        ) : !course.thumbnailPath ? (
+          <div className={styles.thumbnail}>
+            <CourseArtwork title={course.title} />
           </div>
         ) : null}
-        <p className={styles.muted}>PNG, JPEG or WebP, up to 5 MB. If you change who can find the course, add the thumbnail again.</p>
-      </div>
+        <p className={styles.muted}>
+          {course.thumbnailPath
+            ? thumb
+              ? 'A cover image is set.'
+              : 'A cover image is set (members only).'
+            : 'No cover image. Learners see this artwork in AQS colours instead.'}
+        </p>
+        {coverMismatch ? (
+          <Banner tone="warning">"Who can find it" changed after this image was added. Add the image again, or remove it, before proposing the course.</Banner>
+        ) : null}
+        {editable ? (
+          <>
+            <div className={styles.row}>
+              <Button variant="secondary" size="sm" needsConnection onClick={() => coverInput.current?.click()}>
+                {course.thumbnailPath ? 'Replace cover image' : 'Add a cover image'}
+              </Button>
+              <input
+                ref={coverInput}
+                id="thumbnail-file"
+                type="file"
+                hidden
+                accept="image/png,image/jpeg,image/webp"
+                onChange={(event) => {
+                  const file = event.target.files?.[0]
+                  event.target.value = ''
+                  if (file) void run.run(() => authoring.setThumbnail(course.id, file, Boolean(course.thumbnailPath)), 'Cover image added.')
+                }}
+              />
+              {course.thumbnailPath ? (
+                <Button needsConnection
+                  variant="text"
+                  size="sm"
+                  onClick={async () => {
+                    if (await confirm(highImpact({ title: `Remove the cover image of “${course.title}”?`, happens: 'The course shows its artwork in AQS colours until a new image is added.', kept: 'The course and its content are kept.', canUndo: false, undo: "This can't be undone, but you can add an image again.", confirmLabel: 'Remove cover image' })))
+                      void run.run(() => authoring.clearThumbnail(course.id), 'Cover image removed.')
+                  }}
+                >
+                  Remove cover image
+                </Button>
+              ) : null}
+            </div>
+            <p className={styles.muted}>PNG, JPEG or WebP, up to 5 MB.</p>
+          </>
+        ) : null}
+      </section>
     </Card>
   )
 }
@@ -135,7 +163,13 @@ export function StaffPanel({
   onChanged: () => void
 }) {
   const members = useResource(
-    () => (isOrgAdmin && course.orgId ? rpc<Member[]>('organization_members', { p_org: course.orgId }) : Promise.resolve([] as Member[])),
+    () => {
+      const orgId = course.orgId
+      // Every page: one request stops at 1,000 members, which would leave people out of the picker.
+      return isOrgAdmin && orgId
+        ? collectPages((from, to) => query<Member[]>((db) => db.rpc('organization_members', { p_org: orgId }).order('user_id').range(from, to)))
+        : Promise.resolve([] as Member[])
+    },
     `${course.orgId}:${isOrgAdmin}`,
   )
   const [choice, setChoice] = useState('')

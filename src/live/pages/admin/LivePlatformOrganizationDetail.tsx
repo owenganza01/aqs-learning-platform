@@ -10,6 +10,7 @@ import { DomainsCard } from '../../components/DomainsCard'
 import { LiveShell } from '../../components/LiveShell'
 import { invitationActions, type InvitationSent } from '../../data/orgAdmin'
 import { organizationProfile, originRequest, setOrganizationProfile, type OrganizationProfile } from '../../data/onboarding'
+import { useSession } from '../../session-context'
 import { getOrganization, orgAdminMemberships, platformActions, platformInvitations, platformReport } from '../../data/platform'
 import { formatDate } from '../../learner-model'
 import { platformShell } from '../../navigation'
@@ -29,6 +30,7 @@ type Invite = Awaited<ReturnType<typeof platformInvitations>>[number]
 
 export default function LivePlatformOrganizationDetail() {
   const { orgId = '' } = useParams()
+  const { userId } = useSession()
   const data = useResource(async () => {
     const org = await getOrganization(orgId)
     if (!org) return null
@@ -37,12 +39,12 @@ export default function LivePlatformOrganizationDetail() {
     const [report, admins, invitations, profile, origin] = await Promise.all([
       platformReport(orgId),
       orgAdminMemberships(orgId),
-      platformInvitations(orgId),
+      platformInvitations(orgId, userId),
       organizationProfile(orgId).catch(() => undefined),
       originRequest(orgId).catch(() => null),
     ])
     return { org, row: report[0] ?? null, admins, invitations, profile, origin, loadedAt: Date.now() }
-  }, orgId)
+  }, `${orgId}:${userId}`)
   const location = useLocation()
   const created = (location.state as { created?: string } | null)?.created
   const [email, setEmail] = useState('')
@@ -130,7 +132,9 @@ export default function LivePlatformOrganizationDetail() {
       />
       {created && !message ? (
         <Banner tone="success">
-          Draft workspace created from the request. Next: invite its Organization Admin below. Nothing has been sent yet.
+          {org.status === 'active'
+            ? 'Workspace activated from the request. Its Organization Admin invitations are listed below; each person becomes an Organization Admin by accepting with Google.'
+            : 'Draft workspace created from the request. Next: invite its Organization Admin below. Nothing has been sent yet.'}
         </Banner>
       ) : null}
       <ActionFeedback error={act.error} success={message} />
@@ -264,7 +268,7 @@ export default function LivePlatformOrganizationDetail() {
         <Card as="section" padding="lg" aria-label="Proposed administrators" className={styles.panel}>
           <CardHeader
             title="Proposed administrators"
-            subtitle={`Named in request ${origin.reference}. Choosing one fills the invitation form; nothing is sent until you press Send invitation.`}
+            subtitle={`Named in request ${origin.reference}. Approving the request invited them; for anyone without an invitation, choosing them fills the invitation form and nothing is sent until you press Send invitation.`}
             headingLevel="h2"
             size="md"
           />

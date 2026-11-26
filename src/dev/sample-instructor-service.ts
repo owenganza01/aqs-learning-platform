@@ -92,21 +92,21 @@ export interface InstructorService {
   getCourse(orgSlug: string, courseId: string): InstructorCourse | null
 }
 
-const ORGANIZATION: InstructorOrganization = { slug: SAMPLE_ORG_SLUG, name: 'Sample organization' }
+const ORGANIZATION: InstructorOrganization = { slug: SAMPLE_ORG_SLUG, name: 'Northgate Logistics' }
 
 const COURSES: CourseSummary[] = [
-  { id: 'sample-data-analytics', title: 'Data analytics fundamentals', meta: '7 lessons · Data & analytics', status: 'published', enrolled: 124, completion: 78 },
-  { id: 'sample-leadership', title: 'Strategic leadership', meta: '10 lessons · Leadership', status: 'published', enrolled: 86, completion: 65 },
-  { id: 'sample-planning', title: 'Project planning', meta: '8 lessons · Operations', status: 'published', enrolled: 72, completion: 74 },
+  { id: 'sample-data-analytics', title: 'Data analytics fundamentals', meta: '7 lessons · Data & analytics', status: 'published', enrolled: 18, completion: 78 },
+  { id: 'sample-leadership', title: 'Strategic leadership', meta: '10 lessons · Leadership', status: 'published', enrolled: 14, completion: 65 },
+  { id: 'sample-planning', title: 'Project planning', meta: '8 lessons · Operations', status: 'published', enrolled: 11, completion: 74 },
   { id: 'sample-communication', title: 'Effective communication', meta: '10 lessons · Professional skills', status: 'draft', enrolled: 0, completion: 0 },
 ]
 
 const ACTIVITY: ActivityItem[] = [
-  { id: 'a1', name: 'Ganza Owen', initials: 'GO', text: 'Completed a data analytics lesson', when: '5 minutes ago' },
-  { id: 'a2', name: 'Sarah Chen', initials: 'SC', text: 'Enrolled in Strategic leadership', when: '18 minutes ago' },
-  { id: 'a3', name: 'James Wilson', initials: 'JW', text: 'Completed Project planning', when: '42 minutes ago' },
-  { id: 'a4', name: 'Amina Hassan', initials: 'AH', text: 'Started Data analytics fundamentals', when: '1 hour ago' },
-  { id: 'a5', name: 'Daniel Kim', initials: 'DK', text: 'Started Project planning', when: '2 hours ago' },
+  { id: 'a1', name: 'Aline Mukamana', initials: 'AM', text: 'Completed a data analytics lesson', when: '5 minutes ago' },
+  { id: 'a2', name: 'Claire Uwera', initials: 'CU', text: 'Enrolled in Strategic leadership', when: '18 minutes ago' },
+  { id: 'a3', name: 'Denis Kayitare', initials: 'DK', text: 'Completed Project planning', when: '42 minutes ago' },
+  { id: 'a4', name: 'Olive Nyiraneza', initials: 'ON', text: 'Started Data analytics fundamentals', when: '1 hour ago' },
+  { id: 'a5', name: 'Eric Mugisha', initials: 'EM', text: 'Started Project planning', when: '2 hours ago' },
 ]
 
 /** Builds a sample outline: each module lists its lesson titles, alternating video and reading. */
@@ -127,7 +127,7 @@ function buildModules(courseId: string, outline: string[][]): Module[] {
         required: lessonIndex === 0,
         materials: isVideo
           ? []
-          : [{ name: 'Sample reading.pdf', kind: 'PDF', size: '180 KB' }],
+          : [{ name: 'Course reading notes.pdf', kind: 'PDF', size: '180 KB' }],
       }
     }),
   }))

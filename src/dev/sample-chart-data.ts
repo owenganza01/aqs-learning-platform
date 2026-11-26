@@ -10,54 +10,54 @@ import type { ChartDatum } from '../components/ui/Chart/chart-model'
 /** Shown on every preview chart, so nobody mistakes the figures for real ones. */
 export const SAMPLE_CHART_NOTE = 'Sample chart data · not real figures'
 
-/** 7-3 Organization Admin: completion by course (%). */
+// A14 (23 November 2026): the figures agree with the other sample data of Northgate Logistics, the sample
+// organization (sample-instructor-service.ts, sample-org-admin-service.ts, sample-platform-admin-service.ts):
+// the same three published courses and completion rates, 21 learner invitations accepted for its learners,
+// and platform totals that add up the five sample organizations.
+const PUBLISHED = ['Data analytics fundamentals', 'Strategic leadership', 'Project planning'] as const
+
+/** 7-3 Organization Admin: completion by course (%), as on the course cards. */
 export const ORG_COMPLETION_BY_COURSE: ChartDatum[] = [
-  { label: 'Workplace safety essentials', value: 82 },
-  { label: 'Data protection for every team member', value: 64 },
-  { label: 'Customer service foundations', value: 47 },
-  { label: 'Leading hybrid teams', value: 18 },
+  { label: PUBLISHED[0], value: 78 },
+  { label: PUBLISHED[1], value: 65 },
+  { label: PUBLISHED[2], value: 74 },
 ]
 
 /** 7-3 Organization Admin: overdue assignments by course (count). */
 export const ORG_OVERDUE_BY_COURSE: ChartDatum[] = [
-  { label: 'Workplace safety essentials', value: 3 },
-  { label: 'Data protection for every team member', value: 9 },
-  { label: 'Customer service foundations', value: 1 },
-  { label: 'Leading hybrid teams', value: 0 },
+  { label: PUBLISHED[0], value: 2 },
+  { label: PUBLISHED[1], value: 3 },
+  { label: PUBLISHED[2], value: 1 },
 ]
 
-/** 7-3 Organization Admin: invitations by status (count). */
+/** 7-3 Organization Admin: invitations by status (count); the invitations page lists the most recent ones. */
 export const ORG_INVITATIONS_BY_STATUS: ChartDatum[] = [
-  { label: 'Accepted', value: 142 },
-  { label: 'Pending', value: 26 },
-  { label: 'Expired', value: 11 },
-  { label: 'Revoked', value: 4 },
+  { label: 'Accepted', value: 21 },
+  { label: 'Pending', value: 1 },
+  { label: 'Expired', value: 1 },
+  { label: 'Revoked', value: 1 },
 ]
 
-/** 7-4 Instructor: completion by course (%). */
-export const INSTRUCTOR_COMPLETION_BY_COURSE: ChartDatum[] = [
-  { label: 'Introduction to Regression', value: 71 },
-  { label: 'Data analytics fundamentals', value: 54 },
-  { label: 'Statistics for decision makers', value: 33 },
-]
+/** 7-4 Instructor: completion by course (%), as on the course cards. */
+export const INSTRUCTOR_COMPLETION_BY_COURSE: ChartDatum[] = ORG_COMPLETION_BY_COURSE
 
 /** 7-4 Instructor: share of quiz attempts passed, by course (%). */
 export const INSTRUCTOR_QUIZ_PASS_BY_COURSE: ChartDatum[] = [
-  { label: 'Introduction to Regression', value: 88 },
-  { label: 'Data analytics fundamentals', value: 76 },
-  { label: 'Statistics for decision makers', value: 59 },
+  { label: PUBLISHED[0], value: 88 },
+  { label: PUBLISHED[1], value: 81 },
+  { label: PUBLISHED[2], value: 92 },
 ]
 
-/** 7-5 Platform: organizations by status (count). */
+/** 7-5 Platform: organizations by status (count): four active, Summit Financial suspended. */
 export const PLATFORM_ORGANIZATIONS_BY_STATUS: ChartDatum[] = [
-  { label: 'Active', value: 12 },
-  { label: 'Draft', value: 3 },
+  { label: 'Active', value: 4 },
+  { label: 'Draft', value: 0 },
   { label: 'Suspended', value: 1 },
 ]
 
-/** 7-5 Platform: learners and courses (count). */
+/** 7-5 Platform: learners and published courses are the sums over the five sample organizations. */
 export const PLATFORM_TOTALS: ChartDatum[] = [
-  { label: 'Learners in organizations', value: 1240 },
-  { label: 'Published courses', value: 38 },
-  { label: 'Draft courses', value: 9 },
+  { label: 'Learners in organizations', value: 2072 },
+  { label: 'Published courses', value: 26 },
+  { label: 'Draft courses', value: 4 },
 ]

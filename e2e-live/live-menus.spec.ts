@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { COURSE, mockSupabase, sessionTables, signIn, USER } from './mock-supabase.js'
 
 // Refinement plan, Phase 3 (16 November 2026): a live workspace menu lists only pages that exist.
-// Features outside the first release (certificates, messaging, instructor invitations and reports,
+// Features outside the first release (messaging, instructor invitations and reports,
 // the instructor profile, platform settings) are left out instead of shown dimmed, so no menu item
 // leads nowhere. Each workspace also names itself, and the switcher says which workspace is current.
 // Against the MOCKED Supabase API.
@@ -45,7 +45,7 @@ const CASES = [
     who: 'learner',
     path: '/learn',
     admin: false,
-    items: ['Dashboard', 'My courses', 'Catalog', 'Profile'],
+    items: ['Dashboard', 'My courses', 'Catalog', 'Certificates', 'Profile'],  // A11 (0026): Certificates is built
   },
   {
     who: 'instructor',
@@ -57,7 +57,7 @@ const CASES = [
     who: 'organization admin',
     path: `/o/${ORG.slug}/manage`,
     admin: false,
-    items: ['Dashboard', 'Members', 'Invitations and domains', 'Organization details'],
+    items: ['Dashboard', 'Members', 'Invitations and domains', 'Certificates', 'Organization details'],  // A11 (0026)
   },
   {
     who: 'platform admin',

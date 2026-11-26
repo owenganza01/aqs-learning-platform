@@ -105,4 +105,5 @@ test('an empty or oversized material file is refused with a clear message before
   await page.getByRole('region', { name: 'Upload materials' }).locator('input[type=file]').setInputFiles({ name: 'empty.pdf', mimeType: 'application/pdf', buffer: Buffer.alloc(0) })
   await expect(page.getByText('This file is empty. Choose another file.')).toBeVisible()
   expect(mock.calls.some((c) => c.name === 'add_lesson_resource')).toBe(false)
+  expect(mock.calls.some((c) => c.name === 'begin_lesson_resource_upload')).toBe(false) // A10 (0027)
 })

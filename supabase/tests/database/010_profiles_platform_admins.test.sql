@@ -61,8 +61,9 @@ select is_empty(
 select set_eq(
   $$ select p.oid::regprocedure::text from pg_proc p
       where p.pronamespace = 'private'::regnamespace and p.prosecdef $$,
-  $$ values ('private.handle_new_auth_user()'), ('private.sync_auth_user_email()') $$,
-  'in private, only the two Auth trigger functions are SECURITY DEFINER (database-wide list: 900_api_exposure)');
+  $$ values ('private.handle_new_auth_user()'), ('private.sync_auth_user_email()'),
+            ('private.enqueue_email(text,text,jsonb,text,uuid)') $$,  -- 0024: the email outbox contract (no client role may execute it)
+  'in private, only the two Auth trigger functions and the 0024 email enqueue contract are SECURITY DEFINER (database-wide list: 900_api_exposure)');
 select has_trigger('auth', 'users', 'on_auth_user_created', 'profile-creation trigger exists on auth.users');
 select has_trigger('auth', 'users', 'on_auth_user_email_changed', 'email-sync trigger exists on auth.users');
 

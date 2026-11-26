@@ -2,7 +2,7 @@ import type { NavItem, WorkspaceIdentity } from '../components/layout/types'
 
 /*
  * Sidebar navigation for each role shell, from the approved design references (learner
- * dashboard, Instructor and Global Admin screens). Entries for pages that are not built are
+ * dashboard, Instructor and Platform Admin screens; the designs' "Global Admin" is the Platform Admin, C3). Entries for pages that are not built are
  * `unavailable`, so they never link to a missing route.
  *
  * This data only shapes the layout. It does not grant access, and it is not role assignment.
@@ -69,7 +69,7 @@ export function getInstructorShell(orgSlug: string): ShellDefinition {
   }
 }
 
-/** Up to two initials for an organization's tile: "ABC Corporation" gives "AC". */
+/** Up to two initials for an organization's tile: "Northgate Logistics" gives "NL". */
 export function workspaceInitials(name: string): string {
   const words = name.trim().split(/\s+/).filter(Boolean)
   if (words.length === 0) return ''
@@ -111,7 +111,7 @@ export function getShellDefinition(role: ShellRole, dashboardTo: string): ShellD
       return {
         role,
         roleLabel: 'Instructor',
-        workspace: { title: 'Teaching Studio', subtitle: 'Sample organization', mark: workspaceInitials('Sample organization') },
+        workspace: { title: 'Teaching Studio', subtitle: 'Northgate Logistics', mark: workspaceInitials('Northgate Logistics') },
         helpTitle: 'Here to help you teach',
         navItems: [
           { label: 'Dashboard', to: dashboardTo },
@@ -127,7 +127,7 @@ export function getShellDefinition(role: ShellRole, dashboardTo: string): ShellD
       return {
         role,
         roleLabel: 'Organization Admin',
-        workspace: { title: 'Sample organization', subtitle: 'Organization workspace', mark: workspaceInitials('Sample organization') },
+        workspace: { title: 'Northgate Logistics', subtitle: 'Organization workspace', mark: workspaceInitials('Northgate Logistics') },
         helpTitle: 'Here to help you manage',
         navItems: [
           { label: 'Dashboard', to: dashboardTo },

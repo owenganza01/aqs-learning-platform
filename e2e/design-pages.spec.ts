@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test'
 // accepted, activated or saved. Each simulated action is labelled as such on the page.
 
 const PAGES: Array<{ path: string; heading: string }> = [
-  { path: '/invite/tok?state=valid', heading: "You've been invited to join ABC Corporation" },
+  { path: '/invite/tok?state=valid', heading: "You've been invited to join Northgate Logistics" },
   { path: '/sign-in/unlinked', heading: "Your email isn't linked to an organization" },
   { path: '/access-denied', heading: "You don't have access to this page" },
   { path: '/account-inactive', heading: "Your account isn't active" },
@@ -14,7 +14,7 @@ const PAGES: Array<{ path: string; heading: string }> = [
   { path: '/admin/reports', heading: 'Reports' },
   { path: '/admin/settings', heading: 'Settings' },
   { path: '/admin/organizations/new', heading: 'Create organization' },
-  { path: '/admin/organizations/sample-abc/review', heading: 'Review ABC Corporation' },
+  { path: '/admin/organizations/sample-abc/review', heading: 'Review Northgate Logistics' },
   { path: '/o/sample-org/manage/invitations', heading: 'Invitations and domains' },
   { path: '/o/sample-org/teach/messages', heading: 'Messages' },
   { path: '/o/sample-org/teach/learners', heading: 'Learners' },
@@ -38,12 +38,12 @@ test.describe('remaining design pages (development draft)', () => {
 test.describe('invitation acceptance states', () => {
   test('each state opens directly from the URL and shows its heading', async ({ page }) => {
     const states: Array<[string, string]> = [
-      ['existing', 'Join ABC Corporation'],
-      ['new', 'Create your account to join ABC Corporation'],
+      ['existing', 'Join Northgate Logistics'],
+      ['new', 'Create your account to join Northgate Logistics'],
       ['verify', 'Confirm your email to finish'],
       ['expired', 'This invitation has expired'],
       ['revoked', 'This invitation is no longer valid'],
-      ['accepted', "You've joined ABC Corporation"],
+      ['accepted', "You've joined Northgate Logistics"],
       ['mismatch', 'This invitation is for a different address'],
       ['invalid', "We can't find this invitation"],
       ['error', "We couldn't accept the invitation"],
@@ -57,7 +57,7 @@ test.describe('invitation acceptance states', () => {
   test('accepting an existing account is simulated and says so', async ({ page }) => {
     await page.goto('/invite/tok?state=existing')
     await page.getByRole('button', { name: 'Accept invitation' }).click()
-    await expect(page.getByRole('heading', { level: 1, name: "You've joined ABC Corporation" })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: "You've joined Northgate Logistics" })).toBeVisible()
     await expect(page.getByText('Simulated: no membership is stored', { exact: false })).toBeVisible()
   })
 
@@ -101,8 +101,8 @@ test.describe('domains and invitations', () => {
     await page.getByRole('button', { name: 'Send invitation' }).click()
     await expect(page.getByText('Enter an email address, for example', { exact: false })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Revoke invitation for sarah@abc-sample.test' }).click()
-    const row = page.getByRole('row').filter({ hasText: 'sarah@abc-sample.test' })
+    await page.getByRole('button', { name: 'Revoke invitation for sarah@northgate-sample.test' }).click()
+    const row = page.getByRole('row').filter({ hasText: 'sarah@northgate-sample.test' })
     await expect(row.getByText('Revoked')).toBeVisible()
   })
 
@@ -132,7 +132,7 @@ test.describe('organization creation and activation', () => {
 
   test('an active organization shows that it is active and offers no activation', async ({ page }) => {
     await page.goto('/admin/organizations/sample-abc/review')
-    await expect(page.getByText('ABC Corporation is already active.')).toBeVisible()
+    await expect(page.getByText('Northgate Logistics is already active.')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Activate organization' })).toHaveCount(0)
   })
 
@@ -149,7 +149,7 @@ test.describe('organization detail tabs', () => {
   test('the Users tab shows roles read-only and no role change control', async ({ page }) => {
     await page.goto('/admin/organizations/sample-abc')
     await page.getByRole('tab', { name: 'Users' }).click()
-    await expect(page.getByRole('table', { name: 'Users of ABC Corporation' })).toBeVisible()
+    await expect(page.getByRole('table', { name: 'Users of Northgate Logistics' })).toBeVisible()
     await expect(page.getByRole('button', { name: /change role|promote|deactivate/i })).toHaveCount(0)
   })
 })
@@ -162,7 +162,7 @@ test.describe('course access states (development draft)', () => {
 
   test('a member sees the sample start link and no enrolment is recorded', async ({ page }) => {
     await page.goto('/courses/sample-regression?access=member')
-    await expect(page.getByText("Included in ABC Corporation's courses. Sample only", { exact: false })).toBeVisible()
+    await expect(page.getByText("Included in Northgate Logistics's courses. Sample only", { exact: false })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Start course (sample)' })).toHaveAttribute(
       'href',
       '/learn/courses/sample-regression/lessons/what-regression-is-for',
@@ -177,7 +177,7 @@ test.describe('course access states (development draft)', () => {
 
   test('an inactive organization and an unavailable course say so', async ({ page }) => {
     await page.goto('/courses/sample-regression?access=inactive')
-    await expect(page.getByText("ABC Corporation isn't active", { exact: false })).toBeVisible()
+    await expect(page.getByText("Northgate Logistics isn't active", { exact: false })).toBeVisible()
     await page.goto('/courses/sample-regression?access=unavailable')
     await expect(page.getByText("This course isn't available to your organization.")).toBeVisible()
   })

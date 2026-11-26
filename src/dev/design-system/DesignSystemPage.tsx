@@ -128,7 +128,7 @@ const spacing = [
 type MockOrg = { id: string; name: string; domain: string; learners: number; status: 'Active' | 'Draft' | 'Suspended' }
 
 const mockOrgs: MockOrg[] = [
-  { id: 'ORG-001', name: 'ABC Corporation', domain: 'abc.example', learners: 428, status: 'Active' },
+  { id: 'ORG-001', name: 'Northgate Logistics', domain: 'northgate.example', learners: 20, status: 'Active' },
   { id: 'ORG-002', name: 'Meridian Technologies', domain: 'meridian.example', learners: 816, status: 'Active' },
   { id: 'ORG-006', name: 'Willow Learning', domain: 'willow.example', learners: 0, status: 'Draft' },
   { id: 'ORG-004', name: 'Summit Financial', domain: 'summit.example', learners: 284, status: 'Suspended' },
@@ -196,7 +196,7 @@ const WORKSPACE_SHELL_SAMPLES: {
     roleLabel: 'Instructor',
     heading: 'Teaching Studio',
     note: 'White sidebar with a warm active item.',
-    workspace: { title: 'Teaching Studio', subtitle: 'Sample organization', mark: 'SO' },
+    workspace: { title: 'Teaching Studio', subtitle: 'Northgate Logistics', mark: 'NL' },
     nav: [
       { label: 'Dashboard', to: '/mock/teach', active: true },
       { label: 'Courses', to: '/mock/teach/courses' },
@@ -210,7 +210,7 @@ const WORKSPACE_SHELL_SAMPLES: {
     roleLabel: 'Organization Admin',
     heading: 'Organization workspace',
     note: 'Navy sidebar with the organization tile in the header.',
-    workspace: { title: 'Sample organization', subtitle: 'Organization workspace', mark: 'SO' },
+    workspace: { title: 'Northgate Logistics', subtitle: 'Organization workspace', mark: 'NL' },
     nav: [
       { label: 'Dashboard', to: '/mock/manage', active: true },
       { label: 'Members', to: '/mock/manage/members' },
@@ -824,7 +824,7 @@ export default function DesignSystemPage() {
           </Section>
 
           {/* Handoff 2, Phase C (C.2, task 7-2): the bar chart in each state it has to handle. */}
-          <Section id="charts" title="Charts" note="Horizontal bars drawn as SVG, values on the bars, a table with the same numbers for screen readers and on request. No motion with reduced motion.">
+          <Section id="charts" title="Charts" note="Horizontal bars drawn with Recharts (SVG), labels that wrap, values on the bars, a tooltip on hover, a table with the same numbers for screen readers and on request. No motion with reduced motion.">
             <div className={styles.chartGrid}>
               <Card padding="lg">
                 <BarChart title="With values" description="Completion by course" unit="percent" labelHeading="Course" valueHeading="Completion"
@@ -832,7 +832,7 @@ export default function DesignSystemPage() {
               </Card>
               <Card padding="lg">
                 <BarChart title="All zero" description="Nothing completed yet" labelHeading="Course" valueHeading="Learners"
-                  data={[{ label: 'Course A', value: 0 }, { label: 'Course B', value: 0 }, { label: 'Course C', value: 0 }]} />
+                  data={[{ label: 'Fire safety refresher', value: 0 }, { label: 'Manual handling basics', value: 0 }, { label: 'Fleet driver induction', value: 0 }]} />
               </Card>
               <Card padding="lg">
                 <BarChart title="One item" labelHeading="Status" valueHeading="Organizations" data={[{ label: 'Active', value: 12 }]} />

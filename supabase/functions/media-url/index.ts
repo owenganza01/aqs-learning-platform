@@ -12,6 +12,7 @@ import { mediaUrl } from './kinds.ts'
  * because they cannot read private objects through the Storage API (0010).
  *
  * POST { kind: 'resource' | 'video' | 'thumbnail', id }
+ *    | { kind: 'resource', id, download: false }   (A10: shown in the browser, not saved)
  *    | { kind: 'submission', id, download?: boolean }
  *    | { kind: 'submission-captions' | 'lesson-captions' | 'lesson-video-review', id }
  *  -> { url, expiresAt }

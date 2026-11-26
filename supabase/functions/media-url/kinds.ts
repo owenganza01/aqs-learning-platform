@@ -7,6 +7,7 @@ import { fromDbError, FunctionError, isUuid } from '../_shared/core.ts'
  * Every kind is resolved by a database function called AS THE CALLER, which decides access and
  * writes any audit row; only then is a URL signed with the secret key (index.ts).
  *   resource | video | thumbnail        -> public.media_access            (0010, unchanged)
+ *   resource { id, download: false }    -> the same, signed to be shown rather than saved (A10)
  *   submission { id, download? }        -> public.submission_media_access 'submission' | 'submission-download'
  *   submission-captions { id }          -> public.submission_media_access 'submission-captions'
  *   lesson-captions { id: lesson }      -> public.submission_media_access 'lesson-captions'
@@ -29,7 +30,10 @@ export function accessCall(body: Record<string, unknown>): AccessCall {
   const known = (LEGACY_KINDS as readonly unknown[]).includes(kind) || (REVIEW_KINDS as readonly unknown[]).includes(kind)
   if (!known) throw new FunctionError('invalid', 'Unknown file kind.')
   if (!isUuid(body.id)) throw new FunctionError('invalid', 'Unknown file.')
-  if (body.download !== undefined && (kind !== 'submission' || typeof body.download !== 'boolean')) {
+  // `download` is a choice only for a submission (true or false) and, since A10, for a lesson file
+  // (false only: shown in the browser instead of saved). Access is decided the same way either way.
+  const downloadChoice = (kind === 'submission' && typeof body.download === 'boolean') || (kind === 'resource' && body.download === false)
+  if (body.download !== undefined && !downloadChoice) {
     throw new FunctionError('invalid', 'Unknown file kind.')
   }
   if ((LEGACY_KINDS as readonly unknown[]).includes(kind)) {
@@ -60,7 +64,11 @@ export async function mediaUrl(body: Record<string, unknown>, deps: Deps): Promi
   if (access.bucket === 'course-thumbnails') {
     return { url: deps.publicUrl(access.bucket, access.object_path), expiresAt: new Date(now + 365 * 864e5).toISOString() }
   }
-  const url = await deps.signedUrl(access.bucket, access.object_path, LIFETIME_SECONDS, access.download)
+  // A10: a lesson file asked for with download: false is signed without the download header, so the
+  // browser shows it (PDF, image). The same person, the same object and the same 15-minute lifetime;
+  // media_access has already refused anyone who may not download it (L7(a)).
+  const inline = body.kind === 'resource' && body.download === false
+  const url = await deps.signedUrl(access.bucket, access.object_path, LIFETIME_SECONDS, access.download && !inline)
   if (!url) throw new FunctionError('not-found', 'The file is not available.')
   return { url, expiresAt: new Date(now + LIFETIME_SECONDS * 1000).toISOString() }
 }

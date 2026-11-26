@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.117.3'
-import { bearerToken, corsHeaders, FunctionError, isUserSession, resolveApiKey } from './core.ts'
+import { bearerToken, corsHeaders, FunctionError, isUserSession, readJsonLimited, resolveApiKey } from './core.ts'
 
 /*
  * Request plumbing shared by the AQS Edge Functions. Secrets come only from the function's
@@ -45,7 +45,15 @@ export async function callerClient(req: Request): Promise<SupabaseClient> {
   return client
 }
 
-/** Service client for signing Storage URLs only (media-url). The key never leaves the function. */
+/**
+ * Service client (secret key). The key never leaves the function. Used only for:
+ *  - signing Storage URLs for a path the database returned to the caller (media-url);
+ *  - one service-only RPC each: submit_organization_request (organisation-request) and
+ *    record_domain_verification (domain-verify, after the caller's own checks);
+ *  - the storage-cleanup job's service-only RPCs and its Storage deletes.
+ * On hosted Supabase the service role has no table rights on app tables (P10 L4), so every use
+ * goes through a security definer function that only service_role may execute, never a table.
+ */
 export function adminClient(): SupabaseClient {
   return createClient(env('SUPABASE_URL'), apiKey('secret'), { auth: { persistSession: false, autoRefreshToken: false } })
 }
@@ -58,12 +66,9 @@ export function serve(handler: (req: Request, body: Record<string, unknown>) => 
       new Response(JSON.stringify(payload), { status, headers: { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } })
     if (req.method !== 'POST') return json(405, { error: { kind: 'invalid', message: 'Use POST.' } })
     try {
-      let body: Record<string, unknown> = {}
-      try {
-        body = (await req.json()) as Record<string, unknown>
-      } catch {
-        throw new FunctionError('invalid', 'The request body must be JSON.')
-      }
+      // Bodies are read with a hard limit on the bytes actually received (review finding 4), never by trusting
+      // Content-Length alone.
+      const body = await readJsonLimited(req)
       return json(200, await handler(req, body))
     } catch (error) {
       if (error instanceof FunctionError) return json(error.status, { error: { kind: error.kind, message: error.message } })

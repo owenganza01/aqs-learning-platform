@@ -76,3 +76,56 @@ test('only a signed-in user session is accepted', () => {
   assert.equal(core.isUserSession(null), false)
   assert.equal(core.isUserSession(undefined), false)
 })
+
+// Review finding 4 (23 Nov 2026): body limits are enforced on the bytes read, not on Content-Length.
+import { readBodyLimited, readJsonLimited, MAX_JSON_BODY_BYTES } from './core.ts'
+
+function streamOf(chunks) {
+  let cancelled = false
+  const stream = new ReadableStream({
+    pull(controller) {
+      const next = chunks.shift()
+      if (next === undefined) controller.close()
+      else controller.enqueue(typeof next === 'number' ? new Uint8Array(next) : new TextEncoder().encode(next))
+    },
+    cancel() { cancelled = true },
+  })
+  return { stream, wasCancelled: () => cancelled, remaining: () => chunks.length }
+}
+const status413 = async (promise) => {
+  await assert.rejects(promise, (error) => error.status === 413 && error.kind === 'invalid')
+}
+
+test('readBodyLimited: a body within the limit is returned whole, with or without Content-Length', async () => {
+  assert.equal(new TextDecoder().decode(await readBodyLimited(streamOf(['ab', 'cd']).stream, '4', 10)), 'abcd')
+  assert.equal(new TextDecoder().decode(await readBodyLimited(streamOf(['ab', 'cd']).stream, null, 4)), 'abcd')
+  assert.equal((await readBodyLimited(null, null, 4)).length, 0)
+})
+
+test('readBodyLimited: a declared oversized body is refused without reading it', async () => {
+  const s = streamOf([100])
+  await status413(readBodyLimited(s.stream, '1000', 10))
+  assert.equal(s.remaining(), 1, 'nothing was read')
+})
+
+test('readBodyLimited: without Content-Length (chunked), the limit applies to the bytes received and reading stops', async () => {
+  const s = streamOf([6, 6, 6, 6, 6])
+  await status413(readBodyLimited(s.stream, null, 10))
+  assert.ok(s.remaining() >= 2, 'it stopped reading once past the limit')
+  assert.equal(s.wasCancelled(), true, 'the stream is cancelled')
+})
+
+test('readBodyLimited: an understated or malformed Content-Length does not let an oversized body through', async () => {
+  await status413(readBodyLimited(streamOf([8, 8]).stream, '3', 10))
+  await status413(readBodyLimited(streamOf([8, 8]).stream, 'abc', 10))
+  await status413(readBodyLimited(streamOf([8, 8]).stream, '-1', 10))
+  await status413(readBodyLimited(streamOf([8, 8]).stream, '', 10))
+})
+
+test('readJsonLimited: JSON objects only, 64 KB by default', async () => {
+  const req = (body, length = null) => ({ body: streamOf([body]).stream, headers: { get: (n) => (n === 'Content-Length' ? length : null) } })
+  assert.deepEqual(await readJsonLimited(req('{"a":1}')), { a: 1 })
+  await assert.rejects(readJsonLimited(req('[1]')), (e) => e.status === 400)
+  await assert.rejects(readJsonLimited(req('not json')), (e) => e.status === 400)
+  await status413(readJsonLimited(req('{"a":"' + 'x'.repeat(MAX_JSON_BODY_BYTES) + '"}')))
+})

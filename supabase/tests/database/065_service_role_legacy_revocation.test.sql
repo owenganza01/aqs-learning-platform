@@ -8,7 +8,9 @@
 --     organization_memberships, membership_roles, invitations.
 --   * service_role has NO SELECT, REFERENCES, TRIGGER (and no SELECT/REFERENCES
 --     column privilege) on public.profiles.
---   * service_role RETAINS UPDATE (table + column) on public.profiles (F8/R4).
+--   * service_role has no UPDATE on public.profiles either: 0012 never granted it, and hosted
+--     Supabase gives none by default (P10 L4, 23 November 2026; the earlier "RETAINS UPDATE"
+--     assertions depended on the over-permissive sandbox stand-in).
 --   * Existing client-role and function grants are unchanged.
 --   * Later least-privilege tables (0007-0011) are not regressed for service_role.
 
@@ -85,8 +87,8 @@ select is(has_any_column_privilege('service_role','public.invitations','UPDATE')
 select is(has_any_column_privilege('service_role','public.invitations','REFERENCES'), false, 'invitations: service_role no column REFERENCES');
 
 -- =========================================================================
--- C. public.profiles: service_role loses SELECT, REFERENCES, TRIGGER
---    but RETAINS UPDATE (table + column). INSERT/DELETE/TRUNCATE stay revoked.
+-- C. public.profiles: service_role has no SELECT, REFERENCES, TRIGGER, and (on hosted
+--    defaults, P10 L4) no UPDATE either. INSERT/DELETE/TRUNCATE stay revoked.
 -- =========================================================================
 -- revoked at table level
 select is(has_table_privilege('service_role','public.profiles','SELECT'), false, 'profiles: service_role no SELECT (table)');
@@ -96,12 +98,17 @@ select is(has_table_privilege('service_role','public.profiles','INSERT'), false,
 select is(has_table_privilege('service_role','public.profiles','DELETE'), false, 'profiles: service_role no DELETE (table)');
 select is(has_table_privilege('service_role','public.profiles','TRUNCATE'), false, 'profiles: service_role no TRUNCATE (table)');
 -- retained
-select is(has_table_privilege('service_role','public.profiles','UPDATE'), true, 'profiles: service_role RETAINS UPDATE (table)');
+-- P10 L4 (23 November 2026, changed assertion): 0012 only revokes; it never grants UPDATE. The old
+-- "RETAINS UPDATE" checks passed only because the sandbox stand-in granted ALL on new tables to
+-- service_role by default. Hosted Supabase does not (staging-update-pack-1 section 9.3: the service role
+-- has no right on any app table, profiles included). The F8/R4 anonymisation route must therefore be a
+-- security definer function, never a service-role table update.
+select is(has_table_privilege('service_role','public.profiles','UPDATE'), false, 'profiles: service_role has no UPDATE (table), as on hosted Supabase (P10 L4; F8/R4 must use a security definer function)');
 -- column-level SELECT/REFERENCES gone; UPDATE retained at column level
 select is(has_any_column_privilege('service_role','public.profiles','SELECT'), false, 'profiles: service_role no column SELECT');
 select is(has_any_column_privilege('service_role','public.profiles','INSERT'), false, 'profiles: service_role no column INSERT');
 select is(has_any_column_privilege('service_role','public.profiles','REFERENCES'), false, 'profiles: service_role no column REFERENCES');
-select is(has_any_column_privilege('service_role','public.profiles','UPDATE'), true, 'profiles: service_role RETAINS column UPDATE');
+select is(has_any_column_privilege('service_role','public.profiles','UPDATE'), false, 'profiles: service_role has no column UPDATE, as on hosted Supabase (P10 L4)');
 
 -- =========================================================================
 -- D. Client grants unchanged (spot checks; full catalogue in 900_api_exposure).

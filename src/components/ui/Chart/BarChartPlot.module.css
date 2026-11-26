@@ -1,0 +1,61 @@
+/* C4: the Recharts plot (BarChartPlot.tsx). Every colour is a token, set here and not in code. */
+.plot {
+  position: relative;
+  min-width: 0;
+  font-size: var(--text-body-sm);
+  font-family: var(--font-sans);
+  font-weight: 400;
+}
+
+.plot :global(.recharts-wrapper),
+.plot :global(.recharts-surface) {
+  overflow: visible;
+}
+
+.label {
+  fill: var(--color-text);
+  font-size: var(--text-body-sm);
+}
+
+.track {
+  fill: var(--color-surface-muted);
+}
+
+.bar {
+  fill: var(--color-action);
+}
+
+.value,
+.valueInside {
+  font-size: 13px;
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.value {
+  fill: var(--color-text);
+}
+
+.valueInside {
+  fill: var(--color-white);
+}
+
+/* Hover details: label and value, on a white card with the card border and shadow tokens. */
+.tooltip {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 260px;
+  padding: var(--space-8) var(--space-12);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  box-shadow: var(--shadow-2);
+  color: var(--color-text);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.tooltipLabel {
+  color: var(--color-text-subtle);
+  overflow-wrap: anywhere;
+}

@@ -24,7 +24,7 @@ test.describe('platform admin users and roles (development only)', () => {
     await page.getByLabel('Role').selectOption('instructor')
 
     await expect(page.getByText('Showing 1–2 of 2 users · 32 users in total')).toBeVisible()
-    await expect(page.getByRole('cell', { name: 'Sarah Chen' })).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Daniel Kim' })).toBeVisible()
   })
 
   test('the organization filter can show platform users only', async ({ page }) => {
@@ -96,12 +96,12 @@ test.describe('platform admin users and roles: phone cards and desktop table', (
     // Page 1 of the 32 sample users.
     await expect(userRows(page, true)).toHaveCount(8)
 
-    const sarah = page.getByRole('listitem').filter({ hasText: 'Sarah Chen' })
-    await expect(sarah.getByText('Sarah Chen', { exact: true })).toBeVisible()
+    const sarah = page.getByRole('listitem').filter({ hasText: 'Daniel Kim' })
+    await expect(sarah.getByText('Daniel Kim', { exact: true })).toBeVisible()
     await expect(sarah.getByRole('term')).toHaveText(['Email', 'Organization', 'Role', 'Status', 'Last active'])
     await expect(sarah.getByRole('definition')).toHaveText([
-      'sarah@abc-sample.test',
-      'ABC Corporation',
+      'daniel.kim@northgate-sample.test',
+      'Northgate Logistics',
       'Instructor',
       'Active',
       'Today, 8:15 AM',
@@ -158,7 +158,7 @@ test.describe('platform admin users and roles: phone cards and desktop table', (
 
       await expect(page.getByText('Showing 1–2 of 2 users', { exact: false })).toBeVisible()
       await expect(userRows(page, phone)).toHaveCount(2)
-      await expect(userRows(page, phone)).toHaveText([/Sarah Chen/, /David Miller/])
+      await expect(userRows(page, phone)).toHaveText([/Daniel Kim/, /David Miller/])
     })
 
     test(`${label}: search matches one user by email`, async ({ page }) => {

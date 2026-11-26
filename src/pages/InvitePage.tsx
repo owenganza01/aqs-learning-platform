@@ -12,8 +12,8 @@ import styles from './NoticePages.module.css'
  * be revoked, and membership waits for email verification where a new account is created.
  */
 
-const INVITED = 'john@abc-sample.test'
-const ORG = 'ABC Corporation'
+const INVITED = 'john@northgate-sample.test'
+const ORG = 'Northgate Logistics'
 const EXPIRES = '1 Nov 2026'
 
 type InviteState = 'valid' | 'existing' | 'new' | 'verify' | 'expired' | 'revoked' | 'accepted' | 'mismatch' | 'invalid' | 'error'

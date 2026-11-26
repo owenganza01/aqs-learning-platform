@@ -84,22 +84,40 @@ export async function getOrganization(orgId: string): Promise<PlatformOrg | null
     : null
 }
 
-/** L11 P1: the organization's active Organization Admin memberships (person IDs and dates only). */
+/**
+ * L11 P1: the organization's active Organization Admin memberships (person IDs and dates only).
+ * A9 (23 November 2026): filtered in the query as well. The row rules also return the caller's own
+ * membership, and every membership of an organization where the Platform Admin is ALSO an
+ * Organization Admin; the Platform console must still list only active Organization Admins.
+ */
 export async function orgAdminMemberships(orgId: string): Promise<Array<{ userId: string; since: string }>> {
   const rows = await query<Array<{ user_id: string; created_at: string }>>((db) =>
-    db.from('organization_memberships').select('user_id, created_at').eq('org_id', orgId),
+    db
+      .from('organization_memberships')
+      .select('user_id, created_at, membership_roles!inner(role)')
+      .eq('org_id', orgId)
+      .eq('status', 'active')
+      .eq('membership_roles.role', 'org_admin'),
   )
   return rows.map((r) => ({ userId: r.user_id, since: r.created_at }))
 }
 
-/** Invitations a Platform Admin routinely sees: pending Organization Admin invitations and their own (P15). */
-export async function platformInvitations(orgId: string) {
+/**
+ * Invitations a Platform Admin routinely sees: pending Organization Admin invitations and their own (P15).
+ * A9 (23 November 2026): filtered in the query as well, so a Platform Admin who is also an Organization Admin
+ * of this organization (and may read all its invitations there) is not shown learner and instructor
+ * invitations in the Platform console. `viewerId` is the signed-in Platform Admin.
+ */
+export async function platformInvitations(orgId: string, viewerId: string | null) {
+  // viewerId is a UUID from the session; anything else is left out of the filter.
+  const own = viewerId && /^[0-9a-f-]{36}$/i.test(viewerId) ? `,invited_by.eq.${viewerId}` : ''
   return query<Array<{ id: string; email: string; role: string; status: string; created_at: string; expires_at: string; accepted_at: string | null }>>(
     (db) =>
       db
         .from('invitations')
         .select('id, email, role, status, created_at, expires_at, accepted_at')
         .eq('org_id', orgId)
+        .or(`and(role.eq.org_admin,status.eq.pending)${own}`)
         .order('created_at', { ascending: false }),
   )
 }

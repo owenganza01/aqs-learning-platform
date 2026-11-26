@@ -7,12 +7,13 @@ import { previewUser } from '../dev/role-preview'
 import { listInstructorQuizzes } from '../dev/sample-instructor-quizzes'
 import { sampleInstructorService, type InstructorCourse, type Lesson } from '../dev/sample-instructor-service'
 import { getInstructorShell } from '../lib/navigation'
+import { DocumentUpload } from '../live/components/DocumentUpload/DocumentUpload'
 import { NotFound } from './NotFound'
 import styles from './InstructorCoursePage.module.css'
 import { countOf } from '../lib/plural'
 
 const DEMO_NOTICE = 'Demo only: this is not connected to a backend, so nothing was saved.'
-const UPLOAD_NOTICE = 'Demo only: uploads are not connected to a backend, so no file was added.'
+const UPLOAD_NOTICE = 'Demo only: uploads are not connected to a backend, so no file was sent or added.'
 const ADD_LESSON_NOTICE = 'Demo only: adding lessons is not connected to a backend yet.'
 const ADD_MODULE_NOTICE = 'Demo only: adding modules is not connected to a backend yet.'
 
@@ -232,10 +233,8 @@ function LessonEditor({ lesson, onNotice }: LessonEditorProps) {
         <h3 id={`materials-${lesson.id}`} className={styles.sectionTitle}>
           Upload materials
         </h3>
-        <button type="button" className={styles.dropzone} onClick={() => onNotice(UPLOAD_NOTICE)}>
-          Click to upload or drag and drop
-          <span className={styles.dropzoneHint}>PDF, DOCX, PPTX. Up to 20 MB per file. Demo only.</span>
-        </button>
+        {/* A10: the live multiple-document upload; here nothing is sent (the demo notice says so). */}
+        <DocumentUpload upload={null} onDemo={() => onNotice(UPLOAD_NOTICE)} />
         {lesson.materials.length > 0 ? (
           <ul className={styles.fileList}>
             {lesson.materials.map((file) => (

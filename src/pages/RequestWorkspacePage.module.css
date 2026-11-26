@@ -276,6 +276,106 @@
   }
 }
 
+/* 0025 (WS-ONBOARD): documents, terms, the review step. */
+.hidden {
+  display: none;
+}
+
+.documents,
+.terms {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.file {
+  max-width: 100%;
+  color: var(--color-text);
+  font-size: var(--text-body-sm);
+}
+
+.file:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius);
+}
+
+.fileList {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fileList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-12);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.check input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  accent-color: var(--color-action);
+}
+
+.check a {
+  color: var(--color-blue);
+}
+
+.review {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.reviewList {
+  display: grid;
+  gap: var(--space-12);
+  margin: 0;
+}
+
+.reviewList > div {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: var(--space-16);
+  padding-bottom: var(--space-12);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.reviewList dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.reviewList dd {
+  margin: 0;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+@media (max-width: 767px) {
+  .reviewList > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+}
+
 /* Keep "AQS E-Learning" together rather than breaking after the hyphen */
 .name {
   white-space: nowrap;

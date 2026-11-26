@@ -28,7 +28,7 @@ test.describe('course detail page (development only)', () => {
 
   test('an organization-only course is not shown to visitors (Not found)', async ({ page }) => {
     await page.goto('/courses/sample-org-onboarding')
-    await expect(page.getByRole('heading', { level: 1, name: /Sample organization/ })).toHaveCount(0)
+    await expect(page.getByRole('heading', { level: 1, name: /Northgate Logistics/ })).toHaveCount(0)
     await expect(page.getByText(/not found/i).first()).toBeVisible()
   })
 

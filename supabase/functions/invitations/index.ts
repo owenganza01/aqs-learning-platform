@@ -1,52 +1,39 @@
-import { fromDbError, FunctionError, invitationEmail, invitationLink, isUuid, newInvitationToken, normalizeEmail, parseRole, tokenHashLiteral, type OrgRole } from '../_shared/core.ts'
+import { fromDbError, FunctionError, isUuid, normalizeEmail, parseRole, type OrgRole } from '../_shared/core.ts'
 import { callerClient, env, serve } from '../_shared/http.ts'
+import { createInvitation } from './invite.ts'
 
 /*
  * invitations (T6): creates an invitation token, stores only its SHA-256 through
  * create_invitation (called AS THE CALLER, so the database checks who may invite whom:
- * D6, D18, I2, I3), and emails the link. No secret or service-role key is used; the caller's
- * session is verified before anything else (callerClient).
+ * D6, D18, I2, I3). No secret or service-role key is used; the caller's session is verified
+ * before anything else (callerClient).
+ *
+ * Review finding 5 (23 November 2026): the link email now goes through the 0024 email outbox (retries,
+ * deduplication, delivery tracking) instead of a direct Resend call; see invite.ts. Needs migration 0024
+ * and the email-send function; until email is configured the link is returned for manual sharing.
  *
  * POST { action: 'create', orgId, email, role } | { action: 'resend', invitationId }
- *   -> { invitationId, emailSent, link }  (link is returned only when no email was sent,
+ *   -> { invitationId, emailSent, emailQueued, link }  (link is returned only when no email was queued,
  *      so the inviter can pass it on; it is never stored or logged)
  */
 
 type Db = Awaited<ReturnType<typeof callerClient>>
 
-async function create(db: Db, orgId: string, email: string, role: OrgRole) {
-  const token = newInvitationToken()
-  const { data: invitationId, error } = await db.rpc('create_invitation', {
-    p_org: orgId,
-    p_email: email,
-    p_role: role,
-    p_token_hash: await tokenHashLiteral(token),
-  })
-  if (error) throw fromDbError(error)
-
-  const link = invitationLink(env('SITE_URL'), token)
-  const apiKey = Deno.env.get('RESEND_API_KEY') ?? ''
-  const from = Deno.env.get('EMAIL_FROM') ?? ''
-  let emailSent = false
-  if (apiKey && from) {
-    const [{ data: org }, { data: invite }] = await Promise.all([
-      db.from('organizations').select('name').eq('id', orgId).maybeSingle(),
-      db.from('invitations').select('expires_at').eq('id', invitationId).maybeSingle(),
-    ])
-    const message = invitationEmail(org?.name ?? 'your organization', role, link, invite?.expires_at ?? new Date(Date.now() + 7 * 864e5).toISOString())
-    try {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from, to: [email], subject: message.subject, text: message.text, html: message.html }),
-      })
-      emailSent = response.ok
-      if (!response.ok) console.error('email provider refused the message', response.status)
-    } catch {
-      console.error('email provider unreachable')
-    }
-  }
-  return { invitationId: invitationId as string, emailSent, link: emailSent ? '' : link }
+function create(db: Db, orgId: string, email: string, role: OrgRole) {
+  return createInvitation(
+    {
+      rpc: async (fn, args) => {
+        const { data, error } = await db.rpc(fn, args)
+        return { data, error }
+      },
+      siteUrl: env('SITE_URL'),
+      emailConfigured: Boolean(Deno.env.get('RESEND_API_KEY')) && Boolean(Deno.env.get('EMAIL_FROM')),
+      log: (message) => console.log(message),
+    },
+    orgId,
+    email,
+    role,
+  )
 }
 
 serve(async (req, body) => {

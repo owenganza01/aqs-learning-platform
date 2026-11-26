@@ -9,8 +9,10 @@
 --   * schemas auth and extensions; usage grants as Supabase sets them
 --   * auth.users and auth.identities with the columns the migrations use
 --   * auth.uid(), auth.role(), auth.jwt() with Supabase's definitions
---   * Supabase's default privileges in public (ALL to anon, authenticated,
---     service_role), which migration 0001 deliberately revokes
+--   * Supabase's default privileges in public as hosted projects have them since
+--     30 October 2026 (no grants on new tables and sequences; EXECUTE on new
+--     functions for anon, authenticated, service_role, which migration 0001
+--     revokes for anon and authenticated) - P10 L4, 23 November 2026
 -- What it does NOT reproduce: PostgREST, GoTrue, pg_graphql, the Storage API (only its two
 -- tables, see the end of this file), realtime,
 -- the exact Supabase role ownership model. Results from the sandbox are
@@ -36,8 +38,16 @@ create schema auth;
 grant usage on schema auth to anon, authenticated, service_role;
 
 grant usage on schema public to anon, authenticated, service_role;
-alter default privileges for role postgres in schema public grant all on tables    to anon, authenticated, service_role;
-alter default privileges for role postgres in schema public grant all on sequences to anon, authenticated, service_role;
+-- Default privileges on NEW objects that `postgres` (the migration role) creates in `public`.
+-- P10 L4 (23 November 2026): matched to hosted Supabase. Since Supabase's "tables not exposed to
+-- the Data API automatically" change (new projects from 30 May 2026, every existing project from
+-- 30 October 2026) new tables and sequences get NO grants for anon, authenticated or service_role.
+-- Staging confirmed it before that date for service_role (staging-update-pack-1 section 9.3: the
+-- service role has no right on any app table). New functions still get EXECUTE for the three client
+-- roles, as on hosted Supabase; migration 0001 removes it for PUBLIC, anon and authenticated, so a
+-- function stays callable by service_role unless its migration revokes it.
+-- Before this change the stand-in granted ALL on new tables and sequences to all three roles, so a
+-- test could pass for a service-role table path that hosted Supabase refuses.
 alter default privileges for role postgres in schema public grant all on functions to anon, authenticated, service_role;
 
 create table auth.users (
@@ -131,4 +141,9 @@ create table storage.objects (
 );
 alter table storage.buckets enable row level security;
 alter table storage.objects enable row level security;
-grant all on storage.buckets, storage.objects to anon, authenticated, service_role;
+-- P10 L4: the client grants hosted Supabase Storage sets (Supabase troubleshooting note "Revoking
+-- privileges on Storage ... has no effect"): anon and authenticated get SELECT, INSERT, UPDATE and
+-- DELETE, and row rules decide; service_role gets every privilege (and bypasses row rules). Before
+-- this change anon and authenticated also had TRUNCATE, REFERENCES and TRIGGER here.
+grant select, insert, update, delete on storage.buckets, storage.objects to anon, authenticated;
+grant all on storage.buckets, storage.objects to service_role;

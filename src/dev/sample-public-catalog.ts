@@ -130,7 +130,7 @@ export const SAMPLE_PUBLIC_CATALOG: SamplePublicCourse[] = [
   // Organization-only samples: never listed publicly, and their detail URLs show Not found.
   {
     id: 'sample-org-onboarding',
-    title: 'Sample organization: staff onboarding',
+    title: 'Northgate Logistics: staff onboarding',
     category: 'Onboarding',
     level: 'Beginner',
     summary: "An organization's own onboarding course, for its members only.",
@@ -143,7 +143,7 @@ export const SAMPLE_PUBLIC_CATALOG: SamplePublicCourse[] = [
   },
   {
     id: 'sample-org-safety',
-    title: 'Sample organization: safety procedures',
+    title: 'Northgate Logistics: safety procedures',
     category: 'Compliance',
     level: 'Beginner',
     summary: "An organization's internal procedures course, for its members only.",

@@ -14,7 +14,7 @@ import styles from './LearnerMessagesPage.module.css'
  * sends, stores or reads nothing.
  */
 
-const MOCK_LEARNER: CurrentUser = { name: 'Ganza Owen', roleLabel: 'Learner' }
+const MOCK_LEARNER: CurrentUser = { name: 'Aline Mukamana', roleLabel: 'Learner' }
 const LEARNER_NAV: NavItem[] = getShellDefinition('learner', '/learn').navItems
 
 export default function LearnerMessagesPage() {

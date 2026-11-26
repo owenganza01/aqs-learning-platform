@@ -39,7 +39,7 @@ test.describe('landing page content', () => {
 
   test('tells invited staff which address to sign in with', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByText(/Invited by your organization\? Sign in with the email address the invitation was sent to\./)).toBeVisible()
+    await expect(page.getByText(/Invited by your organization\? Sign in with the Google account for the email address the invitation was sent to\./)).toBeVisible()
   })
 
   test('the hero shows the office team photo, with alternative text, cropped to the hero frame', async ({ page }) => {

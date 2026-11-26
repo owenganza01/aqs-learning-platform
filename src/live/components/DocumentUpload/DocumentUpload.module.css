@@ -1,0 +1,81 @@
+/* A10: the multiple-document upload (drop zone, selection list, status). Tokens only. */
+.root {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-12);
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-24);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: 8px;
+  text-align: center;
+  color: var(--color-text);
+}
+
+.dragging {
+  border-color: var(--color-action);
+  background: var(--color-surface-muted);
+}
+
+.dropText {
+  margin: 0;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.queue {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-8);
+}
+
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-8);
+  padding: var(--space-12);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.itemText {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.name {
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.error {
+  color: var(--color-danger);
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.status {
+  min-height: 0;
+}

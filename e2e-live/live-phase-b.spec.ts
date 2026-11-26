@@ -235,7 +235,7 @@ for (const [button, title, confirmLabel, rpcName, tab] of [
   ['Delete Week one', /Delete the module “Week one”\?/, 'Delete module', 'delete_course_module', 'content'],
   ['Remove zz-map.pdf', /Remove zz-map\.pdf\?/, 'Remove file', 'delete_lesson_resource', 'content'],
   ['Remove video', /Remove the video from “Lecture”\?/, 'Remove video', 'clear_lesson_video', 'content'],
-  ['Remove thumbnail', /Remove the thumbnail of “ZZ Safety basics”\?/, 'Remove thumbnail', 'clear_course_thumbnail', 'details'],
+  ['Remove cover image', /Remove the cover image of “ZZ Safety basics”\?/, 'Remove cover image', 'clear_course_thumbnail', 'details'],
 ] as const) {
   test(`B.5 "${button}" asks through the high-impact pattern; Cancel and Escape send nothing`, async ({ page }) => {
     const mock = await studio(page)

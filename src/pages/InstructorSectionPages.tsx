@@ -48,19 +48,19 @@ interface Conversation {
 const SAMPLE_CONVERSATIONS: Conversation[] = [
   {
     id: 'c1',
-    learner: 'Ganza Owen',
+    learner: 'Aline Mukamana',
     course: 'Data analytics fundamentals',
     when: '10:24 AM',
     unread: true,
     messages: [
       { from: 'learner', text: "Hi Mary, I'm on the final assessment. Should I include the charts as well as the summary in my report?", time: '9:42 AM' },
-      { from: 'instructor', text: 'Hi Ganza! Yes, please include both. Use the charts to support your findings.', time: '9:51 AM' },
+      { from: 'instructor', text: 'Hi Aline! Yes, please include both. Use the charts to support your findings.', time: '9:51 AM' },
       { from: 'learner', text: 'Thank you. Is the residual plot required too?', time: '10:24 AM' },
     ],
   },
   {
     id: 'c2',
-    learner: 'Sarah Chen',
+    learner: 'Claire Uwera',
     course: 'Strategic leadership',
     when: '9:58 AM',
     unread: true,
@@ -68,7 +68,7 @@ const SAMPLE_CONVERSATIONS: Conversation[] = [
   },
   {
     id: 'c3',
-    learner: 'James Wilson',
+    learner: 'Denis Kayitare',
     course: 'Project planning',
     when: 'Yesterday',
     unread: false,
@@ -203,10 +203,10 @@ interface LearnerRow {
 }
 
 const SAMPLE_LEARNERS: LearnerRow[] = [
-  { name: 'Ganza Owen', courseId: 'sample-data-analytics', course: 'Data analytics fundamentals', enrolment: 'Enrolled' },
+  { name: 'Aline Mukamana', courseId: 'sample-data-analytics', course: 'Data analytics fundamentals', enrolment: 'Enrolled' },
   { name: 'Amina Hassan', courseId: 'sample-data-analytics', course: 'Data analytics fundamentals', enrolment: 'Enrolled' },
-  { name: 'Sarah Chen', courseId: 'sample-leadership', course: 'Strategic leadership', enrolment: 'Enrolled' },
-  { name: 'James Wilson', courseId: 'sample-planning', course: 'Project planning', enrolment: 'Completed' },
+  { name: 'Claire Uwera', courseId: 'sample-leadership', course: 'Strategic leadership', enrolment: 'Enrolled' },
+  { name: 'Denis Kayitare', courseId: 'sample-planning', course: 'Project planning', enrolment: 'Completed' },
   { name: 'Daniel Kim', courseId: 'sample-planning', course: 'Project planning', enrolment: 'Enrolled' },
 ]
 
@@ -269,7 +269,7 @@ export function InstructorLearnersPage() {
 }
 
 const SAMPLE_INVITATIONS = [
-  { invitee: 'sam@abc-sample.test', role: 'Learner', status: 'Pending', expires: '1 Nov 2026' },
+  { invitee: 'sam@northgate-sample.test', role: 'Learner', status: 'Pending', expires: '1 Nov 2026' },
 ]
 
 export function InstructorInvitationsPage() {

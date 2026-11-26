@@ -13,7 +13,7 @@
 -- lists in the same pull request, so any unplanned exposure fails here.
 -- Per-migration test files check their own objects; this file checks the whole.
 --
--- Last updated for: migration 0004 (lists kept current through 0022).
+-- Last updated for: migration 0004 (lists kept current through 0027).
 -- =============================================================================
 begin;
 create extension if not exists pgtap with schema extensions;
@@ -272,6 +272,12 @@ select set_eq(
             ('public.approve_organization_request(uuid, text, text, text)'),  -- 0021 (WP3), Platform Admin only
             ('public.organization_profile(uuid)'),  -- 0021 (WP3), own Org Admins and Platform Admins
             ('public.set_organization_profile(uuid, text, text, text, text, text)'),  -- 0021 (WP3), Platform Admin only
+            ('public.organization_request_history(uuid)'),  -- 0025 (A5), Platform Admin only
+            ('public.organization_request_documents(uuid)'),  -- 0025 (A5), Platform Admin only
+            ('public.organization_request_document_access(uuid)'),  -- 0025 (A5), Platform Admin only (read by organisation-request as the caller)
+            ('public.request_more_information(uuid, text)'),  -- 0025 (A5), Platform Admin only
+            ('public.queue_invitation_email(uuid)'),  -- 0024 (review finding 5), the invitation's creator only
+            ('public.invitation_email_status(uuid[])'),  -- 0024 (review finding 5), Org Admins and Platform Admins
             ('public.add_organization_domain(uuid, text)'),  -- 0022 (D40), Platform Admin only
             ('public.remove_organization_domain(uuid)'),  -- 0022 (D40), Platform Admin only
             ('public.disable_domain_admission(uuid)'),  -- 0022 (D40), Platform Admin only
@@ -281,6 +287,17 @@ select set_eq(
             ('public.claim_domain_membership()'),  -- 0022 (D40), any signed-in person; eligibility checked inside
             ('public.org_learning_summary(uuid)'),  -- 0023 (P5, 7-1), own Org Admins only
             ('public.course_learning_summary(uuid[])'),  -- 0023 (P5, 7-1), course staff and own Org Admins
+            ('public.begin_lesson_resource_upload(uuid, text, text, bigint)'),  -- 0027 (A10), course staff of an editable draft
+            ('public.finish_lesson_resource_upload(uuid, text, boolean)'),  -- 0027 (A10), course staff of an editable draft
+            ('public.certificate_templates(uuid)'),  -- 0026 (A11)
+            ('public.create_certificate_template(uuid, text, text, text, numeric, numeric)'),  -- 0026 (A11)
+            ('public.update_certificate_template(uuid, text, jsonb, text, numeric, numeric)'),  -- 0026 (A11)
+            ('public.activate_certificate_template(uuid)'),  -- 0026 (A11)
+            ('public.deactivate_certificate_template(uuid)'),  -- 0026 (A11)
+            ('public.my_certificates()'),  -- 0026 (A11)
+            ('public.org_certificates(uuid)'),  -- 0026 (A11)
+            ('public.certificate_file_access(text, uuid)'),  -- 0026 (A11)
+            ('authz.can_upload_certificate_template(text)'),  -- 0026 (A11)
             ('authz.can_write_course_object(text, text, boolean)'),
             ('authz.can_read_course_object(text)'),
             ('public.platform_report(uuid, organization_status)'),
@@ -380,6 +397,13 @@ select set_eq(
             ('public.approve_organization_request(uuid, text, text, text)'),  -- 0021 (WP3)
             ('public.organization_profile(uuid)'),  -- 0021 (WP3)
             ('public.set_organization_profile(uuid, text, text, text, text, text)'),  -- 0021 (WP3)
+            ('public.submit_organization_request_with_documents(jsonb, text, jsonb)'),  -- 0025 (A5), service_role only (organisation-request)
+            ('public.confirm_organization_request_documents(uuid, uuid[])'),  -- 0025 (A5), service_role only (organisation-request)
+            ('public.record_organization_request_attempt(text)'),  -- 0025 (P10 L1), service_role only (organisation-request)
+            ('public.organization_request_history(uuid)'),  -- 0025 (A5)
+            ('public.organization_request_documents(uuid)'),  -- 0025 (A5)
+            ('public.organization_request_document_access(uuid)'),  -- 0025 (A5)
+            ('public.request_more_information(uuid, text)'),  -- 0025 (A5)
             ('public.add_organization_domain(uuid, text)'),  -- 0022 (D40)
             ('public.remove_organization_domain(uuid)'),  -- 0022 (D40)
             ('public.disable_domain_admission(uuid)'),  -- 0022 (D40)
@@ -390,6 +414,30 @@ select set_eq(
             ('public.claim_domain_membership()'),  -- 0022 (D40)
             ('public.org_learning_summary(uuid)'),  -- 0023 (P5, 7-1)
             ('public.course_learning_summary(uuid[])'),  -- 0023 (P5, 7-1)
+            ('public.begin_lesson_resource_upload(uuid, text, text, bigint)'),  -- 0027 (A10)
+            ('public.finish_lesson_resource_upload(uuid, text, boolean)'),  -- 0027 (A10)
+            ('public.certificate_templates(uuid)'),  -- 0026 (A11)
+            ('public.create_certificate_template(uuid, text, text, text, numeric, numeric)'),  -- 0026 (A11)
+            ('public.update_certificate_template(uuid, text, jsonb, text, numeric, numeric)'),  -- 0026 (A11)
+            ('public.activate_certificate_template(uuid)'),  -- 0026 (A11)
+            ('public.deactivate_certificate_template(uuid)'),  -- 0026 (A11)
+            ('public.my_certificates()'),  -- 0026 (A11)
+            ('public.org_certificates(uuid)'),  -- 0026 (A11)
+            ('public.certificate_file_access(text, uuid)'),  -- 0026 (A11)
+            ('authz.can_upload_certificate_template(text)'),  -- 0026 (A11)
+            ('public.claim_certificates(integer)'),  -- 0026 (A11), service_role only
+            ('public.record_certificate_result(uuid, boolean, text)'),  -- 0026 (A11), service_role only
+            ('public.verify_certificate(text)'),  -- 0026 (A11), service_role only
+            ('private.enqueue_email(text, text, jsonb, text, uuid)'),  -- 0024 (email outbox contract), no client role
+            ('public.email_claim_batch(integer)'),  -- 0024, service_role only (email-send)
+            ('public.email_mark_accepted(uuid, text)'),  -- 0024, service_role only (email-send)
+            ('public.email_mark_failed(uuid, text, boolean)'),  -- 0024, service_role only (email-send)
+            ('public.email_release(uuid[])'),  -- 0024, service_role only (email-send)
+            ('public.issue_invitation_token_for_email(uuid, bytea)'),  -- 0024, service_role only (email-send)
+            ('public.email_record_event(text, text, text, timestamp with time zone, jsonb)'),  -- 0024, service_role only (email-webhook)
+            ('public.email_reconcile_held_events(interval)'),  -- 0024 (review finding 1), service_role only (email-send)
+            ('public.queue_invitation_email(uuid)'),  -- 0024 (review finding 5), the inviter only
+            ('public.invitation_email_status(uuid[])'),  -- 0024 (review finding 5), Org Admins and Platform Admins
             ('authz.can_view_learner_record(uuid, uuid)'),
             ('public.set_quiz_settings(uuid, integer, integer, boolean, quiz_reveal_policy)'),
             ('public.add_quiz_question(uuid, text, quiz_question_type)'),

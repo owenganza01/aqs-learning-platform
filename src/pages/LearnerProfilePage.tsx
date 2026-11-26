@@ -10,7 +10,7 @@ import styles from './LearnerProfilePage.module.css'
  * learner has, and an empty state when there are none. Sign out is shown as unavailable, as D24 requires.
  */
 
-const PROFILE_USER: CurrentUser = { name: 'Ganza Owen', roleLabel: 'Learner' }
+const PROFILE_USER: CurrentUser = { name: 'Aline Mukamana', roleLabel: 'Learner' }
 const SAMPLE_EMAIL = 'ganza.owen@gmail-sample.test'
 const LEARNER_NAV: NavItem[] = getShellDefinition('learner', '/learn').navItems
 
@@ -20,7 +20,7 @@ interface MembershipRow {
   status: string
 }
 
-const MEMBERSHIPS: MembershipRow[] = [{ organization: 'ABC Corporation', role: 'Learner', status: 'Active' }]
+const MEMBERSHIPS: MembershipRow[] = [{ organization: 'Northgate Logistics', role: 'Learner', status: 'Active' }]
 
 const columns: Array<TableColumn<MembershipRow>> = [
   { key: 'organization', header: 'Organization', render: (row) => <span className={styles.strong}>{row.organization}</span> },

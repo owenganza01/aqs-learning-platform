@@ -56,4 +56,9 @@ check 0020 "$R/0020_youtube_check_actor.rollback.sql"         || status=1
 check 0021 "$R/0021_organization_data.rollback.sql"          || status=1
 check 0022 "$R/0022_organization_domains.rollback.sql"       || status=1
 check 0023 "$R/0023_learning_summaries.rollback.sql"         || status=1
+check 0024 "$R/0024_email_outbox.rollback.sql"               || status=1
+check 0025 "$R/0025_onboarding_activation.rollback.sql"       || status=1
+check 0026 "$R/0026_certificates.rollback.sql"               || status=1
+check 0027 "$R/0027_multi_document_upload.rollback.sql"       || status=1
+check 0028 "$R/0028_security_fixes.rollback.sql"              || status=1
 exit $status

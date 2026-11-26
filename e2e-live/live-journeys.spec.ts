@@ -85,6 +85,16 @@ for (const width of WIDTHS) {
       await page.getByLabel('Your role').fill('Head of training')
       await page.getByLabel('Number of learners').selectOption('26-100')
       await page.getByRole('radio', { name: 'No' }).check()
+      // 0025 (WS-ONBOARD): the new required answers, then the review step before sending.
+      await page.getByLabel('About your organisation').fill('ZZ A fictional training company.')
+      await page.getByLabel('Address', { exact: true }).fill('ZZ 1 Test Street, Nairobi')
+      await page.getByLabel("Representative's name").fill('Test Contact')
+      await page.getByLabel("Representative's job title").fill('Director')
+      await page.getByLabel('Administrator 1 name').fill('Test Admin')
+      await page.getByLabel('Administrator 1 email').fill('admin.one@zz-test.example')
+      await page.getByRole('checkbox', { name: /I accept the Terms of Use/ }).check()
+      await tap(page, page.getByRole('button', { name: 'Review request' }))
+      await expect(page.getByRole('heading', { name: 'Check your request' })).toBeVisible()
       await tap(page, page.getByRole('button', { name: 'Send request' }))
       await expect(page.getByRole('heading', { name: 'Request received' })).toBeVisible()
       await expect(page.getByText('REQ-F001AB')).toBeVisible()
@@ -291,7 +301,7 @@ for (const width of WIDTHS) {
       await noSidewaysScroll(page)
     })
 
-    test('platform admin: workspace requests → open → start review → approve → draft organisation', async ({ page }) => {
+    test('platform admin: workspace requests → open → start review → approve → active organisation (C2)', async ({ page }) => {
       const REQ_ID = '00000000-0000-4000-8000-00000000f001'
       const NEW_ORG_ID = '00000000-0000-4000-8000-00000000f0b1'
       const state = { status: 'new' as 'new' | 'in_review' | 'approved', orgId: null as string | null }
@@ -341,6 +351,8 @@ for (const width of WIDTHS) {
           state.orgId = NEW_ORG_ID
           return { json: NEW_ORG_ID }
         },
+        organization_request_history: () => ({ json: [] }),
+        organization_request_documents: () => ({ json: [] }),
         platform_report: () => ({ json: [] }),
         organization_profile: () => ({ json: [] }),
       }
@@ -350,7 +362,7 @@ for (const width of WIDTHS) {
           ...sessionTables(),
           platform_admins: () => ({ json: [{ user_id: USER.id }] }),
           organizations: () => ({
-            json: [{ id: NEW_ORG_ID, name: 'ZZ Test Training Co', slug: 'zz-test-training-co', status: 'draft', created_at: '2026-11-10T10:00:00Z', activated_at: null, suspended_at: null }],
+            json: [{ id: NEW_ORG_ID, name: 'ZZ Test Training Co', slug: 'zz-test-training-co', status: 'active', created_at: '2026-11-10T10:00:00Z', activated_at: '2026-11-10T10:00:00Z', suspended_at: null }],
           }),
           organization_memberships: () => ({ json: [] }),
           invitations: () => ({ json: [] }),
@@ -368,11 +380,11 @@ for (const width of WIDTHS) {
       await tap(page, page.getByRole('button', { name: 'Start review' }))
       const approve = page.getByRole('form', { name: 'Approve' })
       await approve.getByLabel('What you checked').fill('Website and phone call checked.')
-      await tap(page, approve.getByRole('button', { name: 'Approve and create draft' }))
+      await tap(page, approve.getByRole('button', { name: 'Approve and activate' }))
       const dialog = page.getByRole('dialog')
-      await tap(page, dialog.getByRole('button', { name: 'Approve and create draft' }))
+      await tap(page, dialog.getByRole('button', { name: 'Approve and activate' }))
       await expect(page).toHaveURL(`/admin/organizations/${NEW_ORG_ID}`)
-      await expect(page.getByText(/Draft workspace created from the request/)).toBeVisible()
+      await expect(page.getByText(/Workspace activated from the request/)).toBeVisible()
       expect(mock.calls.filter((c) => c.name === 'approve_organization_request')).toHaveLength(1)
       await noSidewaysScroll(page)
     })

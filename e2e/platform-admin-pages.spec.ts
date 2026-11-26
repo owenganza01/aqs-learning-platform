@@ -48,10 +48,10 @@ test.describe('platform admin organizations list (development only)', () => {
   test('View opens the organization detail page', async ({ page }) => {
     await page.goto(LIST)
 
-    await page.getByRole('link', { name: 'View ABC Corporation' }).click()
+    await page.getByRole('link', { name: 'View Northgate Logistics' }).click()
 
     await expect(page).toHaveURL(/\/admin\/organizations\/sample-abc$/)
-    await expect(page.getByRole('heading', { level: 1, name: 'ABC Corporation' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'Northgate Logistics' })).toBeVisible()
   })
 
   test('Create organization opens the form, which validates and creates nothing', async ({ page }) => {
@@ -75,17 +75,18 @@ test.describe('platform admin organization detail (development only)', () => {
   test('shows the stats, the Instructors tab and the breadcrumb back to the list', async ({ page }) => {
     await page.goto(DETAIL)
 
-    await expect(page.getByRole('heading', { level: 1, name: 'ABC Corporation' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'Northgate Logistics' })).toBeVisible()
     await expect(page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link', { name: 'Organizations' })).toBeVisible()
     await expect(page.getByText('Pending invitations')).toBeVisible()
     await expect(page.getByRole('tab', { name: /^Instructors/ })).toHaveAttribute('aria-selected', 'true')
-    await expect(page.getByRole('table', { name: 'Instructors of ABC Corporation' }).getByRole('row')).toHaveCount(3)
+    await expect(page.getByRole('table', { name: 'Instructors of Northgate Logistics' }).getByRole('row')).toHaveCount(3)
   })
 
   test('the instructor search filters the table', async ({ page }) => {
     await page.goto(DETAIL)
 
-    await page.getByLabel('Search instructors by name or email').fill('david')
+    // A14: Northgate Logistics' instructors are now Mary Jones and Daniel Kim.
+    await page.getByLabel('Search instructors by name or email').fill('daniel')
 
     await expect(page.getByText('Showing 1 of 2 instructors')).toBeVisible()
   })
@@ -94,10 +95,10 @@ test.describe('platform admin organization detail (development only)', () => {
     await page.goto(DETAIL)
 
     await page.getByRole('tab', { name: 'Users' }).click()
-    await expect(page.getByRole('table', { name: 'Users of ABC Corporation' })).toBeVisible()
+    await expect(page.getByRole('table', { name: 'Users of Northgate Logistics' })).toBeVisible()
 
     await page.getByRole('tab', { name: 'Courses' }).click()
-    await expect(page.getByRole('table', { name: 'Courses for ABC Corporation' })).toBeVisible()
+    await expect(page.getByRole('table', { name: 'Courses for Northgate Logistics' })).toBeVisible()
 
     await page.getByRole('tab', { name: 'Settings' }).click()
     await expect(page.getByText('Read-only. Lifecycle changes are made by a Platform Admin', { exact: false })).toBeVisible()

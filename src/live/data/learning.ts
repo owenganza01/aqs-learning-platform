@@ -1,4 +1,4 @@
-import { callFunction, client, query, rpc, toAppError } from '../api'
+import { AppError, callFunction, client, query, rpc, toAppError } from '../api'
 
 /*
  * Learner data: catalog, course outline, enrolment, lessons, files and progress. Every query
@@ -286,6 +286,20 @@ export async function getLessonContent(lessonId: string): Promise<LessonContent>
 /** A 15-minute signed URL from the media-url Edge Function (P16). */
 export async function mediaUrl(kind: 'resource' | 'video' | 'thumbnail', id: string): Promise<{ url: string; expiresAt: string }> {
   return callFunction('media-url', { kind, id })
+}
+
+/**
+ * A10: a 15-minute URL that shows a lesson file (PDF, image) in the browser instead of saving it.
+ * Same access rule as a download (media_access: staff, or learners when downloadable, L7(a)). A
+ * media-url deployed before A10 refuses the flag; the file is then opened as a download.
+ */
+export async function resourceViewUrl(id: string): Promise<{ url: string; expiresAt: string }> {
+  try {
+    return await callFunction('media-url', { kind: 'resource', id, download: false })
+  } catch (error) {
+    if (error instanceof AppError && error.kind === 'invalid') return mediaUrl('resource', id)
+    throw error
+  }
 }
 
 /** Public URL of a thumbnail in the public bucket, or null when it is private. */

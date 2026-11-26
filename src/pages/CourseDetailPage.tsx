@@ -154,7 +154,7 @@ function EnrolControl({ access }: { access: AccessState }) {
   if (access === 'member') {
     return (
       <div className={styles.accessBlock}>
-        <p className={styles.accessNote}>Included in ABC Corporation's courses. Sample only: no enrolment is recorded.</p>
+        <p className={styles.accessNote}>Included in Northgate Logistics's courses. Sample only: no enrolment is recorded.</p>
         <ButtonLink to="/learn/courses/sample-regression/lessons/what-regression-is-for" className={styles.enroll}>
           Start course (sample)
         </ButtonLink>
@@ -172,7 +172,7 @@ function EnrolControl({ access }: { access: AccessState }) {
   if (access === 'inactive') {
     return (
       <div className={styles.accessBlock}>
-        <p className={styles.accessNote}>ABC Corporation isn't active, so new courses can't be started. Existing progress stays visible.</p>
+        <p className={styles.accessNote}>Northgate Logistics isn't active, so new courses can't be started. Existing progress stays visible.</p>
         {disabledEnrol}
       </div>
     )

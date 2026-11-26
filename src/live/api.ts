@@ -92,7 +92,7 @@ export async function query<T>(
 }
 
 /** Call an Edge Function with the signed-in person's token. */
-export async function callFunction<T>(name: string, body: Record<string, unknown>): Promise<T> {
+export async function callFunction<T>(name: string, body: Record<string, unknown> | FormData): Promise<T> {
   let result
   try {
     result = await client().functions.invoke(name, { body })

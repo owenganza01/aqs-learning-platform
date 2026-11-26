@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { INSIDE_THRESHOLD, barPercent, formatValue, scaleBars } from '../../src/components/ui/Chart/chart-model.ts'
+import { INSIDE_THRESHOLD, STACK_BELOW, barPercent, chartLayout, formatValue, scaleBars, wrapLabel } from '../../src/components/ui/Chart/chart-model.ts'
 
 // Handoff 2, Phase C (task 7-2): the bar chart's scaling, value labels, edge cases and the table alternative.
 
@@ -77,4 +77,68 @@ test('the table alternative carries the same numbers as the bars', () => {
     bars.map((b) => [b.label, b.value, b.display]),
     data.map((d) => [d.label, d.value, String(d.value)]),
   )
+})
+
+// C4 (23 November 2026): the Recharts plot's label wrapping and row layout. A fixed-width "font" (8 px per
+// character) stands in for the browser's text measurement.
+const mono = (s) => s.length * 8
+
+test('labels wrap by word within the width, and keep every word in order', () => {
+  const label = 'Data protection for every team member'
+  const lines = wrapLabel(label, 100, mono)
+  assert.ok(lines.length > 1)
+  for (const line of lines) assert.ok(mono(line) <= 100, `"${line}" is wider than 100`)
+  assert.equal(lines.join(' '), label)
+})
+
+test('a single word wider than the space is broken, never cut or left overflowing', () => {
+  const lines = wrapLabel('Supercalifragilisticexpialidocious', 80, mono)
+  assert.ok(lines.length > 1)
+  for (const line of lines) assert.ok(mono(line) <= 80)
+  assert.equal(lines.join(''), 'Supercalifragilisticexpialidocious')
+})
+
+test('a label that fits stays on one line; an empty label is one empty line', () => {
+  assert.deepEqual(wrapLabel('Active', 200, mono), ['Active'])
+  assert.deepEqual(wrapLabel('   ', 200, mono), [''])
+})
+
+test('narrow plots put each label above its bar; wide plots put it beside', () => {
+  const bars = scaleBars([{ label: 'Workplace safety essentials', value: 82 }], 'percent', 100)
+  const narrow = chartLayout(bars, STACK_BELOW - 1, mono)
+  assert.equal(narrow.stacked, true)
+  assert.equal(narrow.labelWidth, 0)
+  const wide = chartLayout(bars, 800, mono)
+  assert.equal(wide.stacked, false)
+  assert.ok(wide.labelWidth >= 120 && wide.labelWidth <= 280)
+})
+
+test('every row is tall enough for its longest label, and the plot is rows x row height', () => {
+  const bars = scaleBars(
+    [
+      { label: 'Data protection and information security for every team member, including contractors', value: 128 },
+      { label: 'Short', value: 64 },
+    ],
+    'count',
+  )
+  for (const width of [1440, 768, 390, 300]) {
+    const layout = chartLayout(bars, width, mono)
+    const most = Math.max(...layout.lines.map((l) => l.length))
+    assert.ok(layout.rowHeight >= most * 20, `row too short at ${width}`)
+    assert.equal(layout.height, layout.rowHeight * bars.length)
+    for (const line of layout.lines.flat()) assert.ok(mono(line) <= layout.labelMax, `"${line}" overflows at ${width}`)
+  }
+})
+
+test('the value of a short bar always fits right of it, inside the plot', () => {
+  for (const width of [1440, 768, 390, 300, 200]) {
+    for (const value of [0, 1, 40, 79]) {
+      const bars = scaleBars([{ label: 'A', value }, { label: 'B', value: 100 }], 'count')
+      const layout = chartLayout(bars, width, mono)
+      const plot = width - layout.labelWidth - layout.valueRoom
+      const [short] = bars
+      const end = layout.labelWidth + (short.percent / 100) * plot + 6 + mono(short.display)
+      assert.ok(end <= width, `value of ${value} ends at ${end} past ${width}`)
+    }
+  }
 })

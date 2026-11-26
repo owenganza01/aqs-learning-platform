@@ -46,7 +46,7 @@ test.describe('public Courses page (development preview)', () => {
 
   test('organization-only sample courses are not listed', async ({ page }) => {
     await page.goto(CATALOG)
-    await expect(page.getByText(/Sample organization:/)).toHaveCount(0)
+    await expect(page.getByText(/Northgate Logistics:/)).toHaveCount(0)
   })
 
   test('every public course opens its detail page', async ({ page }) => {

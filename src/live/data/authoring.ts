@@ -1,7 +1,7 @@
 import { AppError, client, query, rpc, toAppError } from '../api'
+import { checkDocument } from '../components/DocumentUpload/document-files'
 import type { LessonType } from './learning'
 
-const MAX_RESOURCE_BYTES = 100 * 1024 * 1024
 const MAX_VIDEO_BYTES = 500 * 1024 * 1024
 const MAX_THUMBNAIL_BYTES = 5 * 1024 * 1024
 const VIDEO_TYPES = ['video/mp4', 'video/webm']
@@ -60,6 +60,12 @@ type CoursePeopleRow = {
  */
 async function coursePeople(ids: string[]): Promise<Map<string, CoursePeopleRow>> {
   if (ids.length === 0) return new Map()
+  // 0028: at most 200 ids per call, so larger lists are asked for in batches.
+  if (ids.length > 200) {
+    const out = new Map<string, CoursePeopleRow>()
+    for (let i = 0; i < ids.length; i += 200) for (const [k, v] of await coursePeople(ids.slice(i, i + 200))) out.set(k, v)
+    return out
+  }
   const { data, error } = await client().rpc('course_people', { p_courses: ids })
   if (error?.code === 'PGRST202') {
     // Transition only: a database without migration 0014 has no course_people yet, and still
@@ -241,6 +247,56 @@ async function upload(bucket: string, path: string, file: File): Promise<void> {
   if (error) throw toAppError({ code: 'P0001', message: `AQS: the upload failed (${error.message})` })
 }
 
+/**
+ * A10: the same upload as `upload` (the Storage object endpoint, the person's own token, no
+ * overwrite, the 900-second cache lifetime) through XMLHttpRequest, which reports progress. The
+ * Storage row rules still decide (0010, 0019): only an issued pending path of an editable draft.
+ */
+async function uploadWithProgress(bucket: string, path: string, body: Blob, onProgress: (fraction: number) => void): Promise<void> {
+  const base = (import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? ''
+  const key = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ?? ''
+  if (!base || !key) throw new AppError('unavailable', 'The service is not configured for this site.')
+  const { data } = await client().auth.getSession()
+  const token = data.session?.access_token
+  if (!token) throw new AppError('forbidden', 'Sign in again to continue.')
+  const form = new FormData()
+  form.append('cacheControl', String(UPLOAD_CACHE_SECONDS))
+  form.append('', body)
+  const url = `${base.replace(/\/+$/, '')}/storage/v1/object/${bucket}/${path.split('/').map(encodeURIComponent).join('/')}`
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', url)
+    xhr.setRequestHeader('authorization', `Bearer ${token}`)
+    xhr.setRequestHeader('apikey', key)
+    xhr.setRequestHeader('x-upsert', 'false')
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable && event.total > 0) onProgress(Math.min(1, event.loaded / event.total))
+    }
+    xhr.onerror = () => reject(new AppError('network', 'The upload stopped: the connection was lost. Retry the file.'))
+    xhr.onabort = xhr.onerror
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onProgress(1)
+        resolve()
+        return
+      }
+      let message = `HTTP ${xhr.status}`
+      try {
+        const answer = JSON.parse(xhr.responseText) as { message?: string; error?: string }
+        message = answer.message || answer.error || message
+      } catch {
+        // Not JSON: keep the status.
+      }
+      if (xhr.status === 401 || xhr.status === 403) {
+        reject(new AppError('forbidden', `The upload was refused (${message}). Sign in again, or check that the course is still an editable draft.`))
+      } else {
+        reject(toAppError({ code: 'P0001', message: `AQS: the upload failed (${message})` }))
+      }
+    }
+    xhr.send(form)
+  })
+}
+
 /** Calls a function that only exists once migration 0018 is applied; `missing` before that. */
 async function rpcIfPresent<T>(fn: string, args: Record<string, unknown>): Promise<{ missing: true } | { missing: false; value: T }> {
   const { data, error } = await client().rpc(fn, args)
@@ -308,20 +364,45 @@ export const authoring = {
   reorderLessons: (moduleId: string, ids: string[]) => rpc('reorder_lessons', { p_module: moduleId, p_lessons: ids }),
   setBody: (lessonId: string, body: string) => rpc('set_lesson_body', { p_lesson: lessonId, p_body: body }),
 
-  async addResource(lessonId: string, file: File, downloadable: boolean) {
-    // Same limits as lesson_resources (0007: 1 byte to 100 MB); say so before anything is stored.
-    if (file.size === 0) throw new AppError('invalid', 'This file is empty. Choose another file.')
-    if (file.size > MAX_RESOURCE_BYTES) throw new AppError('invalid', 'Files can be at most 100 MB. Choose a smaller file.')
+  /**
+   * Add one document to a lesson (A10; 0027). The file is checked first (type and size, the
+   * existing limits), then the database issues a pending path, the file is uploaded with progress,
+   * and only then does the database create the file record. On any failure the pending path is
+   * cancelled: the lesson, and every other file of the same selection, is exactly as it was.
+   * Before 0027 is applied, the 0007 flow (record first, removed again on failure) is used.
+   */
+  async addResource(lessonId: string, file: File, downloadable: boolean, onProgress: (fraction: number) => void = () => undefined): Promise<void> {
+    const check = checkDocument(file)
+    if (!check.ok) throw new AppError('invalid', check.message)
+    const body = file.slice(0, file.size, check.contentType)
+    const issued = await rpcIfPresent<string>('begin_lesson_resource_upload', {
+      p_lesson: lessonId,
+      p_file_name: file.name,
+      p_content_type: check.contentType,
+      p_size_bytes: file.size,
+    })
+    if (!issued.missing) {
+      try {
+        await uploadWithProgress('course-files', issued.value, body, onProgress)
+        await rpc('finish_lesson_resource_upload', { p_lesson: lessonId, p_path: issued.value, p_downloadable: downloadable })
+      } catch (error) {
+        // A file that arrived but could not be confirmed is left for the orphaned-file cleanup (0017).
+        await rpc('cancel_pending_upload', { p_path: issued.value }).catch(() => undefined)
+        throw error
+      }
+      return
+    }
+    // Transition only (before 0027): the record is written first and removed again if the upload fails.
     const rows = await rpc<Array<{ id: string; storage_path: string }>>('add_lesson_resource', {
       p_lesson: lessonId,
       p_file_name: file.name,
-      p_content_type: file.type || 'application/octet-stream',
+      p_content_type: check.contentType,
       p_size_bytes: file.size,
       p_downloadable: downloadable,
     })
     const created = rows[0]
     try {
-      await upload('course-files', created.storage_path, file)
+      await uploadWithProgress('course-files', created.storage_path, body, onProgress)
     } catch (error) {
       await rpc('delete_lesson_resource', { p_resource: created.id }).catch(() => undefined)
       throw error
@@ -336,7 +417,7 @@ export const authoring = {
   },
 
   async setThumbnail(courseId: string, file: File, hadThumbnail = true) {
-    checkFile(file, THUMBNAIL_TYPES, MAX_THUMBNAIL_BYTES, 'Thumbnails must be PNG, JPEG or WebP images.', 'Thumbnails can be at most 5 MB.')
+    checkFile(file, THUMBNAIL_TYPES, MAX_THUMBNAIL_BYTES, 'Cover images must be PNG, JPEG or WebP images.', 'Cover images can be at most 5 MB.')
     const result = await stagedUpload(
       () => rpcIfPresent<string>('begin_course_thumbnail_upload', { p_course: courseId, p_content_type: file.type }),
       splitFull,

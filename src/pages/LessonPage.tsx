@@ -28,7 +28,7 @@ import { countOf } from '../lib/plural'
  * board are not built.
  */
 
-const MOCK_LEARNER: CurrentUser = { name: 'Ganza Owen', roleLabel: 'Learner' }
+const MOCK_LEARNER: CurrentUser = { name: 'Aline Mukamana', roleLabel: 'Learner' }
 
 const SAMPLE_LESSON_NOTICE =
   'Sample lesson: layout only. Video does not play, nothing is saved, and progress resets when the page reloads.'

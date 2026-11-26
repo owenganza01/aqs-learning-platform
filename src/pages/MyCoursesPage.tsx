@@ -13,7 +13,7 @@ import styles from './MyCoursesPage.module.css'
  * resets on reload. Nothing here is enrolment, grading or a certificate.
  */
 
-const MOCK_LEARNER: CurrentUser = { name: 'Ganza Owen', roleLabel: 'Learner' }
+const MOCK_LEARNER: CurrentUser = { name: 'Aline Mukamana', roleLabel: 'Learner' }
 const LEARNER_NAV: NavItem[] = getShellDefinition('learner', '/learn').navItems
 
 export default function MyCoursesPage() {

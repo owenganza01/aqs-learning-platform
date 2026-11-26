@@ -57,7 +57,7 @@ test.describe('organization admin settings (development only)', () => {
     await page.goto(SETTINGS)
 
     await expect(page.getByRole('heading', { level: 1, name: 'Organization settings' })).toBeVisible()
-    await expect(page.getByLabel('Organization name')).toHaveValue('Sample organization')
+    await expect(page.getByLabel('Organization name')).toHaveValue('Northgate Logistics')
     await expect(page.getByLabel('Website')).toHaveValue('https://www.example.com')
     await expect(page.getByRole('group', { name: 'Primary contact' })).toBeVisible()
     await expect(page.getByRole('group', { name: 'Privacy contact' })).toBeVisible()

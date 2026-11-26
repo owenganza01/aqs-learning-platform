@@ -116,7 +116,7 @@ test.describe('organization admin dashboard (development only)', () => {
     await expect(page.getByRole('table', { name: 'Completion by course' }).getByRole('row')).toHaveCount(5)
     const attention = page.getByRole('region', { name: 'Needs attention' })
     await expect(attention).toContainText('Instructor invitation is pending')
-    await expect(attention).toContainText('sarah@abc-sample.test · expires 27 Oct 2026')
+    await expect(attention).toContainText('sarah@northgate-sample.test · expires 27 Oct 2026')
     await expect(attention).toContainText('Domain meridian-sample.test is not verified')
 
     const roles = page.getByRole('region', { name: 'Members by role' })
@@ -180,9 +180,9 @@ test.describe('instructor sections (development draft)', () => {
   test('Messages: choosing a conversation opens it, and replying is disabled', async ({ page }) => {
     await page.goto('/o/sample-org/teach/messages')
     const writes = trackWrites(page)
-    await page.getByRole('button', { name: /^Sarah Chen/ }).click()
-    await expect(page.getByRole('region', { name: 'Conversation with Sarah Chen' })).toContainText('Could you explain the case study brief?')
-    await expect(page.getByLabel('Reply to Sarah')).toBeDisabled()
+    await page.getByRole('button', { name: /^Claire Uwera/ }).click()
+    await expect(page.getByRole('region', { name: 'Conversation with Claire Uwera' })).toContainText('Could you explain the case study brief?')
+    await expect(page.getByLabel('Reply to Claire')).toBeDisabled()
     await expect(page.getByRole('button', { name: 'Send (not available yet)' })).toBeDisabled()
     await expect(page.getByRole('button', { name: 'Attach a file (not available yet)' })).toBeDisabled()
     expect(writes).toEqual([])

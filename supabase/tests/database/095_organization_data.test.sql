@@ -1,6 +1,10 @@
 -- =============================================================================
 -- Tests for migration 0021 (WP3: workspace requests, their review, the organization profile).
 -- PREPARED ONLY: 0021 is not applied to any hosted database. Synthetic data only ("ZZ", example.test).
+-- 23 November 2026 (WS-ONBOARD, migration 0025, owner decision C2): approval now activates the workspace
+-- and invites its administrators. Section 7's draft / no-invitation / second-approval-refused assertions
+-- were rewritten to the decided behaviour; the request fixture gained 0025's required fields. Needs 0025
+-- and 0024 (or scripts/db-sandbox/stubs/0024-email-outbox.from-ws-email.sql in the sandbox). More: 098_onboarding_activation.
 --
 -- People: PA1 9f0, PA2 9f1 Platform Admins | Org A (active): ADM 9f2 org admin, LRN 9f4 learner,
 --         INS 9f5 instructor | Org B (active): BADM 9f3 org admin | Org C (draft): CADM 9f6 org admin.
@@ -38,7 +42,11 @@ create function pg_temp.req(p_name text, p_over jsonb default '{}'::jsonb) retur
     'website', 'https://zz-school.example.test', 'contact_name', 'ZZ Rita Requester',
     'contact_email', 'rita@zz-school.example.test', 'contact_role', 'Head of training',
     'learner_range', '26-100', 'training_needs', 'ZZ Data skills for teachers',
-    'wants_domain_admission', false, 'proposed_admin_emails', jsonb_build_array('admin@zz-school.example.test')
+    'wants_domain_admission', false, 'proposed_admin_emails', jsonb_build_array('admin@zz-school.example.test'),
+    -- 0025 (A5) required fields: description, address, authorised representative, terms acceptance.
+    'organization_description', 'ZZ A fictional school that wants staff training.', 'address', 'ZZ 1 Test Street, Kigali',
+    'representative_name', 'ZZ Rita Requester', 'representative_title', 'Head of training',
+    'terms_accepted', true, 'terms_version', 'terms-2026-11-15', 'form_version', 2
   ) || p_over;
 $$;
 grant execute on function pg_temp.req(text, jsonb) to anon, authenticated, service_role;
@@ -64,10 +72,22 @@ create function pg_temp.org_children(p_org uuid) returns int language sql securi
   select (select count(*) from public.invitations where org_id = p_org)::int
        + (select count(*) from public.organization_memberships where org_id = p_org)::int;
 $$;
+-- 0025 (C2): what approval creates, read as the test owner.
+create function pg_temp.org_invitations(p_org uuid) returns text language sql security definer as $$
+  select coalesce(string_agg(i.email::text || '|' || i.role::text || '|' || i.status::text, ',' order by i.email), '<none>')
+    from public.invitations i where i.org_id = p_org;
+$$;
+create function pg_temp.org_members(p_org uuid) returns int language sql security definer as $$
+  select count(*)::int from public.organization_memberships where org_id = p_org;
+$$;
+create function pg_temp.outbox(p_kind text) returns int language sql security definer as $$
+  select count(*)::int from private.email_outbox where kind = p_kind;
+$$;
 grant execute on function pg_temp.req_field(text, text), pg_temp.req_id(text), pg_temp.profile_field(uuid, text),
-  pg_temp.audits(text), pg_temp.orgs_named(text), pg_temp.org_children(uuid) to anon, authenticated, service_role;
+  pg_temp.audits(text), pg_temp.orgs_named(text), pg_temp.org_children(uuid), pg_temp.org_invitations(uuid),
+  pg_temp.org_members(uuid), pg_temp.outbox(text) to anon, authenticated, service_role;
 
-select plan(56);
+select plan(59);
 
 -- Setup ------------------------------------------------------------------------------------------------
 insert into auth.users (id, email, raw_user_meta_data) values
@@ -196,7 +216,8 @@ select is((select status || '|' || decided_by_name from public.organization_requ
 select throws_ok($$ select public.start_organization_request_review(pg_temp.req_id('ZZ Charity Three')) $$,
   '22023', 'AQS: this request is already in review or decided', 'a declined request cannot be reopened');
 
--- 7. Approval: exactly one draft organization, its profile, nothing else --------------------------------------
+-- 7. Approval (0025, owner decision C2): exactly one ACTIVE organization, its profile, one Org Admin
+--    invitation per named administrator, no member until an invitation is accepted, emails queued once. --
 select public.start_organization_request_review(pg_temp.req_id('ZZ School One'));
 select throws_ok($$ select public.approve_organization_request(pg_temp.req_id('ZZ School One'), 'ZZ School One', 'zz-school-one', '') $$,
   '22023', 'AQS: record what you checked before approving (up to 1,000 characters)', 'approval needs a note of what was checked');
@@ -204,13 +225,19 @@ select throws_ok($$ select public.approve_organization_request(pg_temp.req_id('Z
   '23505', null, 'a web address already in use is refused');
 select is(pg_temp.req_field('ZZ School One', 'status'), 'in_review', 'and the request stays in review');
 select set_config('t.new_org', public.approve_organization_request(pg_temp.req_id('ZZ School One'), 'ZZ School One', 'zz-school-one', 'ZZ website and email domain match')::text, true);
-select is((select status::text from public.organizations where id = pg_temp.id('new_org')), 'draft', 'approval creates a draft organization');
+select is((select status::text from public.organizations where id = pg_temp.id('new_org')), 'active', 'approval creates an ACTIVE organization (C2; was: a draft)');
 select is(pg_temp.orgs_named('ZZ School One'), 1, 'exactly one organization');
 select is(pg_temp.profile_field(pg_temp.id('new_org'), 'organization_type') || '|' || pg_temp.profile_field(pg_temp.id('new_org'), 'contact_email'),
   'education|rita@zz-school.example.test', 'the profile is prefilled from the request');
-select is(pg_temp.org_children(pg_temp.id('new_org')), 0, 'approval sends no invitation and adds no member');
-select throws_ok($$ select public.approve_organization_request(pg_temp.req_id('ZZ School One'), 'ZZ School One B', 'zz-school-one-b', 'again') $$,
-  '22023', 'AQS: start the review before deciding this request', 'a second approval is refused');
+select is(pg_temp.org_invitations(pg_temp.id('new_org')), 'admin@zz-school.example.test|org_admin|pending',
+  'approval creates one pending Org Admin invitation for the named administrator (C2; was: no invitation)');
+select is(pg_temp.org_members(pg_temp.id('new_org')), 0, 'approval adds no member: the role comes only with an accepted invitation');
+select is(pg_temp.outbox('org_workspace_activated') || '|' || pg_temp.outbox('org_admin_invitation'), '1|1',
+  'approval queues the activation email and the invitation email once each');
+select is(public.approve_organization_request(pg_temp.req_id('ZZ School One'), 'ZZ School One B', 'zz-school-one-b', 'again'),
+  pg_temp.id('new_org'), 'a second approval returns the same organization (idempotent; was: refused)');
+select is(pg_temp.outbox('org_workspace_activated') || '|' || pg_temp.outbox('org_admin_invitation'), '1|1',
+  'a second approval queues no email again');
 select is(pg_temp.orgs_named('ZZ School One B') + pg_temp.orgs_named('ZZ School One'), 1, 'still exactly one organization');
 select is(pg_temp.audits('organization_request.review') || '|' || pg_temp.audits('organization_request.decline') || '|' || pg_temp.audits('organization_request.approve'),
   '2|1|1', 'every review action writes one audit row');

@@ -147,12 +147,15 @@ reset role;
 
 -- 1-3. Buckets and row rules (T8) -------------------------------------------------------------
 select results_eq($$ select id, public, file_size_limit from storage.buckets order by id $$,
-  $$ values ('course-files', false, 104857600::bigint), ('course-thumbnails', true, 5242880::bigint), ('course-video', false, 524288000::bigint) $$,
-  'T8: one public bucket for thumbnails, private buckets for materials and video, with size limits');
+  $$ values ('certificate-templates', false, 10485760::bigint), ('certificates', false, 10485760::bigint),  -- 0026 (A11): private
+            ('course-files', false, 104857600::bigint), ('course-thumbnails', true, 5242880::bigint), ('course-video', false, 524288000::bigint),
+            ('organisation-request-documents', false, 10485760::bigint) $$,
+  'T8: one public bucket for thumbnails, private buckets for materials, video, (0025) workspace-request documents and (0026) certificates, with size limits');
 select results_eq($$ select allowed_mime_types from storage.buckets where id = 'course-video' $$,
   $$ values (array['video/mp4', 'video/webm', 'text/vtt']) $$, 'the video bucket accepts MP4 and WebM video, and WebVTT captions (0019, D39)');
-select policies_are('storage', 'objects', array['aqs_course_objects_insert', 'aqs_course_objects_delete', 'aqs_course_objects_select'],
-  'storage.objects has exactly the three AQS rules: no UPDATE rule and nothing for anon');
+select policies_are('storage', 'objects', array['aqs_course_objects_insert', 'aqs_course_objects_delete', 'aqs_course_objects_select',
+                                                'aqs_certificate_templates_insert'],  -- 0026 (A11): template uploads by Org Admins
+  'storage.objects has exactly the three AQS course rules and the 0026 template-upload rule: no UPDATE rule and nothing for anon');
 
 -- 4-16. Thumbnails, video sources and uploads ----------------------------------------------------
 set local role authenticated;

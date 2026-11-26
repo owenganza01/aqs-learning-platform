@@ -118,7 +118,7 @@ const SAMPLE_QUESTIONS: SampleQuestion[] = [
   },
 ]
 
-const MOCK_LEARNER: CurrentUser = { name: 'Ganza Owen', roleLabel: 'Learner' }
+const MOCK_LEARNER: CurrentUser = { name: 'Aline Mukamana', roleLabel: 'Learner' }
 
 /** Sample result copy from the design. The pass and not-passed results are fixed; nothing is computed. */
 const SAMPLE_RESULTS = {

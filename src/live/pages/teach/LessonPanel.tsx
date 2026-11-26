@@ -4,9 +4,9 @@ import base from '../../../pages/InstructorCoursePage.module.css'
 import { ActionFeedback } from '../../components/States'
 import { authoring, type AuthoringCourse, type AuthoringLesson } from '../../data/authoring'
 import { formatBytes, LESSON_TYPE_LABEL } from '../../learner-model'
-import { toAppError } from '../../api'
-import { UploadStatus } from '../../components/UploadStatus'
-import type { UploadState } from '../../components/upload-status'
+import { DocumentUpload } from '../../components/DocumentUpload/DocumentUpload'
+import { previewKind, typeLabel } from '../../components/DocumentUpload/document-files'
+import { mediaUrl, resourceViewUrl } from '../../data/learning'
 import { useAction } from '../../useResource'
 import styles from './CourseEditor.module.css'
 import { VideoSection } from './VideoSection'
@@ -20,7 +20,27 @@ import { VideoSection } from './VideoSection'
  * confirmed captions for organisation-only courses.
  */
 
-const MATERIAL_TYPES = '.pdf,.txt,.csv,.png,.jpg,.jpeg,.webp,.zip,.mp3,.m4a,.doc,.docx,.xls,.xlsx,.ppt,.pptx'
+/**
+ * A10: open a lesson file for course staff, as a learner would get it (a 15-minute URL from
+ * media-url). "Preview" shows a PDF or image in a new tab; "Download" saves it. The tab is opened
+ * before the URL is fetched, so pop-up blockers allow it, and it cannot reach back to this page.
+ */
+async function openFile(id: string, view: boolean): Promise<void> {
+  if (!view) {
+    window.location.assign((await mediaUrl('resource', id)).url)
+    return
+  }
+  const tab = window.open('', '_blank')
+  if (tab) tab.opener = null
+  try {
+    const { url } = await resourceViewUrl(id)
+    if (tab) tab.location.href = url
+    else window.location.assign(url)
+  } catch (error) {
+    tab?.close()
+    throw error
+  }
+}
 
 export function LessonPanel({
   course,
@@ -48,18 +68,8 @@ export function LessonPanel({
     setSaved(message)
     onChanged()
   })
-  // CM3-8: the file upload's own status, next to its control, with a cause-specific error.
-  const [upload, setUpload] = useState<UploadState>({ phase: 'idle' })
-  const uploadFile = async (file: File) => {
-    setUpload({ phase: 'uploading', name: file.name })
-    try {
-      await authoring.addResource(lesson.id, file, downloadable)
-      setUpload({ phase: 'done', message: `${file.name} uploaded.` })
-      onChanged()
-    } catch (error) {
-      setUpload({ phase: 'failed', error: toAppError(error) })
-    }
-  }
+  // A10: preview and download are reads; they never reload the course.
+  const opening = useAction((id: string, view: boolean) => openFile(id, view))
   const textChanged = title.trim() !== lesson.title || body !== lesson.body
 
   return (
@@ -141,37 +151,30 @@ export function LessonPanel({
             Upload materials
           </h3>
           {editable ? (
-            <>
+            <DocumentUpload upload={(file, onProgress) => authoring.addResource(lesson.id, file, downloadable, onProgress)} onUploaded={onChanged}>
               <label className={styles.row}>
                 <input type="checkbox" checked={downloadable} onChange={(e) => setDownloadable(e.target.checked)} />
                 <span>Learners may download new files</span>
               </label>
-              <label className={base.dropzone}>
-                Click to choose a file
-                <span className={base.dropzoneHint}>PDF, Office documents, images, CSV or ZIP. Up to 100 MB per file.</span>
-                <input
-                  type="file"
-                  accept={MATERIAL_TYPES}
-                  className="visually-hidden"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0]
-                    event.target.value = ''
-                    if (file) void uploadFile(file)
-                  }}
-                  aria-describedby={`upload-status-${lesson.id}`}
-                />
-              </label>
-              <UploadStatus state={upload} id={`upload-status-${lesson.id}`} />
-            </>
+            </DocumentUpload>
           ) : null}
+          {opening.error ? <Banner tone="danger">{opening.error.message}</Banner> : null}
           {lesson.resources.length > 0 ? (
             <ul className={base.fileList}>
               {lesson.resources.map((file) => (
                 <li key={file.id} className={base.file}>
                   <span>{file.fileName}</span>
                   <span className={base.fileMeta}>
-                    {formatBytes(file.sizeBytes)} ·{' '}
+                    {typeLabel(file.contentType, file.fileName)} · {formatBytes(file.sizeBytes)} ·{' '}
                     {file.downloadable ? <Badge tone="success">Downloadable</Badge> : <Badge>Not downloadable</Badge>}
+                    {previewKind(file.contentType) ? (
+                      <Button needsConnection variant="text" size="sm" onClick={() => void opening.run(file.id, true)}>
+                        Preview<span className="visually-hidden"> {file.fileName}</span>
+                      </Button>
+                    ) : null}
+                    <Button needsConnection variant="text" size="sm" onClick={() => void opening.run(file.id, false)}>
+                      Download<span className="visually-hidden"> {file.fileName}</span>
+                    </Button>
                     {editable ? (
                       <>
                         {' '}

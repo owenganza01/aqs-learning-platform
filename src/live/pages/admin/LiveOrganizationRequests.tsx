@@ -20,6 +20,7 @@ import { REQUEST_STATUS } from './request-status'
 const FILTERS: Array<{ id: RequestStatus; label: string }> = [
   { id: 'new', label: 'New' },
   { id: 'in_review', label: 'In review' },
+  { id: 'more_info_requested', label: 'Waiting for information' },
   { id: 'approved', label: 'Approved' },
   { id: 'declined', label: 'Declined' },
 ]

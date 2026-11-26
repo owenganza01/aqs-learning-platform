@@ -4,6 +4,8 @@
  * (supabase/functions/_shared/core.test.mjs).
  */
 
+import { invitationContent, renderLayout } from './email-templates.ts'
+
 export type ErrorKind = 'forbidden' | 'invalid' | 'rule' | 'not-found' | 'unavailable' | 'unknown'
 
 export class FunctionError extends Error {
@@ -63,29 +65,12 @@ export function invitationLink(siteUrl: string, token: string): string {
   return `${siteUrl.replace(/\/+$/, '')}/invite#t=${token}`
 }
 
-const ROLE_TEXT: Record<OrgRole, string> = { org_admin: 'an Organization Admin', instructor: 'an Instructor', learner: 'a Learner' }
-
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string)
-}
-
-/** Invitation email (subject, text and HTML). Plain wording; no tracking. */
+/**
+ * Invitation email (subject, text and HTML) in the shared AQS email layout (email-templates.ts).
+ * Plain wording; no tracking. Same signature and subject as before 0024.
+ */
 export function invitationEmail(orgName: string, role: OrgRole, link: string, expiresAt: string) {
-  const expires = new Date(expiresAt).toUTCString().slice(0, 16)
-  const subject = `You're invited to join ${orgName} on AQS E-Learning`
-  const text = [
-    `You've been invited to join ${orgName} on AQS E-Learning as ${ROLE_TEXT[role]}.`,
-    '',
-    `Accept the invitation: ${link}`,
-    '',
-    `Sign in with the Google account for this email address. The invitation expires on ${expires}.`,
-    "If you weren't expecting this, you can ignore this email.",
-  ].join('\n')
-  const html = `<p>You've been invited to join <strong>${escapeHtml(orgName)}</strong> on AQS E-Learning as ${ROLE_TEXT[role]}.</p>
-<p><a href="${escapeHtml(link)}">Accept the invitation</a></p>
-<p>Sign in with the Google account for this email address. The invitation expires on ${escapeHtml(expires)}.</p>
-<p>If you weren't expecting this, you can ignore this email.</p>`
-  return { subject, text, html }
+  return renderLayout(invitationContent(orgName, role, link, expiresAt))
 }
 
 /** Map a PostgREST / Postgres error from an AQS function to a function error. */
@@ -151,4 +136,65 @@ export function corsHeaders(origin: string | null, allowed: string): Record<stri
     'Access-Control-Max-Age': '600',
     Vary: 'Origin',
   }
+}
+
+/* --------------------------------------------------------------------- request body limits (review finding 4) */
+
+/** Default limit for JSON bodies sent to the AQS functions (all are small). */
+export const MAX_JSON_BODY_BYTES = 64 * 1024
+
+/**
+ * Reads a request body, refusing it (413) as soon as more than maxBytes have arrived. A Content-Length header is
+ * only a hint: when it is present, numeric and already too large, the body is refused without reading it; when it
+ * is absent (chunked transfer), malformed or understated, the limit is enforced on the bytes actually read, so an
+ * oversized body is never buffered in full. The stream is cancelled when the limit is passed.
+ */
+export async function readBodyLimited(
+  body: ReadableStream<Uint8Array> | null,
+  contentLength: string | null,
+  maxBytes: number,
+  tooLarge = 'The request is too large.',
+): Promise<Uint8Array<ArrayBuffer>> {
+  const declared = contentLength !== null && /^\s*\d+\s*$/.test(contentLength) ? Number(contentLength) : null
+  if (declared !== null && declared > maxBytes) {
+    await body?.cancel().catch(() => {})
+    throw new FunctionError('invalid', tooLarge, 413)
+  }
+  if (!body) return new Uint8Array(new ArrayBuffer(0))
+  const reader = body.getReader()
+  const chunks: Uint8Array[] = []
+  let total = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    total += value.byteLength
+    if (total > maxBytes) {
+      await reader.cancel().catch(() => {})
+      throw new FunctionError('invalid', tooLarge, 413)
+    }
+    chunks.push(value)
+  }
+  const out = new Uint8Array(new ArrayBuffer(total))
+  let offset = 0
+  for (const chunk of chunks) {
+    out.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+  return out
+}
+
+/** Reads a JSON object body within the limit. Refuses (400) anything that is not a JSON object. */
+export async function readJsonLimited(
+  req: { body: ReadableStream<Uint8Array> | null; headers: { get(name: string): string | null } },
+  maxBytes = MAX_JSON_BODY_BYTES,
+): Promise<Record<string, unknown>> {
+  const bytes = await readBodyLimited(req.body, req.headers.get('Content-Length'), maxBytes)
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(new TextDecoder().decode(bytes))
+  } catch {
+    throw new FunctionError('invalid', 'The request body must be JSON.')
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new FunctionError('invalid', 'The request body must be JSON.')
+  return parsed as Record<string, unknown>
 }

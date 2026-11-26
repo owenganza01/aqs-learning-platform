@@ -18,7 +18,7 @@ export function previewPath(role: ShellRole): string {
 }
 
 const PREVIEW_NAMES: Record<ShellRole, string> = {
-  learner: 'Ganza Owen',
+  learner: 'Aline Mukamana',
   instructor: 'Mary Jones',
   'org-admin': 'Mary Jones',
   'platform-admin': 'Mary Jones',

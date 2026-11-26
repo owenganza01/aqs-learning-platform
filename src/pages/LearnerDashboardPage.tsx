@@ -95,7 +95,7 @@ type MockCatalogCourse = {
 }
 
 const MOCK_LEARNER: CurrentUser & { firstName: string } = {
-  name: 'Ganza Owen',
+  name: 'Aline Mukamana',
   firstName: 'Owen',
   roleLabel: 'Learner',
 }

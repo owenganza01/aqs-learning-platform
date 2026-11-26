@@ -156,7 +156,7 @@ export function LandingPage() {
             </ul>
             <p className={styles.invited}>
               Invited by your organization?{' '}
-              <Link to="/sign-in">Sign in</Link> with the email address the invitation was sent to.
+              <Link to="/sign-in">Sign in</Link> with the Google account for the email address the invitation was sent to.
             </p>
           </div>
           <figure className={styles.heroMedia}>

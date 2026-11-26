@@ -26,6 +26,10 @@ const LiveLessonPage = lazy(() => import('./pages/learner/LiveLessonPage'))
 const LiveQuizPage = lazy(() => import('./pages/learner/LiveQuizPage'))
 const LiveCompletion = lazy(() => import('./pages/learner/LiveCompletion'))
 const LiveProfile = lazy(() => import('./pages/learner/LiveProfile'))
+// A11 (0026, 23 November 2026): certificates for learners and Organization Admins, and the public check.
+const LiveMyCertificates = lazy(() => import('./pages/learner/LiveMyCertificates'))
+const LiveOrgCertificates = lazy(() => import('./pages/manage/LiveOrgCertificates'))
+const LiveVerifyCertificatePage = lazy(() => import('./pages/LiveVerifyCertificatePage'))
 const LiveInstructorDashboard = lazy(() => import('./pages/teach/LiveInstructorDashboard'))
 const LiveInstructorCourses = lazy(() => import('./pages/teach/LiveInstructorCourses'))
 const LiveCourseEditor = lazy(() => import('./pages/teach/LiveCourseEditor'))
@@ -90,6 +94,7 @@ export function LiveApp({ extraRoutes }: { extraRoutes?: ReactNode }) {
         <Route path="/get-started" element={<Page><GetStartedPage /></Page>} />
         <Route path="/request-workspace" element={<Page><LiveRequestWorkspacePage /></Page>} />
         <Route path="/courses/:courseId" element={<Page><LiveCourseDetail /></Page>} />
+        <Route path="/verify-certificate" element={<Page><LiveVerifyCertificatePage /></Page>} />
         <Route path="/access-denied" element={<LiveAccessDenied />} />
         <Route path="/session-expired" element={<LiveSignInRequired />} />
         <Route path="/terms" element={<Page><LegalPage document="terms" /></Page>} />
@@ -103,6 +108,8 @@ export function LiveApp({ extraRoutes }: { extraRoutes?: ReactNode }) {
           <Route path="/learn" element={<Page><LiveLearnerDashboard /></Page>} />
           <Route path="/my-courses" element={<Page><LiveMyCourses /></Page>} />
           <Route path="/profile" element={<Page><LiveProfile /></Page>} />
+          <Route path="/certificates" element={<Page><LiveMyCertificates /></Page>} />
+          <Route path="/certificates/:certificateId" element={<Page><LiveMyCertificates /></Page>} />
           <Route path="/learn/courses/:courseId/lessons/:lessonId" element={<Page><LiveLessonPage /></Page>} />
           <Route path="/learn/courses/:courseId/quizzes/:quizId" element={<Page><LiveQuizPage /></Page>} />
           <Route path="/learn/courses/:courseId/complete" element={<Page><LiveCompletion /></Page>} />
@@ -121,6 +128,7 @@ export function LiveApp({ extraRoutes }: { extraRoutes?: ReactNode }) {
             <Route path="members" element={<Page><LiveOrgMembers /></Page>} />
             <Route path="invitations" element={<Page><LiveOrgInvitations /></Page>} />
             <Route path="settings" element={<Page><LiveOrgSettings /></Page>} />
+            <Route path="certificates" element={<Page><LiveOrgCertificates /></Page>} />
           </Route>
           <Route path="/admin" element={<RequirePlatformAdmin />}>
             <Route index element={<Page><LivePlatformOverview /></Page>} />

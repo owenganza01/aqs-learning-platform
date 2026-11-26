@@ -20,7 +20,8 @@ import styles from './AuthOptions.module.css'
  * under "Or continue with" (Revision 2 Phase 7, A.1: one email entry point, no second email control).
  * Presentation only (amendment 4): which methods appear still comes from the page (VITE_AUTH_PROVIDERS).
  * The pages decide what each action does; in the development previews (D27) nothing is wired and
- * every control is inert.
+ * every control is inert. A8 (23 November 2026): an inert control is also disabled and named "(not
+ * available yet)", like the inert email form, so no option that cannot work is presented as available.
  */
 
 type ProviderButtonsProps = {
@@ -45,12 +46,13 @@ export function ProviderButtons({ methods, onProvider, busyProvider = null, disa
             fullWidth
             aria-describedby={describedBy}
             onClick={onProvider ? () => onProvider(provider) : undefined}
-            disabled={disabled}
+            disabled={disabled || !onProvider}
             loading={busyProvider === provider}
           >
             {/* Task 2-2: each provider's own logo on its button (the spinner takes its place while opening). */}
             {busyProvider !== provider ? <ProviderMark provider={provider} /> : null}
             {busyProvider === provider ? `Opening ${OAUTH_PROVIDER_LABELS[provider]}…` : `Continue with ${OAUTH_PROVIDER_LABELS[provider]}`}
+            {onProvider ? null : <span className="visually-hidden"> (not available yet)</span>}
           </Button>
         </li>
       ))}

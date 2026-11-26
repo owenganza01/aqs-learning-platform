@@ -10,13 +10,16 @@
     "preview": "vite preview",
     "test:e2e": "playwright test",
     "test:e2e:live": "playwright test -c playwright.live.config.ts",
-    "test:functions": "node --experimental-strip-types --test supabase/functions/_shared/core.test.mjs supabase/functions/media-url/kinds.test.mjs supabase/functions/youtube-verify/verify.test.mjs supabase/functions/organisation-request/request.test.mjs supabase/functions/domain-verify/verify.test.mjs",
+    "test:functions": "node --experimental-strip-types --test supabase/functions/_shared/core.test.mjs supabase/functions/invitations/invite.test.mjs supabase/functions/media-url/kinds.test.mjs supabase/functions/youtube-verify/verify.test.mjs supabase/functions/organisation-request/request.test.mjs supabase/functions/domain-verify/verify.test.mjs supabase/functions/email-send/send.test.mjs supabase/functions/email-webhook/webhook.test.mjs supabase/functions/certificate-generate/render.test.mjs supabase/functions/certificate-generate/worker.test.mjs supabase/functions/certificate-url/handle.test.mjs supabase/functions/certificate-verify/verify.test.mjs",
     "test:unit": "node --experimental-strip-types --test tests/unit/*.test.mjs",
-    "check:functions": "npx -y deno@2.5.6 check supabase/functions/invitations/index.ts supabase/functions/media-url/index.ts supabase/functions/storage-cleanup/index.ts supabase/functions/youtube-verify/index.ts supabase/functions/organisation-request/index.ts supabase/functions/domain-verify/index.ts",
+    "check:functions": "npx -y deno@2.5.6 check supabase/functions/invitations/index.ts supabase/functions/media-url/index.ts supabase/functions/storage-cleanup/index.ts supabase/functions/youtube-verify/index.ts supabase/functions/organisation-request/index.ts supabase/functions/domain-verify/index.ts supabase/functions/email-send/index.ts supabase/functions/email-webhook/index.ts supabase/functions/certificate-generate/index.ts supabase/functions/certificate-url/index.ts supabase/functions/certificate-verify/index.ts",
     "check:build": "node scripts/check-production-build.mjs",
     "test:db": "bash scripts/db-sandbox/run.sh",
     "test:db:real-storage": "bash scripts/db-sandbox/run-real-storage.sh",
     "test:db:concurrency": "bash scripts/db-sandbox/concurrency-check.sh",
+    "test:db:onboarding-concurrency": "bash scripts/db-sandbox/onboarding-concurrency-check.sh",
+    "test:db:email-race": "bash scripts/db-sandbox/email-webhook-race-check.sh",
+    "test:db:rollback": "bash scripts/db-sandbox/rollback-check.sh",
     "test:staging": "node tests/api/staging-checks.mjs",
     "test:staging:guards": "node --test tests/api/staging-checks.guards.test.mjs"
   },
@@ -25,6 +28,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^8.4.0",
+    "recharts": "^3.11.0",
     "tus-js-client": "4.3.1"
   },
   "devDependencies": {
@@ -39,6 +43,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.6",
     "globals": "^17.12.0",
+    "pdf-lib": "^1.17.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.69.0",
     "vite": "^8.3.0"

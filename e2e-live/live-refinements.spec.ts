@@ -43,10 +43,13 @@ async function editor(page: Page, rpc: Record<string, Handler> = {}, storage: Re
 
 test('inline upload status: a file refused by Storage says "Too large" next to its control', async ({ page }) => {
   await editor(page, {
-    add_lesson_resource: () => ({ json: [{ id: 'r2', storage_path: `${COURSE_ID}/l1/r2-big.pdf` }] }),
-    delete_lesson_resource: () => ({ json: null }),
+    // A10 (0027): each file is begun, uploaded, then confirmed; a failed one is cancelled.
+    begin_lesson_resource_upload: () => ({ json: `${COURSE_ID}/r2/big.pdf` }),
+    cancel_pending_upload: () => ({ json: null }),
   }, { 'course-files': () => ({ status: 413, json: { statusCode: '413', error: 'Payload too large', message: 'The object exceeded the maximum allowed size' } }) })
   await page.getByRole('region', { name: 'Upload materials' }).locator('input[type=file]').setInputFiles({ name: 'big.pdf', mimeType: 'application/pdf', buffer: Buffer.from('x') })
+  // A10: files are listed first and uploaded on request (remove-before-submit).
+  await page.getByRole('region', { name: 'Upload materials' }).getByRole('button', { name: 'Upload 1 file' }).click()
   const status = page.getByRole('region', { name: 'Upload materials' }).getByRole('status')
   await expect(status).toContainText('Too large:')
   await expect(status).toContainText(/upload failed/i)
@@ -75,10 +78,10 @@ test('consistent confirmations: removing a file, the video and the thumbnail ask
   for (const [button, title, confirmLabel, rpcName] of [
     ['Remove zz-map.pdf', /Remove zz-map\.pdf\?/, 'Remove file', 'delete_lesson_resource'],
     ['Remove video', /Remove the video from “Lecture”\?/, 'Remove video', 'clear_lesson_video'], // Phase B (B.5): the title names the object
-    ['Remove thumbnail', /Remove the thumbnail of “ZZ Safety basics”\?/, 'Remove thumbnail', 'clear_course_thumbnail'], // Phase B (B.5)
+    ['Remove cover image', /Remove the cover image of “ZZ Safety basics”\?/, 'Remove cover image', 'clear_course_thumbnail'], // Phase B (B.5)
   ] as const) {
     // Phase B (B.3): the thumbnail is on the Details tab, the lesson's file and video on Content
-    await page.getByRole('tab', { name: button === 'Remove thumbnail' ? 'Details' : 'Content' }).click()
+    await page.getByRole('tab', { name: button === 'Remove cover image' ? 'Details' : 'Content' }).click()
     await page.getByRole('button', { name: button }).click()
     const dialog = page.getByRole('dialog', { name: title })
     await dialog.getByRole('button', { name: 'Cancel' }).click()
@@ -93,7 +96,7 @@ test('the course editor is no wider than a 390 px screen (Thumbnail block fixed)
   await page.setViewportSize({ width: 390, height: 900 })
   await editor(page, { organization_members: () => ({ json: [] }) })
   await page.getByRole('tab', { name: 'Details' }).click() // Phase B (B.3): the thumbnail is on the Details tab
-  await expect(page.getByRole('heading', { name: 'Thumbnail' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Cover image (optional)' })).toBeVisible() // 9.4 (A10): the Thumbnail block is now the optional cover image
   // On failure, name what sticks out (content inside its own scroll box does not count).
   const wide = await page.evaluate(() =>
     [...document.querySelectorAll('body *')]

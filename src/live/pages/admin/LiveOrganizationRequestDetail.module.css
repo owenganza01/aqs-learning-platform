@@ -75,6 +75,58 @@
   font-weight: var(--weight-semibold);
 }
 
+/* 0025 (WS-ONBOARD): documents, history, more information. */
+.hintText,
+.muted {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.resume {
+  margin: var(--space-16) 0 var(--space-24);
+}
+
+.documents,
+.history {
+  display: grid;
+  gap: var(--space-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.documents li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  overflow-wrap: anywhere;
+}
+
+.history li {
+  display: grid;
+  gap: var(--space-4);
+  padding-left: var(--space-16);
+  border-left: 2px solid var(--color-border);
+}
+
+.historyEvent {
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+}
+
+.historyNote {
+  color: var(--color-text-subtle);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.decide + .decision,
+.decision + .decision {
+  margin-top: var(--space-24);
+}
+
 @media (max-width: 1023px) {
   .grid,
   .decide {

@@ -2,6 +2,8 @@ import { expect, test, type Page } from '@playwright/test'
 
 // D27 / D42: /sign-in is a development-only mock. It shows every sign-in method (Google, Apple,
 // Facebook, email), all inert: the page makes no sign-in, provider, API, session or storage call.
+// A8 (23 November 2026, changed assertions): an inert option is disabled and named "(not available
+// yet)", so nothing that cannot work is presented as available; it is no longer clickable or a Tab stop.
 
 const DEMO_NOTICE = 'Demo only. Sign-in is not available yet. This page makes no sign-in or provider calls.'
 const PLACEHOLDER = 'Hero photo placeholder (pending approved asset)'
@@ -24,11 +26,13 @@ test.describe('sign-in demo route (development only)', () => {
   test('renders the heading, every sign-in option, the demo notice and the photo', async ({ page }) => {
     await page.goto('/sign-in')
     await expect(page.getByRole('heading', { level: 1, name: 'Welcome' })).toBeVisible()
-    await expect(page.getByRole('list', { name: 'Sign-in options' }).getByRole('button')).toHaveText([
-      'Continue with Google',
-      'Continue with Apple',
-      'Continue with Facebook',
+    const options = page.getByRole('list', { name: 'Sign-in options' }).getByRole('button')
+    await expect(options).toHaveText([
+      'Continue with Google (not available yet)',
+      'Continue with Apple (not available yet)',
+      'Continue with Facebook (not available yet)',
     ])
+    for (const option of await options.all()) await expect(option).toBeDisabled()
     // Phase A (A.1): the email form itself is the email option
     await expect(page.getByRole('form', { name: 'Sign in with email' })).toBeVisible()
     await expect(page.getByText(DEMO_NOTICE, { exact: true })).toBeVisible()
@@ -58,7 +62,11 @@ test.describe('sign-in demo route (development only)', () => {
     await page.waitForLoadState('networkidle')
     const requests: string[] = []
     page.on('request', (request) => requests.push(request.url()))
-    for (const name of ['Continue with Apple', 'Continue with Facebook']) await page.getByRole('button', { name }).click()
+    for (const name of ['Continue with Apple', 'Continue with Facebook']) {
+      const option = page.getByRole('button', { name: `${name} (not available yet)` })
+      await expect(option).toBeDisabled()
+      await option.click({ force: true })
+    }
     // Phase A (A.1): no toggle to click; the form is already shown
     const form = page.getByRole('form', { name: 'Sign in with email' })
     await expect(form.getByLabel('Email address')).toBeDisabled()
@@ -87,7 +95,8 @@ test.describe('sign-in demo route (development only)', () => {
     const requests: string[] = []
     page.on('request', (request) => requests.push(request.url()))
 
-    await googleButton(page).click()
+    await expect(googleButton(page)).toBeDisabled()
+    await googleButton(page).click({ force: true })
     await page.waitForLoadState('networkidle')
 
     expect(page.url()).toBe(urlBefore)
@@ -95,22 +104,17 @@ test.describe('sign-in demo route (development only)', () => {
     expect(await storageState()).toBe(storageBefore)
   })
 
-  test('keyboard focus reaches the Google button and never the unavailable footer items', async ({ page }) => {
+  test('keyboard focus never lands on an unavailable option or footer item', async ({ page }) => {
     await page.goto('/sign-in')
     await expect(googleButton(page)).toBeVisible()
+    await expect(googleButton(page)).toHaveAccessibleName('Continue with Google (not available yet)')
 
-    const focused = await tabThrough(page, 6)
-    expect(focused).toContain('Continue with Google')
-    for (const item of FOOTER_ITEMS) {
-      expect(focused).not.toContain(item)
+    // A8: the disabled options are skipped; Tab reaches the "Create an account" link instead.
+    const focused = await tabThrough(page, 8)
+    for (const item of ['Continue with Google', 'Continue with Apple', 'Continue with Facebook', ...FOOTER_ITEMS]) {
+      expect(focused.some((text) => text.startsWith(item))).toBe(false)
     }
-
-    // The focus indicator is visible on the Google button (the shared focus ring is a box-shadow).
-    for (let i = 0; i < 6 && !(await googleButton(page).evaluate((el) => el === document.activeElement)); i++) {
-      await page.keyboard.press('Tab')
-    }
-    await expect(googleButton(page)).toBeFocused()
-    await expect(googleButton(page)).not.toHaveCSS('box-shadow', 'none')
+    expect(focused).toContain('Create an account')
   })
 
   test('unavailable footer items are marked unavailable and explained to screen readers', async ({ page }) => {

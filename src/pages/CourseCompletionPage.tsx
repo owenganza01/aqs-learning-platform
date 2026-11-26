@@ -6,7 +6,7 @@ import { SAMPLE_COURSE_ID, SAMPLE_COURSE_TITLE } from '../dev/sample-course'
 import { NotFound } from './NotFound'
 import styles from './CourseCompletionPage.module.css'
 
-const MOCK_LEARNER: CurrentUser = { name: 'Ganza Owen', roleLabel: 'Learner' }
+const MOCK_LEARNER: CurrentUser = { name: 'Aline Mukamana', roleLabel: 'Learner' }
 const SAMPLE_CATEGORY = 'Data & analytics'
 
 /*
